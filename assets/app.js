@@ -5,7 +5,7 @@ const STYLES = [
     emoji: '🇮🇹',
     desc: 'Dünn, luftig, Röststellen',
     info: '<strong>Neapolitanische Pizza (Napoletana)</strong> — Die originale holzofengebackene Pizza. Hohe Hydration, kaum Öl, lange kalte Fermentation. Backzeit nur 60–90 Sekunden bei über 450°C. Weicher, luftiger Cornicione mit Leopardenflecken.',
-    defaults: { weight: 270, hydration: 65, salt: 2.8, yeast: 0.06, oil: 0 },
+    defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
     hasOil: false,
     ferment: '24–72h kalte Gare',
     flour: 'Tipo 00 Mehl empfohlen',
