@@ -1,29 +1,123 @@
 const STYLES = [
-  {
-    id: 'neapolitan',
-    name: 'Neapolitanisch',
-    emoji: '🇮🇹',
-    desc: 'Dünn, luftig, Röststellen',
-    info: '<strong>Neapolitanische Pizza (Napoletana)</strong> — Die originale holzofengebackene Pizza. Hohe Hydration, kaum Öl, lange kalte Fermentation. Backzeit nur 60–90 Sekunden bei über 450°C. Weicher, luftiger Cornicione mit Leopardenflecken.',
-    defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
-    hasOil: false,
-    ferment: '24–72h kalte Gare',
-    flour: 'Tipo 00 Mehl empfohlen',
-    tip: 'Am besten mit Tipo 00 Mehl arbeiten. Eine lange kalte Gare (48–72h) entwickelt komplexe Aromen. Der Teig soll sehr weich sein – widerstehe dem Drang, mehr Mehl hinzuzufügen.',
-    steps: (r) => [
-      { emoji: '⚖️', title: 'Zutaten abwiegen', time: '5 Min', detail: `<strong>${r.flour}g</strong> Tipo 00 Mehl (oder Weizenmehl Type 550), <strong>${r.water}g</strong> Wasser (18–22°C), <strong>${r.salt}g</strong> feines Meersalz, <strong>${r.yeast}g</strong> Trockenhefe (oder ${(parseFloat(r.yeast)*3).toFixed(1)}g Frischhefe) abwiegen.`, check: 'Alle Zutaten abgewogen? ✓' },
-      { emoji: '💧', title: 'Hefe auflösen', time: '5 Min', detail: 'Die Hefe in etwa 80% des Wassers auflösen. Sanft umrühren und 2–3 Minuten warten, bis sich leichter Schaum bildet.' },
-      { emoji: '🌾', title: 'Mehl und Wasser verbinden', time: '5 Min', detail: 'Das Hefewasser nach und nach zum Mehl geben, mit der Hand oder einer Teigkarte vermischen. Das restliche Wasser langsam einarbeiten – der Teig sieht zunächst ungleichmäßig aus. Mischen, bis kein trockenes Mehl mehr sichtbar ist.' },
-      { emoji: '🧂', title: 'Salz einarbeiten', time: '2 Min', detail: `Das <strong>${r.salt}g</strong> Salz im restlichen Wasser auflösen und in den Teig einkneten. Salz niemals direkt mit der Hefe in Kontakt bringen.` },
-      { emoji: '💪', title: 'Kneten', time: '10–15 Min', detail: 'Auf leicht bemehlter Fläche mit der Drücken-Falten-Drehen-Methode kneten. Der Teig soll glatt, elastisch und leicht klebrig werden – aber nicht nass kleben. Fenstertest: Ein kleines Stück auseinanderziehen – es soll durchscheinend sein, ohne zu reißen.' },
-      { emoji: '🫙', title: 'Stockgare', time: '2h Raumtemperatur', detail: 'Den Teig in eine leicht geölte Schüssel legen, mit Frischhaltefolie abdecken. Bei Raumtemperatur (22–24°C) ca. 2 Stunden gehen lassen, bis er um etwa 50% größer ist.' },
-      { emoji: '⚙️', title: 'Teilen & Kugeln formen', time: '5 Min', detail: `In <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen. Zu straffen Kugeln formen: Die Ränder nach unten ziehen und den Teigling auf der Arbeitsfläche rotieren, um Oberflächenspannung aufzubauen.` },
-      { emoji: '❄️', title: 'Kalte Gare', time: '24–72h', detail: 'Teiglinge in einzelne geölte Behälter oder auf ein Blech legen, abdecken und 24–72 Stunden kühlstellen. Länger = mehr Aroma. 2–3 Stunden vor dem Backen aus dem Kühlschrank nehmen.' },
-      { emoji: '🔥', title: 'Ofen vorheizen', time: '45–60 Min', detail: 'Ofen auf maximale Temperatur (250–300°C) vorheizen. Einen Backstein, Backstahl oder umgedrehtes schweres Backblech auf dem obersten Rost platzieren. Er muss glühend heiß sein.' },
-      { emoji: '🤌', title: 'Teig ausbreiten', time: '3 Min pro Pizza', detail: 'Niemals ein Nudelholz verwenden! Mit den Fingerspitzen von der Mitte nach außen drücken, dann über die Knöchel stretchen oder die „Slap"-Technik anwenden. Dabei rotieren. Ziel: ~30cm Durchmesser mit dickerem Rand (Cornicione).' },
-      { emoji: '🍕', title: 'Belegen & backen', time: '6–10 Min', detail: 'San-Marzano-Tomaten (zerdrückt), frische Mozzarella und einen Schuss Olivenöl auftragen. Mit einer gut bemehlten Pizzaschaufel auf den heißen Stein schieben. Backen, bis der Rand stellenweise dunkel und der Käse blasig ist.' },
-    ],
-  },
+{
+  id: 'neapolitan',
+  name: 'Neapolitanisch',
+  emoji: '🇮🇹',
+  desc: 'Dünn, luftig, weicher Rand',
+  info: '<strong>Neapolitanische Pizza für Zuhause</strong> — Magerer Teig ohne Öl, lange kalte Fermentation und weicher, luftiger Cornicione. Für Home-Pizzaöfen wie den G3 Ferrari funktionieren etwa 63–66% Hydration besonders gut. Backzeit je nach Ofen meist ca. 4–6 Minuten.',
+  defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
+  hasOil: false,
+  ferment: '48h kalte Gare empfohlen',
+  flour: 'Starkes Tipo 00 Mehl empfohlen, z.B. Caputo Cuoco',
+  tip: 'Eine lange kalte Gare entwickelt komplexe Aromen und verbessert die Struktur. Der Teig soll weich und leicht klebrig sein – widerstehe dem Drang, zu viel zusätzliches Mehl einzuarbeiten.',
+  steps: (r) => [
+    {
+      emoji: '⚖️',
+      title: 'Zutaten abwiegen',
+      time: '5 Min',
+      detail: `<strong>${r.flour}g</strong> Caputo Cuoco Tipo 00 Mehl, <strong>${r.water}g</strong> Wasser (18–22°C), <strong>${r.salt}g</strong> feines Meersalz, <strong>${r.yeast}g</strong> Trockenhefe (oder ${(parseFloat(r.yeast) * 3).toFixed(1)}g Frischhefe) exakt abwiegen.`,
+      check: 'Alle Zutaten vorbereitet? ✓'
+    },
+
+    {
+      emoji: '💧',
+      title: 'Hefe einrühren',
+      time: '2 Min',
+      detail: 'Die Trockenhefe in etwa 80% des Wassers einrühren und kurz stehen lassen, damit sie sich gut verteilt und hydratisiert.'
+    },
+
+    {
+      emoji: '🌾',
+      title: 'Mehl und Wasser verbinden',
+      time: '5 Min',
+      detail: 'Das Hefewasser nach und nach zum Mehl geben und mit der Hand oder einer Teigkarte vermengen. Das restliche Wasser langsam einarbeiten. Nur so lange mischen, bis kein trockenes Mehl mehr sichtbar ist – der Teig darf noch rau und ungleichmäßig aussehen.'
+    },
+
+    {
+      emoji: '⏸️',
+      title: 'Erste Ruhephase',
+      time: '15 Min',
+      detail: 'Den grob vermischten Teig abgedeckt ruhen lassen. Dadurch hydratisiert das Mehl vollständig und das Gluten beginnt sich von selbst zu entwickeln – das erleichtert das spätere Handkneten deutlich.'
+    },
+
+    {
+      emoji: '🧂',
+      title: 'Salz einarbeiten',
+      time: '2–3 Min',
+      detail: `Das <strong>${r.salt}g</strong> Salz in einem kleinen Schluck Wasser auflösen und gleichmäßig in den Teig einkneten. Salz erst nach der Ruhephase hinzufügen – dadurch bleibt der Teig geschmeidiger und leichter zu bearbeiten.`
+    },
+
+    {
+      emoji: '💪',
+      title: 'Kneten',
+      time: '8–10 Min',
+      detail: 'Auf leicht bemehlter Arbeitsfläche mit der Drücken-Falten-Drehen-Methode kneten. Der Teig soll glatt, elastisch und leicht klebrig werden – aber nicht nass kleben. Ein leichter Fenstertest reicht: Der Teig muss nicht maximal straff ausgeknetet sein.'
+    },
+
+    {
+      emoji: '😴',
+      title: 'Zweite Ruhephase',
+      time: '15–20 Min',
+      detail: 'Den Teig nach dem Kneten erneut abgedeckt ruhen lassen. Dadurch entspannt sich das Gluten und der anschließende Stretch & Fold funktioniert deutlich besser.'
+    },
+
+    {
+      emoji: '🪢',
+      title: 'Stretch & Fold',
+      time: '1 Min',
+      detail: 'Einmal Stretch & Fold durchführen: Den Teig von jeder Seite vorsichtig nach oben ziehen und zur Mitte falten. Dadurch baut der Teig zusätzliche Spannung und Struktur auf, ohne zu fest zu werden.'
+    },
+
+    {
+      emoji: '🫙',
+      title: 'Kurze Stockgare',
+      time: '20–30 Min Raumtemperatur',
+      detail: 'Den Teig abgedeckt nur kurz bei Raumtemperatur anspringen lassen. Für eine lange kalte Gare nicht warten, bis er stark aufgeht – die Hauptfermentation passiert langsam im Kühlschrank.'
+    },
+
+    {
+      emoji: '⚙️',
+      title: 'Teilen & Kugeln formen',
+      time: '5–10 Min',
+      detail: `Den Teig in <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen. Die Teiglinge straff rundschleifen: Die Außenseiten nach unten ziehen und auf der Arbeitsfläche rotieren, bis Spannung entsteht.`
+    },
+
+    {
+  emoji: '❄️',
+  title: 'Kalte Gare',
+  time: '48h empfohlen',
+  detail: 'Die Teiglinge in einzelne leicht geölte Behälter geben und gut abdecken. Etwa 48 Stunden kalt führen.'
+},
+
+{
+  emoji: '🌡️',
+  title: 'Akklimatisieren',
+  time: '4–5h Raumtemperatur',
+  detail: 'Die Teiglinge 4–5 Stunden vor dem Backen aus dem Kühlschrank nehmen. Sie sollen weich, entspannt und leicht aufgegangen sein. Wenn der Teig noch stark zurückspringt oder kalt wirkt, benötigt er mehr Zeit.'
+},
+
+    {
+      emoji: '🔥',
+      title: 'Ofen vorheizen',
+      time: '20–30 Min',
+      detail: 'Den G3 Ferrari oder Pizzaofen auf maximale Temperatur vollständig vorheizen. Der Stein muss komplett durchgeheizt sein. Zwischen den Pizzen kurz regenerieren lassen.'
+    },
+
+    {
+      emoji: '🤌',
+      title: 'Teig ausbreiten',
+      time: '2–3 Min pro Pizza',
+      detail: 'Den Teigling vorsichtig in Semola oder wenig Mehl legen. Mit den Fingerspitzen von der Mitte nach außen drücken und dabei einen luftigen Rand stehen lassen. Nicht mit dem Nudelholz arbeiten und den Rand nicht entgasen.'
+    },
+
+    {
+      emoji: '🍕',
+      title: 'Belegen & backen',
+      time: '4–6 Min',
+      detail: 'Mit wenig Sauce und gut abgetropfter Mozzarella belegen. Die Pizza auf den heißen Stein geben und nach Bedarf drehen. Backen, bis der Rand stark aufgegangen ist und schöne dunkle Röststellen entstehen.'
+    },
+  ],
+},
   {
     id: 'new-york',
     name: 'New York',
