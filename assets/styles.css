@@ -375,6 +375,33 @@ section h2 {
 
 .tip strong { color: #b8d4ee; }
 
+.preferment-group {
+  margin-bottom: 12px;
+}
+
+.preferment-group:last-child {
+  margin-bottom: 0;
+}
+
+.preferment-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  padding: 6px 0 6px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.preferment-label span {
+  color: var(--accent);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 @media (max-width: 500px) {
   .style-grid { grid-template-columns: repeat(3, 1fr); }
   .style-card { padding: 12px 8px; }
