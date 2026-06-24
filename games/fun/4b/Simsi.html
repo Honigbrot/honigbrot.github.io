@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Dungeon Miner Deluxe</title>
+
+<style>
+body{
+margin:0;overflow:hidden;
+background:radial-gradient(circle at center,#1a1a1a,#050505);
+font-family:Arial;
+}
+
+canvas{display:block}
+
+/* HUD */
+#hud{
+position:fixed;top:10px;left:10px;
+color:#fff;
+background:rgba(0,0,0,.7);
+padding:12px;
+border-radius:10px;
+border:1px solid gold;
+box-shadow:0 0 10px gold;
+}
+
+/* Shop */
+#shop{
+display:none;
+position:fixed;top:50%;left:50%;
+transform:translate(-50%,-50%);
+background:rgba(20,20,20,.95);
+color:white;
+padding:20px;
+border:2px solid gold;
+border-radius:12px;
+width:360px;
+box-shadow:0 0 25px gold;
+}
+
+button{
+width:100%;
+margin:6px 0;
+padding:10px;
+background:#222;
+color:white;
+border:1px solid gold;
+cursor:pointer;
+transition:.2s;
+}
+
+button:hover{
+background:gold;
+color:black;
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+<div id="hp"></div>
+<div id="gold"></div>
+<div id="lvl"></div>
+<div>E = Shop öffnen/schließen</div>
+</div>
+
+<div id="shop">
+<h2>🛒 Shop (HR-Level System)</h2>
+<button onclick="buySpeed()">⚡ Speed (10 Gold) Lvl 0+</button>
+<button onclick="buyMagnet()">🧲 Magnet (20 Gold) Lvl 1+</button>
+<button onclick="buyHealth()">❤️ Leben (15 Gold) Lvl 0+</button>
+<button onclick="buyArmor()">🛡️ Armor (25 Gold) Lvl 2+</button>
+<button onclick="buyIncome()">💰 2x Gold (30 Gold) Lvl 3+</button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas=game;
+const ctx=canvas.getContext("2d");
+
+function resize(){
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+}
+resize();
+addEventListener("resize",resize);
+
+const player={
+x:1500,y:1500,
+size:32,
+speed:4,
+hp:100,
+gold:0,
+magnet:false,
+armor:1,
+income:2
+};
+
+const world={w:3000,h:3000};
+const keys={};
+let shopOpen=false;
+
+let particles=[];
+
+document.addEventListener("keydown",e=>{
+keys[e.key.toLowerCase()]=true;
+
+if(e.key.toLowerCase()==="e"){
+shopOpen=!shopOpen;
+document.getElementById("shop").style.display=shopOpen?"block":"none";
+}
+});
+
+document.addEventListener("keyup",e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
+const ores=[];
+for(let i=0;i<220;i++){
+ores.push({
+x:Math.random()*world.w,
+y:Math.random()*world.h,
+size:18
+});
+}
+
+const enemies=[];
+for(let i=0;i<25;i++){
+enemies.push({
+x:Math.random()*world.w,
+y:Math.random()*world.h,
+size:28,
+speed:1.2
+});
+}
+
+function hit(a,b){
+return a.x<b.x+b.size&&a.x+a.size>b.x&&a.y<b.y+b.size&&a.y+a.size>b.y;
+}
+
+function level(){
+return Math.floor(player.gold/50);
+}
+
+function spawnParticles(x,y){
+for(let i=0;i<8;i++){
+particles.push({
+x,y,
+vx:(Math.random()-0.5)*3,
+vy:(Math.random()-0.5)*3,
+life:30
+});
+}
+}
+
+function updateParticles(){
+for(let i=particles.length-1;i>=0;i--){
+let p=particles[i];
+p.x+=p.vx;
+p.y+=p.vy;
+p.life--;
+if(p.life<=0)particles.splice(i,1);
+}
+}
+
+function buySpeed(){if(player.gold>=10&&level()>=0){player.gold-=10;player.speed+=1;}}
+function buyMagnet(){if(player.gold>=20&&level()>=1){player.gold-=20;player.magnet=true;}}
+function buyHealth(){if(player.gold>=15&&level()>=0){player.gold-=15;player.hp=Math.min(100,player.hp+25);}}
+function buyArmor(){if(player.gold>=25&&level()>=2){player.gold-=25;player.armor*=0.8;}}
+function buyIncome(){if(player.gold>=30&&level()>=3){player.gold-=30;player.income+=1;}}
+
+function update(){
+
+if(!shopOpen){
+if(keys["w"]) player.y-=player.speed;
+if(keys["s"]) player.y+=player.speed;
+if(keys["a"]) player.x-=player.speed;
+if(keys["d"]) player.x+=player.speed;
+}
+
+for(let i=ores.length-1;i>=0;i--){
+let o=ores[i];
+
+if(player.magnet){
+let dx=player.x-o.x;
+let dy=player.y-o.y;
+let d=Math.hypot(dx,dy);
+if(d<200){
+o.x+=dx/d*2;
+o.y+=dy/d*2;
+}
+}
+
+if(hit(player,o)){
+ores.splice(i,1);
+player.gold+=player.income;
+spawnParticles(o.x,o.y);
+}
+}
+
+enemies.forEach(e=>{
+let dx=player.x-e.x;
+let dy=player.y-e.y;
+let d=Math.hypot(dx,dy);
+if(d<350){
+e.x+=dx/d*e.speed;
+e.y+=dy/d*e.speed;
+}
+if(hit(player,e)){
+player.hp-=0.08*player.armor;
+}
+});
+
+updateParticles();
+
+hp.textContent="❤️ Leben: "+Math.floor(player.hp);
+gold.textContent="💰 Gold: "+player.gold;
+lvl.textContent="⭐ HR-Level: "+level();
+
+if(player.hp<=0){
+alert("Game Over! Gold: "+player.gold);
+location.reload();
+}
+}
+
+function draw(){
+const camX=player.x-canvas.width/2;
+const camY=player.y-canvas.height/2;
+
+ctx.fillStyle="#0b2e13";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+/* Boden Grid */
+for(let x=-camX%64;x<canvas.width;x+=64){
+for(let y=-camY%64;y<canvas.height;y+=64){
+ctx.fillStyle="#144d22";
+ctx.fillRect(x,y,60,60);
+}
+}
+
+/* GOLD */
+ores.forEach(o=>{
+ctx.shadowBlur=15;
+ctx.shadowColor="gold";
+ctx.fillStyle="#ffd700";
+ctx.beginPath();
+ctx.arc(o.x-camX,o.y-camY,10,0,Math.PI*2);
+ctx.fill();
+ctx.shadowBlur=0;
+});
+
+/* ENEMIES */
+enemies.forEach(e=>{
+ctx.fillStyle="#b30000";
+ctx.fillRect(e.x-camX,e.y-camY,e.size,e.size);
+});
+
+/* PLAYER */
+ctx.shadowBlur=20;
+ctx.shadowColor="cyan";
+ctx.fillStyle="#00bfff";
+ctx.fillRect(player.x-camX,player.y-camY,player.size,player.size);
+ctx.shadowBlur=0;
+
+/* PARTICLES */
+particles.forEach(p=>{
+ctx.fillStyle="gold";
+ctx.globalAlpha=p.life/30;
+ctx.fillRect(p.x-camX,p.y-camY,3,3);
+ctx.globalAlpha=1;
+});
+}
+
+function loop(){
+update();
+draw();
+requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>

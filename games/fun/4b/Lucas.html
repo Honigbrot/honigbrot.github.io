@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snake Forest Deluxe Ultimate</title>
+<style>
+:root {
+    --bg-dark: #07120a;
+    --panel-bg: rgba(14, 35, 22, 0.85);
+    --panel-border: rgba(255, 255, 255, 0.08);
+    --accent: #52b788;
+    --accent-glow: rgba(82, 183, 136, 0.4);
+    --text: #f1faee;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    overflow: hidden;
+}
+
+#wrapper {
+    display: block;
+    width: 720px;
+    margin: 30px auto;
+}
+
+#hud {
+    width: 100%;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    padding: 12px 25px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+}
+
+#hud table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#hud td {
+    width: 25%;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#gameContainer {
+    position: relative;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+    border-radius: 16px;
+    overflow: hidden;
+    width: 720px;
+    height: 600px;
+}
+
+canvas {
+    display: block;
+    background: #0f2a1b;
+}
+
+.screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 12, 8, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 20;
+    text-align: center;
+    padding-top: 40px;
+}
+
+.hidden { display: none !important; }
+
+h1 {
+    font-size: 2.6rem;
+    margin: 0 0 15px 0;
+    text-shadow: 0 0 20px rgba(82, 183, 136, 0.5);
+}
+
+h2 {
+    font-size: 2rem;
+    margin: 0 0 20px 0;
+    color: #52b788;
+}
+
+button {
+    background: linear-gradient(135deg, #2d6a4f, #1b4332);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 28px;
+    margin: 8px;
+    border-radius: 25px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(82, 183, 136, 0.5);
+    background: linear-gradient(135deg, #52b788, #2d6a4f);
+}
+
+button:disabled {
+    background: #231010 !important;
+    color: #a06868 !important;
+    border-color: rgba(230, 57, 70, 0.2) !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-secondary { background: linear-gradient(135deg, #403d39, #252422); }
+.btn-secondary:hover { background: linear-gradient(135deg, #ccc5b9, #403d39); }
+
+input[type="text"] {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--panel-border);
+    padding: 12px 20px;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 16px;
+    width: 280px;
+    text-align: center;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+input[type="text"]:focus {
+    border-color: #52b788;
+    box-shadow: 0 0 10px rgba(82, 183, 136, 0.3);
+}
+
+#shopItems {
+    width: 580px;
+    margin: 0 auto 15px auto;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.shop-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    transition: all 0.3s ease;
+}
+.shop-item::after { content: ""; display: table; clear: both; }
+.shop-info { float: left; width: 60%; text-align: left; }
+.shop-action { float: right; width: 40%; text-align: right; display: flex; align-items: center; justify-content: flex-end; height: 40px; }
+.shop-name { display: block; font-weight: bold; font-size: 16px; }
+.shop-cost { display: block; color: #ffd60a; font-size: 13px; margin-top: 2px; }
+.shop-feature { display: block; color: #a3b18a; font-size: 11px; font-style: italic; margin-top: 3px; }
+.shop-action button { padding: 6px 16px; font-size: 13px; margin: 0; width: 100%; border-radius: 20px; }
+.btn-equipped { background: #52b788 !important; cursor: default; }
+
+#stats {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 25px;
+    border-radius: 16px;
+    margin: 0 auto 10px auto;
+    width: 450px;
+    line-height: 1.5;
+    font-size: 14px;
+}
+#userDisplay {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+}
+
+.quest-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(82, 183, 136, 0.15);
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin: 10px auto;
+    width: 450px;
+    text-align: left;
+}
+.quest-box-title {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 14px;
+    color: #52b788;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 4px;
+}
+.quest-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin: 4px 0;
+}
+.quest-done {
+    color: #ffd60a;
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+#questNotify {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ffd60a, #ffb703);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    box-shadow: 0 4px 15px rgba(255,214,10,0.4);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="hud" class="hidden">
+        <table>
+            <tr>
+                <td>🍏 Punkte: <span id="score">0</span></td>
+                <td>🪙 Gold: <span id="gold">0</span></td>
+                <td>⏱️ Zeit: <span id="time">0</span>s</td>
+                <td>🏆 High: <span id="high">0</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="gameContainer">
+        <div id="questNotify">Quest abgeschlossen! 🎉</div>
+
+        <div id="loginScreen" class="screen">
+            <h1>🐍 Snake Forest</h1>
+            <h2>Account erstellen / laden</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 20px;">
+                Gib deinen Wunschnamen ein. Existiert er bereits,<br>wird dein Spielstand aus der Cloud geladen!
+            </p>
+            <input type="text" id="usernameInput" placeholder="Spielername..." maxlength="14"><br>
+            <button onclick="handleLogin()">Einloggen / Registrieren</button>
+            <div id="loginStatus" style="margin-top: 15px; color: #ffd60a; font-size: 14px; padding: 0 20px;"></div>
+        </div>
+
+        <div id="startScreen" class="screen hidden">
+            <h1>🐍 Snake Forest Deluxe</h1>
+            
+            <div class="quest-box">
+                <div class="quest-box-title">
+                    <span>📜 Aktive Wald-Quests:</span>
+                    <span id="questTimerStart" style="color: #ffd60a; font-size: 12px;">Reset in: --:--</span>
+                </div>
+                <div id="startQuestsList"></div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <button onclick="startGame()">Spielen</button>
+                <button onclick="showShop('main')" class="btn-secondary">Shop</button>
+            </div>
+            <div id="userDisplay">Eingeloggt als: <span id="currentUser"></span> <span id="onlineStatus" style="color:#52b788;">● Live</span></div>
+        </div>
+
+        <div id="shopScreen" class="screen hidden">
+            <h2>Wald-Boutique</h2>
+            <div id="shopWalletDisplay" style="color: #ffd60a; font-size: 16px; margin-bottom: 10px; font-weight: bold;">Goldvorrat: 0 🪙</div>
+            <div id="shopItems"></div>
+            <button onclick="hideShop()">Zurück</button>
+        </div>
+
+        <div id="gameOverScreen" class="screen hidden">
+            <h1>💀 Game Over</h1>
+            <div id="stats"></div>
+            
+            <div class="quest-box">
+                <div class="quest-box-title">
+                    <span>📜 Quest-Status:</span>
+                    <span id="questTimerEnd" style="color: #ffd60a; font-size: 12px;">Reset in: --:--</span>
+                </div>
+                <div id="endQuestsList"></div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <button onclick="startGame()">Erneut spielen</button>
+                <button onclick="showShop('gameover')" class="btn-secondary">In den Shop</button>
+            </div>
+        </div>
+
+        <canvas id="game" width="720" height="600"></canvas>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const SIZE = 24;
+
+const API_URL = "https://api.restful-api.dev/objects/snake_forest_deluxe_v1";
+
+const BANNED_WORDS = [
+    "schimpfwort", "nigger", "nigga", "hitler", "nazi", "arsch", "wixer", 
+    "ficker", "hurensohn", "scheisse", "scheiß", "idiot", "bastard", "cock", "penis", "vagina"
+];
+
+let username = "";
+let wallet = 0;
+let high = 0;
+let owned = ["forest"];
+let skin = "forest";
+
+let snake, dir, nextDir, food, goldOrb, rainbow = null, obstacles = [], score = 0, startTime = 0, loop, speed = 120;
+let particles = [];
+let tongueTimer = 0;
+let shopOrigin = 'main'; 
+
+const skins = [
+    {id:'forest', name:'🟢 Grüner Würger', cost:0, color:'#52b788', shadow:'#2d6a4f', feature:'Das hungrige, giftgrüne Original.'},
+    {id:'ice', name:'🔵 Frostbiss-Viper', cost:200, color:'#4ea8de', shadow:'#0077b6', feature:'Hinterlässt eisige Kälte beim Beutefang.'},
+    {id:'amethyst', name:'🟣 Amethyst-Natter', cost:350, color:'#b5179e', shadow:'#7209b7', feature:'Schimmert im finsteren Geäst des Waldes.'},
+    {id:'gold', name:'💛 Gierige Midas-Kobra', cost:500, color:'#ffd60a', shadow:'#ffb703', feature:'Geprägt vom Glanz geraubten Goldes.'},
+    {id:'shadow', name:'⚫ Schatten-Anaconda', cost:750, color:'#343a40', shadow:'#000000', feature:'Verschmilzt fast unsichtbar mit der Dunkelheit.'},
+    {id:'dragon', name:'🔴 Rachbeseelter Lindwurm', cost:1000, color:'#ff6b35', shadow:'#d90429', feature:'Speit im Geiste feurige Glutpartikel.'},
+    {id:'platinum', name:'⚪ Platin-Pharaonin', cost:1500, color:'#e9ecef', shadow:'#adb5bd', feature:'Eine majestätische, edle Herrscherin.'},
+    {id:'rainbow', name:'🌈 Neon-Psychopath', cost:2000, color:null, shadow:'#ff00ee', feature:'Schillernder, unberechenbarer Jäger.'}
+];
+
+let goldCollectedThisRun = 0;
+let nextResetTimestamp = Date.now() + 5 * 60 * 1000;
+let quests = [
+    { id: 'points', text: 'Erreiche 30 Punkte', target: 30, reward: 50, done: false },
+    { id: 'gold', text: 'Sammle 3 Gold-Orbs (🪙)', target: 3, reward: 60, done: false },
+    { id: 'time', text: 'Überlebe für 40 Sekunden', target: 40, reward: 70, done: false }
+];
+
+function updateQuestTimer() {
+    let now = Date.now();
+    let diff = nextResetTimestamp - now;
+    
+    if (diff <= 0) {
+        quests.forEach(q => q.done = false);
+        nextResetTimestamp = Date.now() + 5 * 60 * 1000;
+        diff = 5 * 60 * 1000;
+        goldCollectedThisRun = 0;
+        renderQuestsUI('startQuestsList');
+        renderQuestsUI('endQuestsList');
+    }
+
+    let min = Math.floor(diff / 60000);
+    let sec = Math.floor((diff % 60000) / 1000);
+    let format = `Reset in: ${min}:${sec < 10 ? '0' : ''}${sec}`;
+    
+    if(document.getElementById('questTimerStart')) document.getElementById('questTimerStart').textContent = format;
+    if(document.getElementById('questTimerEnd')) document.getElementById('questTimerEnd').textContent = format;
+}
+setInterval(updateQuestTimer, 1000);
+
+function checkQuestsProgress() {
+    let seconds = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+
+    quests.forEach(q => {
+        if (!q.done) {
+            if (q.id === 'points' && score >= q.target) {
+                q.done = true; wallet += q.reward; showQuestNotify(q.text, q.reward);
+            }
+            if (q.id === 'gold' && goldCollectedThisRun >= q.target) {
+                q.done = true; wallet += q.reward; showQuestNotify(q.text, q.reward);
+            }
+            if (q.id === 'time' && seconds >= q.target) {
+                q.done = true; wallet += q.reward; showQuestNotify(q.text, q.reward);
+            }
+        }
+    });
+}
+
+function showQuestNotify(text, reward) {
+    let el = document.getElementById('questNotify');
+    el.textContent = `🏆 Quest geschafft: ${text} (+${reward} 🪙)`;
+    el.style.opacity = 1;
+    setTimeout(() => { el.style.opacity = 0; }, 3000);
+    updateHUD();
+    saveCloudData();
+}
+
+function renderQuestsUI(elementId) {
+    let list = document.getElementById(elementId);
+    if(!list) return;
+    let html = '';
+    quests.forEach(q => {
+        html += `<div class="quest-item ${q.done ? 'quest-done' : ''}">
+            <span>${q.text}</span>
+            <span style="color: #ffd60a; font-weight: bold;">${q.done ? '✓ Erledigt!' : '+' + q.reward + ' 🪙'}</span>
+        </div>`;
+    });
+    list.innerHTML = html;
+}
+
+let forestDecorations = [];
+function generateDecorations() {
+    forestDecorations = [];
+    for(let i=0; i<20; i++) {
+        forestDecorations.push({ x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height), size: Math.random() * 5 + 6 });
+    }
+}
+generateDecorations();
+
+function rand() { return Math.floor(Math.random() * (canvas.width / SIZE)) * SIZE; }
+function randY() { return Math.floor(Math.random() * (canvas.height / SIZE)) * SIZE; }
+
+const scoreEl = document.getElementById('score');
+const goldEl = document.getElementById('gold');
+const highEl = document.getElementById('high');
+const timeEl = document.getElementById('time');
+
+function updateHUD() {
+    scoreEl.textContent = score;
+    goldEl.textContent = wallet;
+    highEl.textContent = high;
+    timeEl.textContent = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+
+    document.getElementById('shopWalletDisplay').textContent = `Goldvorrat: ${wallet} 🪙`;
+}
+
+function getLocalFallback(name) {
+    let localDB = JSON.parse(localStorage.getItem('snake_forest_local_players') || '{}');
+    return localDB[name] || null;
+}
+function saveLocalFallback(name, data) {
+    let localDB = JSON.parse(localStorage.getItem('snake_forest_local_players') || '{}');
+    localDB[name] = data;
+    localStorage.setItem('snake_forest_local_players', JSON.stringify(localDB));
+}
+
+async function handleLogin() {
+    let input = document.getElementById('usernameInput').value.trim();
+    let statusEl = document.getElementById('loginStatus');
+    
+    if(!input || input.length < 3) {
+        statusEl.textContent = "Der Name muss mindestens 3 Zeichen lang sein!";
+        return;
+    }
+
+    let lowerInput = input.toLowerCase();
+    for(let badWord of BANNED_WORDS) {
+        if(lowerInput.includes(badWord)) {
+            statusEl.textContent = "🚫 Name enthält unzulässige oder anstößige Wörter!";
+            return;
+        }
+    }
+
+    statusEl.textContent = "⏳ Verbinde mit Wald-Server...";
+
+    try {
+        let res = await fetch(API_URL);
+        let db = { players: {} };
+
+        if (res.ok) {
+            let serverData = await res.json();
+            if(serverData && serverData.data && serverData.data.players) {
+                db = serverData.data;
+            }
+        }
+
+        if(db.players[input]) {
+            let p = db.players[input];
+            username = input;
+            wallet = p.wallet || 0;
+            high = p.high || 0;
+            owned = p.owned || ["forest"];
+            skin = p.skin || "forest";
+            statusEl.textContent = "Erfolgreich eingeloggt! Daten geladen. 🌳";
+        } else {
+            let localP = getLocalFallback(input);
+            username = input;
+            wallet = localP ? localP.wallet : 0;
+            high = localP ? localP.high : 0;
+            owned = localP ? localP.owned : ["forest"];
+            skin = localP ? localP.skin : "forest";
+
+            db.players[username] = { wallet, high, owned, skin };
+            await saveCloudData(db);
+            statusEl.textContent = "Neuer Account registriert und gesichert! 🐍";
+        }
+
+        saveLocalFallback(username, { wallet, high, owned, skin });
+        enterMainGame();
+
+    } catch(e) {
+        console.warn("Server offline, schalte auf lokalen Speicher um:", e);
+        let localP = getLocalFallback(input);
+        username = input;
+        wallet = localP ? localP.wallet : 0;
+        high = localP ? localP.high : 0;
+        owned = localP ? localP.owned : ["forest"];
+        skin = localP ? localP.skin : "forest";
+        
+        saveLocalFallback(username, { wallet, high, owned, skin });
+        statusEl.textContent = "⚠️ Server nicht erreichbar. Lokaler Modus aktiv.";
+        setTimeout(() => { enterMainGame(); }, 1500);
+    }
+}
+
+function enterMainGame() {
+    document.getElementById('currentUser').textContent = username;
+    document.getElementById('onlineStatus').textContent = "● Live";
+    document.getElementById('onlineStatus').style.color = "#52b788";
+    
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('startScreen').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    renderQuestsUI('startQuestsList');
+    updateHUD();
+}
+
+async function saveCloudData(customDB = null) {
+    saveLocalFallback(username, { wallet, high, owned, skin });
+
+    try {
+        let db = customDB;
+        if(!db) {
+            let res = await fetch(API_URL);
+            if(res.ok) {
+                let serverData = await res.json();
+                db = serverData.data || { players: {} };
+            } else {
+                db = { players: {} };
+            }
+        }
+        
+        db.players[username] = { wallet, high, owned, skin };
+
+        await fetch(API_URL, {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: "Snake Forest Master Object", data: db })
+        });
+    } catch(e) {
+        console.error("Cloud-Backup fehlgeschlagen", e);
+    }
+}
+
+function hideShop() { 
+    document.getElementById('shopScreen').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    if (shopOrigin === 'gameover') {
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+        renderQuestsUI('endQuestsList');
+    } else {
+        document.getElementById('startScreen').classList.remove('hidden');
+        renderQuestsUI('startQuestsList');
+    }
+}
+
+function createParticles(x, y, color, count = 12) {
+    for (let i = 0; i < count; i++) {
+        particles.push({ x: x + SIZE / 2, y: y + SIZE / 2, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, radius: Math.random() * 2.5 + 1.5, alpha: 1, color: color });
+    }
+}
+
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.04;
+        if (p.alpha <= 0) { particles.splice(i, 1); } else {
+            ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+    }
+}
+
+function startGame() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('shopScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    
+    document.getElementById('hud').classList.remove('hidden');
+    
+    goldCollectedThisRun = 0;
+    
+    snake = [{x:240, y:240}, {x:216, y:240}, {x:192, y:240}, {x:168, y:240}];
+    dir = 'RIGHT'; nextDir = 'RIGHT';
+    score = 0; speed = 120;
+    obstacles = []; particles = [];
+    food = {x: rand(), y: randY()};
+    goldOrb = {x: rand(), y: randY()};
+    rainbow = null;
+    startTime = Date.now();
+    clearInterval(loop);
+    loop = setInterval(gameTick, speed);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' && dir !== 'DOWN') nextDir = 'UP';
+    if (e.key === 'ArrowDown' && dir !== 'UP') nextDir = 'DOWN';
+    if (e.key === 'ArrowLeft' && dir !== 'RIGHT') nextDir = 'LEFT';
+    if (e.key === 'ArrowRight' && dir !== 'LEFT') nextDir = 'RIGHT';
+});
+
+function drawBackground() {
+    ctx.fillStyle = '#0f2a1b';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(7, 18, 10, 0.25)';
+    ctx.lineWidth = 1;
+    for(let x=0; x<canvas.width; x+=SIZE) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+    for(let y=0; y<canvas.height; y+=SIZE) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+    forestDecorations.forEach(d => { ctx.fillStyle = '#0a1d13'; ctx.beginPath(); ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2); ctx.fill(); });
+}
+
+function drawOrb(x, y, color, isGlow = true) {
+    ctx.save();
+    if (isGlow) { ctx.shadowBlur = 15; ctx.shadowColor = color; }
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x + SIZE/2, y + SIZE/2, SIZE/2 - 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+
+function drawSnake() {
+    tongueTimer++;
+    let sk = skins.find(a => a.id === skin) || skins[0];
+
+    for (let i = snake.length - 1; i >= 0; i--) {
+        let s = snake[i];
+        let col = sk.color || '#52b788';
+        if (skin === 'rainbow') col = `hsl(${(Date.now() / 15 + i * 15) % 360}, 100%, 60%)`;
+        
+        ctx.save();
+        ctx.shadowBlur = i === 0 ? 8 : 4;
+        ctx.shadowColor = sk.shadow || 'rgba(0,0,0,0.5)';
+        ctx.fillStyle = col;
+
+        let progress = i / snake.length;
+        let radius = (SIZE / 2) - (progress * 4); 
+        if (i === 0) radius = SIZE / 2 + 1;
+        if (radius < 4) radius = 4;
+
+        ctx.beginPath(); ctx.arc(s.x + SIZE/2, s.y + SIZE/2, radius, 0, Math.PI * 2); ctx.fill();
+
+        if (i > 0) {
+            let next = snake[i - 1];
+            ctx.strokeStyle = col; ctx.lineWidth = radius * 2; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(s.x + SIZE/2, s.y + SIZE/2);
+            if (Math.abs(s.x - next.x) <= SIZE && Math.abs(s.y - next.y) <= SIZE) {
+                ctx.lineTo(next.x + SIZE/2, next.y + SIZE/2); ctx.stroke();
+            }
+        }
+
+        if (i === 0) {
+            let eyeX1 = 0, eyeY1 = 0, eyeX2 = 0, eyeY2 = 0, tongueX = 0, tongueY = 0;
+            if (dir === 'RIGHT') { eyeX1 = 4; eyeY1 = -6; eyeX2 = 4; eyeY2 = 6; tongueX = 14; tongueY = 0; } 
+            else if (dir === 'LEFT') { eyeX1 = -4; eyeY1 = -6; eyeX2 = -4; eyeY2 = 6; tongueX = -14; tongueY = 0; } 
+            else if (dir === 'UP') { eyeX1 = -6; eyeY1 = -4; eyeX2 = 6; eyeY2 = -4; tongueX = 0; tongueY = -14; } 
+            else if (dir === 'DOWN') { eyeX1 = -6; eyeY1 = 4; eyeX2 = 6; eyeY2 = 4; tongueX = 0; tongueY = 14; }
+
+            ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 0;
+            ctx.beginPath(); ctx.arc(s.x + SIZE/2 + eyeX1, s.y + SIZE/2 + eyeY1, 3.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(s.x + SIZE/2 + eyeX2, s.y + SIZE/2 + eyeY2, 3.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.beginPath(); ctx.arc(s.x + SIZE/2 + eyeX1 + (tongueX*0.1), s.y + SIZE/2 + eyeY1 + (tongueY*0.1), 1.8, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(s.x + SIZE/2 + eyeX2 + (tongueX*0.1), s.y + SIZE/2 + eyeY2 + (tongueY*0.1), 1.8, 0, Math.PI * 2); ctx.fill();
+
+            if (tongueTimer % 6 < 4) {
+                ctx.strokeStyle = '#d90429'; ctx.lineWidth = 2;
+                let centerX = s.x + SIZE/2 + tongueX, centerY = s.y + SIZE/2 + tongueY;
+                ctx.beginPath(); ctx.moveTo(s.x + SIZE/2, s.y + SIZE/2); ctx.lineTo(centerX, centerY);
+                if (dir === 'RIGHT') { ctx.lineTo(centerX + 4, centerY - 3); ctx.moveTo(centerX, centerY); ctx.lineTo(centerX + 4, centerY + 3); } 
+                else if (dir === 'LEFT') { ctx.lineTo(centerX - 4, centerY - 3); ctx.moveTo(centerX, centerY); ctx.lineTo(centerX - 4, centerY + 3); } 
+                else if (dir === 'UP') { ctx.lineTo(centerX - 3, centerY - 4); ctx.moveTo(centerX, centerY); ctx.lineTo(centerX + 3, centerY - 4); } 
+                else if (dir === 'DOWN') { ctx.lineTo(centerX - 3, centerY + 4); ctx.moveTo(centerX, centerY); ctx.lineTo(centerX + 3, centerY + 4); }
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+}
+
+function gameTick() {
+    dir = nextDir;
+    updateHUD();
+    drawBackground();
+    checkQuestsProgress();
+
+    if (score >= 50) {
+        if (Math.random() < 0.01 && !rainbow) rainbow = {x: rand(), y: randY()};
+        if (obstacles.length < 20 && Math.random() < 0.02) {
+            let ox = rand(), oy = randY();
+            if(!snake.some(s => s.x === ox && s.y === oy) && food.x !== ox && food.y !== oy) obstacles.push({x: ox, y: oy});
+        }
+        let ns = Math.max(50, 120 - Math.floor((score - 50) / 2));
+        if (ns !== speed) { speed = ns; clearInterval(loop); loop = setInterval(gameTick, speed); }
+    }
+
+    // Geändert: Die Textur zeichnet nun runde, graue Felsbrocken/Steine anstelle von Bäumen
+    obstacles.forEach(o => {
+        ctx.save(); 
+        ctx.shadowBlur = 8; 
+        ctx.shadowColor = '#000'; 
+        
+        // Stein-Körper
+        ctx.fillStyle = '#6c757d'; 
+        ctx.beginPath();
+        ctx.arc(o.x + SIZE/2, o.y + SIZE/2, SIZE/2 - 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Struktur/Highlight auf dem Stein
+        ctx.fillStyle = '#495057';
+        ctx.beginPath();
+        ctx.arc(o.x + SIZE/3, o.y + SIZE/3, SIZE/5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    });
+
+    drawOrb(food.x, food.y, '#e63946');
+    drawOrb(goldOrb.x, goldOrb.y, '#ffd60a');
+    if (rainbow) drawOrb(rainbow.x, rainbow.y, '#ff00ee');
+
+    let x = snake[0].x, y = snake[0].y;
+    if (dir === 'UP') y -= SIZE; if (dir === 'DOWN') y += SIZE; if (dir === 'LEFT') x -= SIZE; if (dir === 'RIGHT') x += SIZE;
+    if (x < 0) x = canvas.width - SIZE; if (x >= canvas.width) x = 0; if (y < 0) y = canvas.height - SIZE; if (y >= canvas.height) y = 0;
+
+    for (const o of obstacles) { if (o.x === x && o.y === y) return endGame(); }
+    for (let i = 1; i < snake.length; i++) { if (snake[i].x === x && snake[i].y === y) return endGame(); }
+
+    if (x === food.x && y === food.y) {
+        score += 1; createParticles(food.x, food.y, '#e63946'); food = {x: rand(), y: randY()};
+    } else if (x === goldOrb.x && y === goldOrb.y) {
+        score += 5; 
+        goldCollectedThisRun += 1;
+        createParticles(goldOrb.x, goldOrb.y, '#ffd60a', 18); goldOrb = {x: rand(), y: randY()};
+        for (let i = 0; i < 3; i++) snake.push({ ...snake[snake.length - 1] });
+    } else if (rainbow && x === rainbow.x && y === rainbow.y) {
+        score += 15; createParticles(rainbow.x, rainbow.y, '#ff00ee', 22); rainbow = null; if(snake.length > 3) snake.pop();
+    } else {
+        snake.pop();
+    }
+
+    snake.unshift({ x, y });
+    drawSnake();
+    updateParticles();
+}
+
+function endGame() {
+    clearInterval(loop);
+    wallet += score;
+    high = Math.max(high, score);
+    
+    document.getElementById('hud').classList.add('hidden');
+    
+    document.getElementById('stats').innerHTML =
+        `🌲 <strong>Ergebnisbericht</strong> 🌲<br><br>
+        Spieler: <span style="color:#52b788">${username}</span><br>
+        Erreichte Punkte: <span style="color:#52b788; font-weight:bold;">${score}</span><br>
+        Persönlicher Highscore: ${high}<br>
+        Gefundenes Gold: <span style="color:#ffd60a; font-weight:bold;">+${score} 🪙</span>`;
+        
+    renderQuestsUI('endQuestsList');
+    document.getElementById('gameOverScreen').classList.remove('hidden');
+    updateHUD();
+    
+    saveCloudData();
+}
+
+function showShop(origin) {
+    shopOrigin = origin; 
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('shopScreen').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    updateHUD();
+    renderShopItems();
+}
+
+function renderShopItems() {
+    let html = '';
+    skins.forEach(s => {
+        const own = owned.includes(s.id);
+        const isCurrent = skin === s.id;
+
+        let btnText = own ? 'Auswählen' : 'Kaufen';
+        let btnClass = isCurrent ? 'class="btn-equipped"' : '';
+        let itemClass = 'class="shop-item"';
+
+        html += `
+        <div ${itemClass}>
+            <div class="shop-info">
+                <span class="shop-name" style="color: ${s.color || '#ff00ee'}; text-shadow: 0 0 8px ${s.shadow};">${s.name}</span>
+                <span class="shop-cost">${own ? '<span style="color:#52b788">Freigeschaltet</span>' : s.cost + ' Gold 🪙'}</span>
+                <span class="shop-feature">Eigenschaft: ${s.feature}</span>
+            </div>
+            <div class="shop-action">
+                <button ${btnClass} onclick="${isCurrent ? '' : `buySkin('${s.id}', ${s.cost})`}">${btnText}</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById('shopItems').innerHTML = html;
+}
+
+function buySkin(id, cost) {
+    if (!owned.includes(id)) {
+        if (wallet < cost) { alert('Nicht genug Gold im Beutel!'); return; }
+        wallet -= cost; owned.push(id);
+    }
+    skin = id;
+    renderShopItems();
+    updateHUD();
+    saveCloudData();
+}
+</script>
+</body>
+</html>

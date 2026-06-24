@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japan City Drive</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #1a1a2e; /* Schöner Nachtmodus-Hintergrund */
+        font-family: Arial, sans-serif;
+    }
+    canvas {
+        display: block;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const keys = {};
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+// Spielfeld-Layout Konstanten
+const ROAD_Y = 300;
+const ROAD_HEIGHT = 200;
+
+const player = {
+    x: 200,
+    y: ROAD_Y + 50,
+    w: 70, // Getauscht für horizontale Fahrt
+    h: 40, 
+    speed: 6
+};
+
+const cars = [];
+for(let i = 0; i < 6; i++){
+    cars.push({
+        x: 800 + i * 350,
+        y: ROAD_Y + Math.random() * (ROAD_HEIGHT - 40),
+        w: 70,
+        h: 40,
+        speed: 2 + Math.random() * 4,
+        color: `hsl(${Math.random() * 360}, 80%, 60%)`
+    });
+}
+
+const buildings = [];
+for(let i = 0; i < 25; i++){
+    buildings.push({
+        x: i * 300,
+        w: 180,
+        h: 200 + Math.random() * 250
+    });
+}
+
+const trees = [];
+for(let i = 0; i < 30; i++){
+    trees.push({
+        x: i * 250 + Math.random() * 100
+    });
+}
+
+let cameraX = 0;
+let score = 0;
+let gameOver = false;
+
+function collision(a, b){
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+    );
+}
+
+function update(){
+    if(gameOver) {
+        if(keys["r"] || keys[" "]) { // Restart mit R oder Leertaste
+            resetGame();
+        }
+        return;
+    }
+
+    score += 0.1;
+
+    // Bewegung
+    if(keys["w"] || keys["arrowup"]) player.y -= player.speed;
+    if(keys["s"] || keys["arrowdown"]) player.y += player.speed;
+    if(keys["a"] || keys["arrowleft"]) player.x -= player.speed;
+    if(keys["d"] || keys["arrowright"]) player.x += player.speed;
+
+    // Automatisch nach vorne scrollen
+    player.x += 3;
+
+    // Straßenbegrenzung
+    if(player.y < ROAD_Y) player.y = ROAD_Y;
+    if(player.y + player.h > ROAD_Y + ROAD_HEIGHT) player.y = ROAD_Y + ROAD_HEIGHT - player.h;
+
+    // Kamera folgt dem Spieler
+    cameraX = player.x - 150;
+
+    // Endlose Objekte & Gegner-Updates
+    for(const car of cars){
+        car.x -= car.speed - 3; // Relativ zur automatischen Fahrt
+
+        // Wenn Auto links aus dem Bildschirm fährt, vorne neu spawnen
+        if(car.x < cameraX - 100){
+            car.x = cameraX + canvas.width + Math.random() * 400;
+            car.y = ROAD_Y + Math.random() * (ROAD_HEIGHT - car.h);
+            car.speed = 2 + Math.random() * 4;
+        }
+
+        if(collision(player, car)){
+            gameOver = true;
+        }
+    }
+
+    // Endlose Gebäude und Bäume (Objekt-Pooling per Modulo)
+    for(const b of buildings) {
+        if(b.x < cameraX - b.w) {
+            b.x += buildings.length * 300;
+            b.h = 200 + Math.random() * 250;
+        }
+    }
+    for(const t of trees) {
+        if(t.x < cameraX - 100) {
+            t.x += trees.length * 250;
+        }
+    }
+}
+
+function drawBuilding(b){
+    // Hauptgebäude
+    ctx.fillStyle = "#2b2b36";
+    ctx.fillRect(b.x, ROAD_Y - b.h, b.w, b.h);
+
+    // Fensterleuchten
+    ctx.fillStyle = "#ffd700";
+    for(let y = ROAD_Y - b.h + 20; y < ROAD_Y - 20; y += 40){
+        for(let x = b.x + 15; x < b.x + b.w - 20; x += 30){
+            if(Math.random() > 0.3) { // Manche Fenster sind dunkel
+                ctx.fillRect(x, y, 12, 18);
+            }
+        }
+    }
+
+    // Neon-Schilder (Tokyo-Vibe)
+    ctx.fillStyle = "#ff007f";
+    ctx.fillRect(b.x + b.w - 40, ROAD_Y - b.h + 30, 25, 100);
+    ctx.fillStyle = "white";
+    ctx.font = "14px sans-serif";
+    ctx.fillText("東", b.x + b.w - 35, ROAD_Y - b.h + 55);
+    ctx.fillText("京", b.x + b.w - 35, ROAD_Y - b.h + 85);
+}
+
+function drawTree(t){
+    // Stamm
+    ctx.fillStyle = "#5c3a21";
+    ctx.fillRect(t.x + 20, ROAD_Y - 40, 10, 40);
+
+    // Sakura Blätter (Kirschblüte)
+    ctx.fillStyle = "#ffb7c5";
+    ctx.beginPath();
+    ctx.arc(t.x + 25, ROAD_Y - 50, 25, 0, Math.PI * 2);
+    ctx.arc(t.x + 10, ROAD_Y - 45, 18, 0, Math.PI * 2);
+    ctx.arc(t.x + 40, ROAD_Y - 45, 18, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawCar(car, isPlayer = false){
+    ctx.fillStyle = car.color;
+    ctx.fillRect(car.x, car.y, car.w, car.h);
+
+    // Windschutzscheibe (zeigt nach links für Gegner, nach rechts für Spieler)
+    ctx.fillStyle = "#333";
+    if(isPlayer) {
+        ctx.fillRect(car.x + car.w - 20, car.y + 4, 12, car.h - 8);
+        // Scheinwerfer vorne
+        ctx.fillStyle = "#ffffaa";
+        ctx.fillRect(car.x + car.w - 2, car.y + 4, 2, 8);
+        ctx.fillRect(car.x + car.w - 2, car.y + car.h - 12, 2, 8);
+    } else {
+        ctx.fillRect(car.x + 8, car.y + 4, 12, car.h - 8);
+        // Scheinwerfer vorne (Gegner fahren nach links)
+        ctx.fillStyle = "#ffffaa";
+        ctx.fillRect(car.x, car.y + 4, 2, 8);
+        ctx.fillRect(car.x, car.y + car.h - 12, 2, 8);
+    }
+
+    // Räder
+    ctx.fillStyle = "black";
+    ctx.fillRect(car.x + 10, car.y - 3, 14, 3);
+    ctx.fillRect(car.x + car.w - 24, car.y - 3, 14, 3);
+    ctx.fillRect(car.x + 10, car.y + car.h, 14, 3);
+    ctx.fillRect(car.x + car.w - 24, car.y + car.h, 14, 3);
+}
+
+function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Himmel / Hintergrund-Farbverlauf
+    let gradient = ctx.createLinearGradient(0, 0, 0, ROAD_Y);
+    gradient.addColorStop(0, "#0f0c20");
+    gradient.addColorStop(1, "#24142c");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Mond
+    ctx.fillStyle = "#fefcd7";
+    ctx.beginPath();
+    ctx.arc(canvas.width - 100, 80, 40, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(-cameraX, 0);
+
+    // Gebäude im Hintergrund zeichnen
+    for(const b of buildings) drawBuilding(b);
+
+    // Bäume vor den Gebäuden am Straßenrand zeichnen
+    for(const t of trees) drawTree(t);
+
+    // Straße
+    ctx.fillStyle = "#22222b";
+    ctx.fillRect(cameraX - 100, ROAD_Y, canvas.width + 200, ROAD_HEIGHT);
+
+    // Fahrbahnmarkierungen (Unterbrochene Linie in der Mitte)
+    ctx.fillStyle = "#ffcc00";
+    let startX = Math.floor(cameraX / 80) * 80;
+    for(let i = startX; i < cameraX + canvas.width + 80; i += 80){
+        ctx.fillRect(i, ROAD_Y + ROAD_HEIGHT / 2 - 3, 40, 6);
+    }
+
+    // Gegner zeichnen
+    for(const car of cars) drawCar(car, false);
+
+    // Spieler zeichnen
+    player.color = "red";
+    drawCar(player, true);
+
+    ctx.restore();
+
+    // HUD
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText("Steuerung: WASD / Pfeiltasten", 25, 40);
+    ctx.fillText("Score: " + Math.floor(score), 25, 75);
+
+    if(gameOver){
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#ff0055";
+        ctx.font = "bold 60px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
+
+        ctx.fillStyle = "white";
+        ctx.font = "24px Arial";
+        ctx.fillText("Drücke LEERTASTE oder 'R' für Neustart", canvas.width / 2, canvas.height / 2 + 40);
+        ctx.textAlign = "left";
+    }
+}
+
+function resetGame() {
+    player.x = 200;
+    player.y = ROAD_Y + 50;
+    score = 0;
+    gameOver = false;
+    
+    // Autos neu verteilen
+    cars.forEach((car, i) => {
+        car.x = player.x + 600 + i * 350;
+        car.y = ROAD_Y + Math.random() * (ROAD_HEIGHT - car.h);
+    });
+}
+
+function gameLoop(){
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>

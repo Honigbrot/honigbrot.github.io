@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man Deluxe - Level Selection</title>
+    <style>
+        body {
+            background-color: #0b0b10;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #menu, #game-container {
+            background: rgba(15, 15, 25, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 255, 0.4);
+            text-align: center;
+            border: 3px solid #4444ff;
+            max-width: 90vw;
+        }
+        #game-container { display: none; }
+        h1 {
+            color: #ffff00;
+            margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(255, 255, 0, 0.6);
+            font-size: 42px;
+        }
+        .option-group {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ccc;
+            font-size: 14px;
+        }
+        select, button {
+            background: #1a1a2e;
+            color: white;
+            border: 2px solid #333;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            width: 250px;
+        }
+        select:hover, button:hover {
+            border-color: #ffff00;
+            background: #252545;
+        }
+        button#btn-start {
+            background: #ffff00;
+            color: black;
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 20px;
+            width: 280px;
+            border: none;
+            box-shadow: 0 4px 0 #b3b300;
+        }
+        button#btn-start:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+        #score-board {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #ffff00;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        #btn-reset {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            font-size: 14px;
+            width: auto;
+            text-transform: uppercase;
+            box-shadow: 0 3px 0 #990000;
+        }
+        #btn-reset:hover { background: #ff2222; }
+        canvas {
+            border: 4px solid #1111cc;
+            background-color: #000;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0,0,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <h1 id="menu-title">PAC-MAN</h1>
+        
+        <div class="option-group">
+            <label id="label-lang">SPRACHE / LANGUAGE</label>
+            <select id="select-lang" onchange="changeLanguage()">
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label id="label-diff">SCHWIERIGKEIT / DIFFICULTY</label>
+            <select id="select-diff">
+                <option value="150" id="opt-easy">Einfach (Easy)</option>
+                <option value="100" id="opt-medium" selected>Normal</option>
+                <option value="70" id="opt-hard">Schwer (Hard)</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label id="label-level">LEVEL WÄHLEN / SELECT LEVEL</label>
+            <select id="select-level">
+                <option value="0">Level 1 - Classic</option>
+                <option value="1">Level 2 - Cross</option>
+                <option value="2">Level 3 - Blockade</option>
+                <option value="3">Level 4 - Vertical</option>
+                <option value="4">Level 5 - Arena</option>
+            </select>
+        </div>
+
+        <button id="btn-start" onclick="startGame()">START</button>
+    </div>
+
+    <div id="game-container">
+        <div id="score-board">
+            <div>LEVEL: <span id="level-display">1</span> | <span id="text-score">PUNKTE</span>: <span id="score">0</span></div>
+            <button id="btn-reset" onclick="backToMenu()">Reset</button>
+        </div>
+        <canvas id="gameCanvas" width="630" height="630"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tileSize = 30; 
+        let score = 0;
+        let currentLevel = 0;
+        let gameInterval;
+        let currentLang = 'de';
+
+        const translations = {
+            de: { title: "PAC-MAN", lang: "SPRACHE", diff: "SCHWIERIGKEIT", easy: "Einfach", med: "Normal", hard: "Schwer", play: "SPIELEN", score: "PUNKTE", win: "Sieg! Alle Levels bestanden! Punkte: ", over: "Game Over! Punkte: ", next: "Level geschafft! Weiter zu Level ", lvlSelect: "LEVEL WÄHLEN" },
+            en: { title: "PAC-MAN", lang: "LANGUAGE", diff: "DIFFICULTY", easy: "Easy", med: "Normal", hard: "Hard", play: "PLAY", score: "SCORE", win: "Victory! All levels cleared! Score: ", over: "Game Over! Your Score: ", next: "Level completed! Next: Level ", lvlSelect: "SELECT LEVEL" }
+        };
+
+        const levels = [
+            // Level 1: Classic
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1,1],
+                [2,2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2,2],
+                [1,1,1,1,1,0,1,2,1,1,2,1,1,2,1,0,1,1,1,1,1],
+                [1,2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2,1],
+                [1,1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1,1],
+                [2,2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2,2],
+                [1,1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,1],
+                [1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1,1],
+                [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 2: Cross (Kreuz)
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],
+                [1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,0,1],
+                [1,0,1,2,2,0,1,2,2,2,2,2,2,2,1,0,2,2,1,0,1],
+                [1,0,1,2,1,0,1,2,1,1,2,1,1,2,1,0,1,2,1,0,1],
+                [1,0,2,2,1,0,2,2,1,2,2,2,1,2,2,0,1,2,2,0,1],
+                [1,0,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,2,2,2,2,2,2,2,1,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 3: Blockade
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,0,1],
+                [1,0,1,0,0,0,1,2,2,2,2,2,2,2,1,0,0,0,1,0,1],
+                [1,0,1,0,1,0,1,2,1,1,2,1,1,2,1,0,1,0,1,0,1],
+                [1,0,0,0,1,0,2,2,1,2,2,2,1,2,2,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,2,1,1,1,1,1,2,1,0,1,0,1,1,1],
+                [1,0,0,0,0,0,1,2,2,2,2,2,2,2,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 4: Vertical Lines
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+                [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,1,1,2,1,2,1,1,1,0,1,0,1,1,1],
+                [1,0,0,0,1,0,1,2,2,2,2,2,2,2,1,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,2,1,1,2,1,1,2,1,0,1,0,1,0,1],
+                [1,0,1,0,0,0,2,2,1,2,2,2,1,2,2,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,2,2,2,2,2,2,2,1,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+                [1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            // Level 5: Arena
+            [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
+                [1,0,1,2,2,2,2,2,2,1,0,1,2,2,2,2,2,2,1,0,1],
+                [1,0,1,2,1,1,1,1,2,1,0,1,2,1,1,1,1,2,1,0,1],
+                [1,0,1,2,1,1,1,1,2,0,0,0,2,1,1,1,1,2,1,0,1],
+                [1,0,1,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,1,0,1],
+                [1,0,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,0,1],
+                [2,0,2,2,2,2,2,2,1,2,2,2,1,2,2,2,2,2,2,0,2],
+                [1,0,1,1,1,1,1,0,1,1,2,1,1,0,1,1,1,1,1,0,1],
+                [2,0,2,2,2,2,2,0,2,2,2,2,2,0,2,2,2,2,2,0,2],
+                [1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                [2,2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2,2],
+                [1,1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,1],
+                [1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1],
+                [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ]
+        ];
+
+        let map = [];
+        let pacman = { x: 10, y: 16, dirX: 0, dirY: 0, nextDirX: 0, nextDirY: 0, angle: 0 };
+        let ghosts = [];
+
+        function changeLanguage() {
+            currentLang = document.getElementById('select-lang').value;
+            const t = translations[currentLang];
+            document.getElementById('menu-title').innerText = t.title;
+            document.getElementById('label-lang').innerText = t.lang;
+            document.getElementById('label-diff').innerText = t.diff;
+            document.getElementById('label-level').innerText = t.lvlSelect;
+            document.getElementById('opt-easy').innerText = t.easy;
+            document.getElementById('opt-medium').innerText = t.med;
+            document.getElementById('opt-hard').innerText = t.hard;
+            document.getElementById('btn-start').innerText = "START";
+            document.getElementById('text-score').innerText = t.score;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp')    { pacman.nextDirX = 0;  pacman.nextDirY = -1; pacman.angle = 1.5 * Math.PI; }
+            if (e.key === 'ArrowDown')  { pacman.nextDirX = 0;  pacman.nextDirY = 1;  pacman.angle = 0.5 * Math.PI; }
+            if (e.key === 'ArrowLeft')  { pacman.nextDirX = -1; pacman.nextDirY = 0;  pacman.angle = Math.PI; }
+            if (e.key === 'ArrowRight') { pacman.nextDirX = 1;  pacman.nextDirY = 0;  pacman.angle = 0; }
+        });
+
+        function drawMap() {
+            for (let r = 0; r < map.length; r++) {
+                for (let c = 0; c < map[r].length; c++) {
+                    if (map[r][c] === 1) {
+                        ctx.fillStyle = '#1a1a8a';
+                        ctx.fillRect(c * tileSize, r * tileSize, tileSize, tileSize);
+                        // Genauerer Rand-Effekt
+                        ctx.strokeStyle = '#3333ff';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(c * tileSize + 2, r * tileSize + 2, tileSize - 4, tileSize - 4);
+                    } else if (map[r][c] === 0) {
+                        ctx.fillStyle = '#ffb8ae';
+                        ctx.beginPath();
+                        ctx.arc(c * tileSize + tileSize/2, r * tileSize + tileSize/2, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+
+        function drawPacman() {
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(pacman.x * tileSize + tileSize/2, pacman.y * tileSize + tileSize/2, tileSize/2 - 2, pacman.angle + 0.2, pacman.angle + 1.8 * Math.PI);
+            ctx.lineTo(pacman.x * tileSize + tileSize/2, pacman.y * tileSize + tileSize/2);
+            ctx.fill();
+        }
+
+        function drawGhosts() {
+            ghosts.forEach(g => {
+                ctx.fillStyle = g.color;
+                ctx.beginPath();
+                let gx = g.x * tileSize + tileSize/2;
+                let gy = g.y * tileSize + tileSize/2;
+                ctx.arc(gx, gy, tileSize/2 - 2, Math.PI, 0, false);
+                ctx.lineTo(gx + tileSize/2 - 2, gy + tileSize/2 - 2);
+                ctx.lineTo(gx - tileSize/2 + 2, gy + tileSize/2 - 2);
+                ctx.closePath();
+                ctx.fill();
+                // Augen
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(gx - 4, gy - 2, 4, 0, 2 * Math.PI);
+                ctx.arc(gx + 4, gy - 2, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function update() {
+            // Tunnel
+            if (pacman.x < 0) pacman.x = map[0].length - 1;
+            if (pacman.x >= map[0].length) pacman.x = 0;
+
+            if (map[pacman.y + pacman.nextDirY] && map[pacman.y + pacman.nextDirY][pacman.x + pacman.nextDirX] !== 1) {
+                pacman.dirX = pacman.nextDirX; pacman.dirY = pacman.nextDirY;
+            }
+            if (map[pacman.y + pacman.dirY] && map[pacman.y + pacman.dirY][pacman.x + pacman.dirX] !== 1) {
+                pacman.x += pacman.dirX; pacman.y += pacman.dirY;
+            }
+
+            if (map[pacman.y][pacman.x] === 0) {
+                map[pacman.y][pacman.x] = 2;
+                score += 10;
+                document.getElementById('score').innerText = score;
+                if (!map.some(row => row.includes(0))) {
+                    if (currentLevel < levels.length - 1) {
+                        currentLevel++;
+                        alert(translations[currentLang].next + (currentLevel + 1));
+                        loadLevel(currentLevel);
+                    } else {
+                        clearInterval(gameInterval);
+                        alert(translations[currentLang].win + score);
+                        backToMenu();
+                    }
+                }
+            }
+
+            ghosts.forEach(g => {
+                let moves = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}]
+                            .filter(d => map[g.y + d.y] && map[g.y + d.y][g.x + d.x] !== 1);
+                if (moves.length > 1) moves = moves.filter(d => d.x !== -g.dirX || d.y !== -g.dirY);
+                let move = moves[Math.floor(Math.random() * moves.length)];
+                if (move) { g.dirX = move.x; g.dirY = move.y; g.x += g.dirX; g.y += g.dirY; }
+                if (pacman.x === g.x && pacman.y === g.y) {
+                    clearInterval(gameInterval);
+                    alert(translations[currentLang].over + score);
+                    backToMenu();
+                }
+            });
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            update(); drawMap(); drawPacman(); drawGhosts();
+        }
+
+        function loadLevel(lvlIndex) {
+            document.getElementById('level-display').innerText = lvlIndex + 1;
+            map = JSON.parse(JSON.stringify(levels[lvlIndex]));
+            pacman = { x: 10, y: 16, dirX: 0, dirY: 0, nextDirX: 0, nextDirY: 0, angle: 0 };
+            ghosts = [
+                { x: 9, y: 10, dirX: 1, dirY: 0, color: '#ff0000' },
+                { x: 10, y: 10, dirX: -1, dirY: 0, color: '#ffb8ff' },
+                { x: 11, y: 10, dirX: 0, dirY: -1, color: '#00ffff' }
+            ];
+        }
+
+        function startGame() {
+            currentLevel = parseInt(document.getElementById('select-level').value);
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            score = 0;
+            document.getElementById('score').innerText = score;
+            loadLevel(currentLevel);
+            const speed = parseInt(document.getElementById('select-diff').value);
+            gameInterval = setInterval(gameLoop, speed);
+        }
+
+        function backToMenu() {
+            clearInterval(gameInterval);
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

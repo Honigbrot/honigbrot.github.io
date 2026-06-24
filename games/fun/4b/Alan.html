@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slither 3D - Classic Spheres Edition</title>
+    <style>
+        :root {
+            --glass-bg: rgba(20, 22, 37, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-blur: blur(25px);
+            --glow-cyan: #00f3ff;
+            --glow-pink: #ff007f;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', -apple-system, Roboto, sans-serif;
+            background-color: #14151f;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* --- BENTO-LAYOUT --- */
+        #dashboard-wrapper {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            z-index: 10;
+            align-items: flex-end;
+            width: calc(100% - 80px);
+            max-width: 1100px;
+        }
+
+        .bento-box {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            color: #fff;
+            padding: 24px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #box-main { flex: 1.2; }
+        
+        #box-selectors { 
+            flex: 1.5; 
+            display: none; 
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        #box-preview { 
+            flex: 1; 
+            display: none; 
+            opacity: 0;
+            transform: translateY(30px);
+            width: 280px; 
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, var(--glow-cyan), var(--glow-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            color: var(--glow-cyan);
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--glass-border);
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .selector-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            height: 42px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--glow-cyan);
+            color: #000;
+        }
+
+        .preview-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .preview-viewport {
+            width: 100%;
+            height: 130px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #00f3ff 0%, #0055ff 100%);
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-action:hover {
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+        }
+
+        .btn-customize {
+            background: linear-gradient(135deg, #ff007f 0%, #aa0055 100%);
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.2);
+        }
+
+        .lang-mini-box { display: flex; gap: 5px; }
+        .lang-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: #ccc;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .lang-btn.active { background: var(--glow-cyan); color: #000; }
+
+        #gameover-container {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 380px;
+            padding: 30px;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #hud-score { top: 30px; left: 30px; padding: 12px 24px; font-size: 1.2rem; font-weight: 700; display: none; }
+        #hud-leaderboard { top: 30px; right: 30px; padding: 22px; width: 230px; display: none; }
+        .leaderboard-title { margin: 0 0 12px 0; font-size: 0.9rem; text-transform: uppercase; color: var(--glow-cyan); border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; }
+        .leaderboard-entry { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .leaderboard-entry.player { color: var(--glow-pink); font-weight: bold; }
+        #instructions { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 0.85rem; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="dashboard-wrapper">
+        <div id="box-main" class="bento-box">
+            <h1>SLITHER 3D</h1>
+            <div class="input-group">
+                <label id="lbl-name">Name</label>
+                <input type="text" id="username" value="NeonSlither" maxlength="15">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                <div class="lang-mini-box">
+                    <button class="lang-btn" id="lang-de" onclick="setLanguage('de')">DE</button>
+                    <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">EN</button>
+                    <button class="lang-btn" id="lang-it" onclick="setLanguage('it')">IT</button>
+                </div>
+                <button class="btn-action btn-customize" id="unlock-btn">ANPASSEN</button>
+            </div>
+            <button class="btn-action" id="start-btn">JOIN ARENA</button>
+        </div>
+
+        <div id="box-selectors" class="bento-box">
+            <h3>ANPASSUNG</h3>
+            <div class="input-group">
+                <label id="lbl-skin">Skin Design</label>
+                <div class="selector-box">
+                    <button class="nav-btn" id="prev-skin">‹</button>
+                    <span class="preview-text" id="skin-lbl">Cyan Glow</span>
+                    <button class="nav-btn" id="next-skin">›</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label id="lbl-map">Spielfeld Stil</label>
+                <div class="selector-box">
+                    <button class="nav-btn" id="prev-map">‹</button>
+                    <span class="preview-text" id="map-lbl">Neon Arcade</span>
+                    <button class="nav-btn" id="next-map">›</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="box-preview" class="bento-box">
+            <h3 id="lbl-preview-title">LIVE VORSCHAU</h3>
+            <div class="preview-viewport" id="preview-canvas-target"></div>
+        </div>
+    </div>
+
+    <div id="gameover-container" class="bento-box" style="position: absolute; z-index: 100;">
+        <h2 style="color:var(--glow-pink); margin:0; font-size:2rem;" id="go-title-txt">GAME OVER</h2>
+        <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px;">
+            <span id="go-score-lbl">Score</span>: <strong id="go-score-val" style="color:var(--glow-cyan)">0</strong>
+        </div>
+        <button class="btn-action" id="restart-btn" style="background: linear-gradient(135deg, #ff007f 0%, #990044 100%);">RETURN</button>
+    </div>
+
+    <div id="hud-score" class="bento-box" style="position: absolute;">
+        <div><span id="lbl-score">Score</span>: <span id="score-val" style="color: var(--glow-cyan);">0</span></div>
+    </div>
+
+    <div id="hud-leaderboard" class="bento-box" style="position: absolute;">
+        <div class="leaderboard-title" id="lbl-leaderboard">Leaderboard</div>
+        <div id="leaderboard-list"></div>
+    </div>
+
+    <div id="instructions">Controls</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        const i18n = {
+            de: { name: "Name", skin: "Skin Design", map: "Spielfeld Stil", play: "JOIN ARENA", score: "Punkte", leaderboard: "Bestenliste", instructions: "Maus bewegen zum Lenken • Links-Klick für Speed-Boost", gotitle: "GAME OVER", goscore: "Punkte", gorestart: "HAUPTMENÜ", previewTitle: "LIVE VORSCHAU" },
+            en: { name: "Name", skin: "Skin Design", map: "Arena Style", play: "JOIN ARENA", score: "Score", leaderboard: "Leaderboard", instructions: "Move mouse to steer • Left click for Boost", gotitle: "GAME OVER", macros: "Score", gorestart: "MAIN MENU", previewTitle: "LIVE PREVIEW" },
+            it: { name: "Nome", skin: "Stile Skin", map: "Mappa Arena", play: "ENTRA", score: "Punti", leaderboard: "Classifica", instructions: "Muovi il mouse per sterzare • Click sinistro per Boost", gotitle: "GAME OVER", macros: "Punteggio", gorestart: "MENU", previewTitle: "ANTEPRIMA" }
+        };
+
+        let currentLang = 'de';
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            if(document.getElementById(`lang-${lang}`)) document.getElementById(`lang-${lang}`).classList.add('active');
+
+            document.getElementById('lbl-name').innerText = i18n[lang].name;
+            document.getElementById('lbl-skin').innerText = i18n[lang].skin;
+            document.getElementById('lbl-map').innerText = i18n[lang].map;
+            document.getElementById('start-btn').innerText = i18n[lang].play;
+            document.getElementById('lbl-score').innerText = i18n[lang].score;
+            document.getElementById('lbl-leaderboard').innerText = i18n[lang].leaderboard;
+            document.getElementById('instructions').innerText = i18n[lang].instructions;
+            document.getElementById('go-title-txt').innerText = i18n[lang].gotitle;
+            document.getElementById('go-score-lbl').innerText = i18n[lang].goscore;
+            document.getElementById('restart-btn').innerText = i18n[lang].gorestart;
+            document.getElementById('lbl-preview-title').innerText = i18n[lang].previewTitle;
+            updateMapLabel();
+        }
+
+        const SKINS = [
+            { name: "Cyan Glow", core: 0x00f3ff, shell: 0x0055ff, emissive: 0x001144 },
+            { name: "Magma Orb", core: 0xff4500, shell: 0xffaa00, emissive: 0x330000 },
+            { name: "Bio Sphere", core: 0x39ff14, shell: 0x00ff88, emissive: 0x002200 },
+            { name: "Cosmic Pearl", core: 0xd400ff, shell: 0x3a007d, emissive: 0x110022 }
+        ];
+
+        const MAPS = [
+            { nameDe: "Retro Neon Arcade", nameEn: "Neon Arcade", nameIt: "Arcade Neon", bg: 0x181026, grid: 0xff007f, floor: 0x24193b },
+            { nameDe: "Sonnenuntergang", nameEn: "Sunset Glow", nameIt: "Tramonto", bg: 0x2b1a1a, grid: 0xffaa00, floor: 0x3d2525 },
+            { nameDe: "Matrix Labor", nameEn: "Matrix Lab", nameIt: "Laboratorio Matrix", bg: 0x121d12, grid: 0x39ff14, floor: 0x1d2e1d }
+        ];
+
+        let currentSkinIndex = 0;
+        let currentMapIndex = 0;
+        let isPlaying = false;
+
+        let scene, camera, renderer;
+        let playerSnake = [];
+        let snakeTargetX = 0, snakeTargetZ = 0;
+        let foodArray = [];
+        let botsArray = [];
+        let score = 0;
+
+        const BASE_SPEED = 0.13;
+        const BOOST_SPEED = 0.26;
+        let currentSpeed = BASE_SPEED;
+        const FIELD_SIZE = 100;
+
+        const dashboard = document.getElementById('dashboard-wrapper');
+        const gameoverBox = document.getElementById('gameover-container');
+        const hudScore = document.getElementById('hud-score');
+        const hudLeaderboard = document.getElementById('hud-leaderboard');
+        const instructions = document.getElementById('instructions');
+        const skinLbl = document.getElementById('skin-lbl');
+        const mapLbl = document.getElementById('map-lbl');
+        const scoreVal = document.getElementById('score-val');
+        const goScoreVal = document.getElementById('go-score-val');
+
+        let previewScene, previewCamera, previewRenderer, previewMeshCore, previewMeshShell, previewGrid;
+
+        function updateMapLabel() {
+            const map = MAPS[currentMapIndex];
+            if(currentLang === 'de') mapLbl.innerText = map.nameDe;
+            else if(currentLang === 'it') mapLbl.innerText = map.nameIt;
+            else mapLbl.innerText = map.nameEn;
+        }
+
+        document.getElementById('unlock-btn').addEventListener('click', () => {
+            const boxSel = document.getElementById('box-selectors');
+            const boxPre = document.getElementById('box-preview');
+            
+            boxSel.style.display = 'flex';
+            boxPre.style.display = 'flex';
+            
+            setTimeout(() => {
+                boxSel.style.opacity = '1';
+                boxSel.style.transform = 'translateY(0)';
+                boxPre.style.opacity = '1';
+                boxPre.style.transform = 'translateY(0)';
+            }, 10);
+
+            document.getElementById('unlock-btn').style.visibility = 'hidden';
+            
+            if(previewRenderer) {
+                const targetEl = document.getElementById('preview-canvas-target');
+                previewRenderer.setSize(targetEl.clientWidth, targetEl.clientHeight);
+                previewCamera.aspect = targetEl.clientWidth / targetEl.clientHeight;
+                previewCamera.updateProjectionMatrix();
+            }
+        });
+
+        document.getElementById('prev-skin').addEventListener('click', () => { 
+            currentSkinIndex = (currentSkinIndex - 1 + SKINS.length) % SKINS.length; 
+            skinLbl.innerText = SKINS[currentSkinIndex].name; 
+            updatePreviewWindowConfig();
+        });
+        document.getElementById('next-skin').addEventListener('click', () => { 
+            currentSkinIndex = (currentSkinIndex + 1) % SKINS.length; 
+            skinLbl.innerText = SKINS[currentSkinIndex].name; 
+            updatePreviewWindowConfig();
+        });
+        document.getElementById('prev-map').addEventListener('click', () => { 
+            currentMapIndex = (currentMapIndex - 1 + MAPS.length) % MAPS.length; 
+            updateMapLabel(); 
+            updateSceneEnvironment(); 
+            updatePreviewWindowConfig();
+        });
+        document.getElementById('next-map').addEventListener('click', () => { 
+            currentMapIndex = (currentMapIndex + 1) % MAPS.length; 
+            updateMapLabel(); 
+            updateSceneEnvironment(); 
+            updatePreviewWindowConfig();
+        });
+
+        function initGame() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambient);
+
+            const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+            sun.position.set(30, 60, 20);
+            scene.add(sun);
+
+            buildMapEnvironment();
+            initPreviewWindow();
+            setLanguage('de');
+
+            for (let i = 0; i < 220; i++) spawnFood();
+            for (let i = 0; i < 10; i++) spawnBot();
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isPlaying) return;
+                snakeTargetX = ((e.clientX / window.innerWidth) * 2 - 1) * 24;
+                snakeTargetZ = ((e.clientY / window.innerHeight) * 2 - 1) * 16;
+            });
+
+            window.addEventListener('mousedown', () => { if(isPlaying) currentSpeed = BOOST_SPEED; });
+            window.addEventListener('mouseup', () => { if(isPlaying) currentSpeed = BASE_SPEED; });
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function initPreviewWindow() {
+            const targetEl = document.getElementById('preview-canvas-target');
+            previewScene = new THREE.Scene();
+
+            previewCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+            previewCamera.position.set(0, 0, 2);
+            previewCamera.lookAt(0, 0, 0);
+
+            previewRenderer = new THREE.WebGLRenderer({ antialias: true });
+            targetEl.appendChild(previewRenderer.domElement);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(2, 4, 3);
+            previewScene.add(dirLight);
+            previewScene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            const currentSkin = SKINS[currentSkinIndex];
+            
+            const coreGeo = new THREE.SphereGeometry(0.3, 32, 32);
+            const coreMat = new THREE.MeshBasicMaterial({ color: currentSkin.core });
+            previewMeshCore = new THREE.Mesh(coreGeo, coreMat);
+            previewScene.add(previewMeshCore);
+
+            const shellGeo = new THREE.SphereGeometry(0.48, 32, 32);
+            const shellMat = new THREE.MeshStandardMaterial({
+                color: currentSkin.shell,
+                roughness: 0.1,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                emissive: currentSkin.emissive,
+                emissiveIntensity: 1.2
+            });
+            previewMeshShell = new THREE.Mesh(shellGeo, shellMat);
+            previewScene.add(previewMeshShell);
+
+            updatePreviewWindowConfig();
+        }
+
+        function updatePreviewWindowConfig() {
+            const currentSkin = SKINS[currentSkinIndex];
+            const currentMap = MAPS[currentMapIndex];
+
+            if(previewMeshCore && previewMeshShell) {
+                previewMeshCore.material.color.setHex(currentSkin.core);
+                previewMeshShell.material.color.setHex(currentSkin.shell);
+                previewMeshShell.material.emissive.setHex(currentSkin.emissive);
+            }
+
+            previewScene.background = new THREE.Color(currentMap.bg);
+            if(previewGrid) previewScene.remove(previewGrid);
+            previewGrid = new THREE.GridHelper(10, 10, currentMap.grid, currentMap.grid);
+            previewGrid.position.y = -0.6;
+            previewScene.add(previewGrid);
+        }
+
+        let environmentFloor, environmentGrid, environmentRing;
+        function buildMapEnvironment() {
+            const currentMap = MAPS[currentMapIndex];
+            scene.background = new THREE.Color(currentMap.bg);
+            scene.fog = new THREE.FogExp2(currentMap.bg, 0.005);
+
+            const floorGeo = new THREE.PlaneGeometry(FIELD_SIZE * 2, FIELD_SIZE * 2);
+            const floorMat = new THREE.MeshStandardMaterial({ color: currentMap.floor, roughness: 0.4, metalness: 0.5 });
+            environmentFloor = new THREE.Mesh(floorGeo, floorMat);
+            environmentFloor.rotation.x = -Math.PI / 2;
+            environmentFloor.position.y = -0.5;
+            scene.add(environmentFloor);
+
+            environmentGrid = new THREE.GridHelper(FIELD_SIZE * 2, 50, currentMap.grid, 0x444455);
+            environmentGrid.position.y = -0.48;
+            scene.add(environmentGrid);
+
+            const ringGeo = new THREE.RingGeometry(FIELD_SIZE, FIELD_SIZE + 2, 64);
+            const ringMat = new THREE.MeshBasicMaterial({ color: currentMap.grid, side: THREE.DoubleSide });
+            environmentRing = new THREE.Mesh(ringGeo, ringMat);
+            environmentRing.rotation.x = -Math.PI / 2;
+            environmentRing.position.y = -0.45;
+            scene.add(environmentRing);
+        }
+
+        function updateSceneEnvironment() {
+            if(environmentFloor) scene.remove(environmentFloor);
+            if(environmentGrid) scene.remove(environmentGrid);
+            if(environmentRing) scene.remove(environmentRing);
+            buildMapEnvironment();
+        }
+
+        function createClassicSphereSegment(position, config, isHead = false) {
+            const group = new THREE.Group();
+            const radiusFactor = isHead ? 0.65 : 0.5;
+
+            const coreGeo = new THREE.SphereGeometry(radiusFactor * 0.6, 24, 24);
+            const coreMat = new THREE.MeshBasicMaterial({ color: config.core });
+            const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+            group.add(coreMesh);
+
+            const shellGeo = new THREE.SphereGeometry(radiusFactor, 32, 32);
+            const shellMat = new THREE.MeshStandardMaterial({
+                color: config.shell,
+                roughness: 0.1,
+                metalness: 0.2,
+                transparent: true,
+                opacity: 0.55,
+                emissive: config.emissive,
+                emissiveIntensity: isHead ? 1.5 : 0.4
+            });
+            const shellMesh = new THREE.Mesh(shellGeo, shellMat);
+            group.add(shellMesh);
+
+            group.position.copy(position);
+            scene.add(group);
+            return group;
+        }
+
+        function spawnPlayer() {
+            const skin = SKINS[currentSkinIndex];
+            playerSnake.push(createClassicSphereSegment(new THREE.Vector3(0,0,0), skin, true));
+            for(let i = 1; i < 12; i++) {
+                playerSnake.push(createClassicSphereSegment(new THREE.Vector3(0, 0, i * 0.42), skin, false));
+            }
+        }
+
+        // Modifiziertes Futter-Spawning, damit wir auch gezielte Partikel spawnen können
+        function spawnFood(customPos = null, customColor = null) {
+            const geo = new THREE.SphereGeometry(0.25, 16, 16);
+            let col;
+            
+            if (customColor !== null) {
+                col = customColor;
+            } else {
+                const palette = [0x00f3ff, 0xff007f, 0x39ff14, 0xffaa00, 0xd400ff];
+                col = palette[Math.floor(Math.random() * palette.length)];
+            }
+
+            const mat = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 2.0 });
+            const mesh = new THREE.Mesh(geo, mat);
+
+            if (customPos) {
+                mesh.position.copy(customPos);
+            } else {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * (FIELD_SIZE - 3);
+                mesh.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+            }
+            
+            scene.add(mesh);
+            foodArray.push(mesh);
+        }
+
+        function spawnBot() {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * (FIELD_SIZE - 10);
+            const startPos = new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+            const bSkin = SKINS[Math.floor(Math.random() * SKINS.length)];
+            const bSegments = [];
+            bSegments.push(createClassicSphereSegment(startPos, bSkin, true));
+            for(let i = 1; i < 12; i++) {
+                bSegments.push(createClassicSphereSegment(new THREE.Vector3(startPos.x, 0, startPos.z + i * 0.42), bSkin, false));
+            }
+            botsArray.push({ name: "Bot " + Math.floor(Math.random()*90+10), segments: bSegments, angle: Math.random()*Math.PI*2, skin: bSkin, timer: 0 });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const timeTicker = Date.now() * 0.003;
+            foodArray.forEach(f => { f.position.y = Math.sin(timeTicker + f.position.x) * 0.1; });
+
+            if(previewMeshCore && previewMeshShell && document.getElementById('box-preview').style.display === 'flex') {
+                previewMeshCore.rotation.y += 0.01;
+                previewMeshShell.rotation.x += 0.005;
+                previewRenderer.render(previewScene, previewCamera);
+            }
+
+            if (isPlaying) {
+                const head = playerSnake[0];
+                if (!head) return;
+
+                const targetXWorld = head.position.x + snakeTargetX;
+                const targetZWorld = head.position.z + snakeTargetZ;
+                const currentAngle = Math.atan2(targetXWorld - head.position.x, targetZWorld - head.position.z);
+
+                const nextX = head.position.x + Math.sin(currentAngle) * currentSpeed;
+                const nextZ = head.position.z + Math.cos(currentAngle) * currentSpeed;
+
+                if (Math.sqrt(nextX*nextX + nextZ*nextZ) > FIELD_SIZE) {
+                    executeGameOver();
+                    return;
+                } else {
+                    for(let i = playerSnake.length - 1; i > 0; i--) {
+                        playerSnake[i].position.lerp(playerSnake[i-1].position, 0.25);
+                    }
+                    head.position.set(nextX, 0, nextZ);
+                }
+
+                camera.position.set(head.position.x, 13, head.position.z + 10);
+                camera.lookAt(head.position.x, 0, head.position.z - 2);
+
+                for(let i = foodArray.length - 1; i >= 0; i--) {
+                    if (head.position.distanceTo(foodArray[i].position) < 0.95) {
+                        scene.remove(foodArray[i]);
+                        foodArray.splice(i, 1);
+                        score += 10;
+                        scoreVal.innerText = score;
+
+                        const lastSeg = playerSnake[playerSnake.length - 1];
+                        playerSnake.push(createClassicSphereSegment(lastSeg.position, SKINS[currentSkinIndex], false));
+                    }
+                }
+
+                let deadBotIndices = [];
+
+                botsArray.forEach((bot, bIndex) => {
+                    const bHead = bot.segments[0];
+                    bot.timer++;
+                    if(bot.timer > 70) { bot.angle += (Math.random() - 0.5) * 1.6; bot.timer = 0; }
+
+                    const bNextX = bHead.position.x + Math.sin(bot.angle) * 0.11;
+                    const bNextZ = bHead.position.z + Math.cos(bot.angle) * 0.11;
+
+                    if (Math.sqrt(bNextX*bNextX + bNextZ*bNextZ) > FIELD_SIZE - 3) {
+                        bot.angle += Math.PI;
+                    } else {
+                        for(let i = bot.segments.length - 1; i > 0; i--) {
+                            bot.segments[i].position.lerp(bot.segments[i-1].position, 0.25);
+                        }
+                        bHead.position.set(bNextX, 0, bNextZ);
+                    }
+
+                    for(let i = 1; i < bot.segments.length; i++) {
+                        if (head.position.distanceTo(bot.segments[i].position) < 0.65) {
+                            executeGameOver();
+                            return;
+                        }
+                    }
+
+                    for (let p = 1; p < playerSnake.length; p++) {
+                        if (bHead.position.distanceTo(playerSnake[p].position) < 0.65) {
+                            deadBotIndices.push(bIndex);
+                            break;
+                        }
+                    }
+                });
+
+                if (deadBotIndices.length > 0) {
+                    let uniqueDeadBots = [...new Set(deadBotIndices)].sort((a, b) => b - a);
+                    
+                    uniqueDeadBots.forEach(idx => {
+                        const bot = botsArray[idx];
+                        if (bot) {
+                            // PARTIKEL-LOGIK: Spawne Futter an den alten Segment-Positionen des Bots
+                            bot.segments.forEach(seg => {
+                                spawnFood(seg.position, bot.skin.core);
+                                scene.remove(seg);
+                            });
+                            
+                            botsArray.splice(idx, 1);
+                            score += 50;
+                            scoreVal.innerText = score;
+                            spawnBot();
+                        }
+                    });
+                }
+
+                refreshLeaderboard();
+            } else {
+                const clock = Date.now() * 0.00007;
+                camera.position.set(Math.cos(clock) * 45, 22, Math.sin(clock) * 45);
+                camera.lookAt(0, 0, 0);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function refreshLeaderboard() {
+            const container = document.getElementById('leaderboard-list');
+            const name = document.getElementById('username').value || "NeonSlither";
+            let board = [{ name: name, score: score, isPlayer: true }];
+            botsArray.forEach(b => board.push({ name: b.name, score: b.segments.length * 10 - 120, isPlayer: false }));
+            board.sort((a,b) => b.score - a.score);
+
+            container.innerHTML = "";
+            board.slice(0, 5).forEach((el, idx) => {
+                const item = document.createElement('div');
+                item.className = `leaderboard-entry ${el.isPlayer ? 'player' : ''}`;
+                item.innerHTML = `<span>${idx+1}. ${el.name}</span><span>${el.score}</span>`;
+                container.appendChild(item);
+            });
+        }
+
+        function executeGameOver() {
+            isPlaying = false;
+            goScoreVal.innerText = score;
+            gameoverBox.style.display = "flex";
+            hudScore.style.display = "none";
+            hudLeaderboard.style.display = "none";
+            instructions.style.display = "none";
+            playerSnake.forEach(seg => scene.remove(seg));
+            playerSnake = [];
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            gameoverBox.style.display = "none";
+            dashboard.style.display = "flex";
+            score = 0;
+            scoreVal.innerText = score;
+            // Altes Rest-Futter beim Neustart wegräumen, damit es nicht überfüllt wird
+            foodArray.forEach(f => scene.remove(f));
+            foodArray = [];
+            for (let i = 0; i < 220; i++) spawnFood();
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            dashboard.style.display = "none";
+            hudScore.style.display = "block";
+            hudLeaderboard.style.display = "block";
+            instructions.style.display = "block";
+            spawnPlayer();
+            isPlaying = true;
+        });
+
+        initGame();
+        animate();
+    </script>
+</body>
+</html>

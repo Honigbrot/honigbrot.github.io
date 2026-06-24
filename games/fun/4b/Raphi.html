@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Forza Horizon 6 - Balanced Top Speed Edition</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #87ceeb; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        #ui { position: absolute; top: 20px; left: 20px; font-size: 20px; font-weight: 900; color: #fff; background: rgba(10,20,40,0.7); padding: 20px; border-radius: 12px; border-left: 6px solid #ff4757; z-index: 10; backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        #tacho { position: absolute; bottom: 30px; right: 30px; background: rgba(10,20,40,0.75); padding: 20px; border-radius: 50%; text-align: center; border: 4px solid #ff4757; color: #fff; width: 95px; height: 95px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; box-shadow: 0 0 30px rgba(255, 71, 87, 0.4); backdrop-filter: blur(8px); }
+        #drift-ui { font-size: 14px; color: #ffaa00; margin-top: 5px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        #hint { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.85); color: #222; padding: 12px; border-radius: 6px; font-size: 13px; z-index: 10; border: 1px solid #ddd; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        #drift-points { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ffaa00; text-shadow: 0 0 15px rgba(255, 170, 0, 0.8); z-index: 10; display: none; text-align: center; }
+        
+        /* RACE UI */
+        #race-ui { position: absolute; top: 120px; left: 20px; background: rgba(255, 71, 87, 0.85); color: white; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 18px; z-index: 10; display: none; min-width: 180px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #countdown { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 90px; font-weight: 900; color: #fff; text-shadow: 0 0 30px #ff4757; z-index: 20; display: none; }
+
+        .btn { background: #ff4757; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn:hover { background: #ff6b81; transform: scale(1.05); }
+        .btn.secondary { background: #555; }
+        .btn.secondary:hover { background: #666; }
+        .btn.race { background: #00ec42; color: #fff; }
+        .btn.race:hover { background: #26ff63; }
+        
+        /* MODALS */
+        .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10,20,40,0.85); z-index: 100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-container { background: #152238; border: 3px solid #ff4757; border-radius: 16px; padding: 30px; width: 80%; max-width: 800px; color: white; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d4263; padding-bottom: 15px; margin-bottom: 20px; }
+        
+        /* SHOP */
+        .car-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .car-card { background: #1f3254; border: 2px solid #2d4263; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; }
+        .car-card.active { border-color: #00ec42; background: #1b3d2b; }
+        .car-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .car-specs { font-size: 11px; color: #ccc; margin-bottom: 15px; line-height: 1.4; }
+        .car-price { font-weight: bold; color: #ffaa00; font-size: 16px; }
+
+        /* SETTINGS TABLE */
+        .settings-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .settings-table tr { border-bottom: 1px solid #2d4263; }
+        .settings-table td { padding: 12px; font-size: 16px; }
+        .key-btn { background: #2d4263; color: #ffaa00; border: 2px solid #455d82; padding: 6px 14px; font-family: monospace; font-weight: bold; font-size: 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; min-width: 100px; text-align: center; display: inline-block; }
+        .key-btn:hover { background: #3b557d; border-color: #ffaa00; }
+        .key-btn.waiting { background: #ff4757; color: white; border-color: white; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="ui">
+        FORZA HORIZON 6<br>
+        <span style="font-size: 12px; color: #ddd; letter-spacing: 1px;">LOCATION: <span style="color:#00ec42; font-weight: bold;">SAKURA ALPINE ROAD</span></span>
+        <div id="drift-ui">STATUS: <span id="drift-angle" style="color:#00ec42;">STRASSE</span></div>
+        <div style="font-size: 16px; color: #ffaa00; margin-top: 10px; font-weight: bold;">KONTO: <span id="ui-coins">0</span> CR</div>
+    </div>
+
+    <div id="drift-points">
+        <span id="pts-val">0</span> PTS<br>
+        <span style="font-size:16px; color:#fff;" id="pts-mult">x1.0</span>
+    </div>
+
+    <div id="race-ui">
+        POS: <span id="race-pos">1/2</span><br>
+        ZIEL: <span id="race-dist">0</span>m
+    </div>
+
+    <div id="countdown">3</div>
+
+    <div id="hint">
+        <button class="btn race" onclick="startRaceMode()">Rennen (500 CR)</button>
+        <button class="btn" onclick="openShop()">Autohaus</button>
+        <button class="btn secondary" onclick="openSettings()">Settings</button>
+    </div>
+
+    <div id="tacho">
+        <span id="speedo" style="font-size: 38px; font-weight: 800; color: #ff4757;">0</span>
+        <span style="font-size: 10px; color: #eee; letter-spacing: 1.5px; font-weight: bold;">KM/H</span>
+    </div>
+
+    <div id="shop-modal" class="modal">
+        <div class="shop-container modal-container">
+            <div class="modal-header">
+                <h2>HORIZON AUTOHAUS</h2>
+                <div style="font-size: 20px; color: #ffaa00; font-weight: bold;">DEINE CREDITS: <span id="shop-coins">0</span> CR</div>
+            </div>
+            <div class="car-grid" id="car-shop-grid"></div>
+            <div style="margin-top: 25px; text-align: right;">
+                <button class="btn secondary" onclick="closeModals()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-container" style="max-width: 550px;">
+            <div class="modal-header">
+                <h2>SETTINGS - TASTENBELEGUNG</h2>
+            </div>
+            <table class="settings-table">
+                <tr><td><b>Gas geben:</b></td><td style="text-align: right;"><div id="key-forward" class="key-btn" onclick="startRebind('forward')">W</div></td></tr>
+                <tr><td><b>Bremse / Retour:</b></td><td style="text-align: right;"><div id="key-backward" class="key-btn" onclick="startRebind('backward')">S</div></td></tr>
+                <tr><td><b>Links lenken:</b></td><td style="text-align: right;"><div id="key-left" class="key-btn" onclick="startRebind('left')">A</div></td></tr>
+                <tr><td><b>Rechts lenken:</b></td><td style="text-align: right;"><div id="key-right" class="key-btn" onclick="startRebind('right')">D</div></td></tr>
+                <tr><td><b>Handbremse:</b></td><td style="text-align: right;"><div id="key-handbrake" class="key-btn" onclick="startRebind('handbrake')">SPACE</div></td></tr>
+            </table>
+            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                <button class="btn secondary" style="background: #3a4b61;" onclick="resetControlsToDefault()">Standard</button>
+                <button class="btn" onclick="closeModals()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userWallet = parseInt(localStorage.getItem("forza_coins")) || 0;
+        let unlockedCars = JSON.parse(localStorage.getItem("forza_unlocked_cars")) || ["ae86"];
+        let currentCarId = localStorage.getItem("forza_current_car") || "ae86";
+
+        let controlsMapping = JSON.parse(localStorage.getItem("forza_controls")) || {
+            forward: "w", backward: "s", left: "a", right: "d", handbrake: " "
+        };
+
+        function updateWalletUI() {
+            document.getElementById("ui-coins").innerText = userWallet.toLocaleString();
+            document.getElementById("shop-coins").innerText = userWallet.toLocaleString();
+            localStorage.setItem("forza_coins", userWallet);
+        }
+
+        // Maximale Geschwindigkeit des besten Autos (tron_lambor) auf 2.0 (250 km/h) herabgesetzt
+        const carDatabase = {
+            ae86: { name: "Toyota AE86 Trueno", price: 0, color: 0xffffff, neonColor: null, maxSpeed: 1.5, acc: 0.004, steerSpeed: 0.038, baseGrip: 0.16, driftGrip: 0.09, maxDrift: 0.85, driftDrag: 0.985, desc: "Drift-Klassiker." },
+            silvia: { name: "Nissan Silvia S15 Spec-R", price: 2500, color: 0x00d2d3, neonColor: null, maxSpeed: 1.7, acc: 0.005, steerSpeed: 0.045, baseGrip: 0.12, driftGrip: 0.04, maxDrift: 0.95, driftDrag: 0.978, desc: "Rutschiges Heck!" },
+            rx7: { name: "Mazda RX-7 FD3S", price: 7500, color: 0xff9f43, neonColor: null, maxSpeed: 1.85, acc: 0.006, steerSpeed: 0.032, baseGrip: 0.24, driftGrip: 0.14, maxDrift: 0.60, driftDrag: 0.992, desc: "Viel Schwung." },
+            horizon_ed: { name: "Horizon Edition Custom", price: 15000, color: 0x222222, neonColor: 0xff0055, maxSpeed: 1.95, acc: 0.008, steerSpeed: 0.050, baseGrip: 0.09, driftGrip: 0.03, maxDrift: 1.10, driftDrag: 0.970, desc: "Profi-Drifter." },
+            tron_lambor: { name: "TRON Aventador SVJ", price: 25000, color: 0x09090d, neonColor: 0x00ffff, maxSpeed: 2.0, acc: 0.010, steerSpeed: 0.040, baseGrip: 0.28, driftGrip: 0.16, maxDrift: 0.65, driftDrag: 0.988, desc: "Allrad-Hypercar." }
+        };
+
+        // ENGINE SETUP
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb); 
+        scene.fog = new THREE.FogExp2(0xe0f2fe, 0.0006); 
+
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 8000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.65); scene.add(ambientLight);
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 0.9); sunLight.position.set(400, 600, 200); scene.add(sunLight);
+
+        // MAP & ROAD
+        const mapSize = 20000;
+        const grassGeo = new THREE.PlaneGeometry(mapSize, mapSize);
+        const grassMat = new THREE.MeshStandardMaterial({ color: 0x2e5c36, roughness: 0.85 }); 
+        const grass = new THREE.Mesh(grassGeo, grassMat); grass.rotation.x = -Math.PI / 2; scene.add(grass);
+
+        const roadPoints = [];
+        const totalPoints = 1600; 
+        for (let i = 0; i < totalPoints; i++) {
+            let z = (i - totalPoints / 2) * 6.0;
+            let x = Math.sin(i * 0.025) * 320 + Math.cos(i * 0.01) * 140; 
+            roadPoints.push(new THREE.Vector3(x, 0.31, z)); 
+        }
+        const roadCurve = new THREE.CatmullRomCurve3(roadPoints);
+        const roadGeometry = new THREE.TubeGeometry(roadCurve, 2400, 26, 4, false);
+        const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x24282b, roughness: 0.7 }); 
+        const roadMesh = new THREE.Mesh(roadGeometry, roadMaterial); roadMesh.scale.set(1, 0.01, 1); scene.add(roadMesh);
+
+        // STRASSEN-LINIEN Markierungen
+        const lineGeo = new THREE.PlaneGeometry(0.4, 3.5);
+        const sideLineGeo = new THREE.PlaneGeometry(0.3, 5.8);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+
+        const trackPoints = roadCurve.getPoints(1500);
+        for (let i = 0; i < trackPoints.length - 1; i++) {
+            let p1 = trackPoints[i];
+            let p2 = trackPoints[i + 1];
+            
+            let forward = new THREE.Vector3().subVectors(p2, p1).normalize();
+            let sideVector = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
+            let angle = Math.atan2(forward.x, forward.z);
+
+            if (i % 3 === 0) {
+                const centerLine = new THREE.Mesh(lineGeo, lineMat);
+                centerLine.position.set(p1.x, 0.33, p1.z);
+                centerLine.rotation.x = -Math.PI / 2;
+                centerLine.rotation.z = angle;
+                scene.add(centerLine);
+            }
+
+            const leftLine = new THREE.Mesh(sideLineGeo, lineMat);
+            leftLine.position.set(p1.x + sideVector.x * 24.2, 0.33, p1.z + sideVector.z * 24.2);
+            leftLine.rotation.x = -Math.PI / 2;
+            leftLine.rotation.z = angle;
+            scene.add(leftLine);
+
+            const rightLine = new THREE.Mesh(sideLineGeo, lineMat);
+            rightLine.position.set(p1.x - sideVector.x * 24.2, 0.33, p1.z - sideVector.z * 24.2);
+            rightLine.rotation.x = -Math.PI / 2;
+            rightLine.rotation.z = angle;
+            scene.add(rightLine);
+        }
+
+        // BÄUME & KOLLISIONS-LISTE
+        const treePositions = []; 
+        const curvePoints = roadCurve.getPoints(1200);
+        const trunkGeo = new THREE.CylinderGeometry(0.4, 0.7, 5, 8);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2f25 });
+        const sakuraMat = new THREE.MeshStandardMaterial({ color: 0xff7fa0, roughness: 0.6 });
+        curvePoints.forEach((p, idx) => {
+            if (idx % 3 === 0 && idx > 5 && idx < curvePoints.length - 10) {
+                const forward = new THREE.Vector3().subVectors(curvePoints[idx+1], p).normalize();
+                const sideVector = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
+                [-48, 48].forEach(distance => {
+                    const tree = new THREE.Group();
+                    const trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 2.5; tree.add(trunk);
+                    const leaves = new THREE.Mesh(new THREE.SphereGeometry(4.5, 8, 8), sakuraMat); leaves.position.y = 6.2; tree.add(leaves);
+                    
+                    let tx = p.x + sideVector.x * distance + (Math.random()*8-4);
+                    let tz = p.z + sideVector.z * distance + (Math.random()*8-4);
+                    tree.position.set(tx, 0, tz);
+                    scene.add(tree);
+
+                    treePositions.push({ x: tx, z: tz });
+                });
+            }
+        });
+
+        // ZIELLINIEN MARKIERUNG
+        const finishPos = roadPoints[roadPoints.length - 20];
+        const finishGroup = new THREE.Group();
+        const gateMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+        const gateL = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 12), gateMat); gateL.position.set(-25, 6, 0);
+        const gateR = gateL.clone(); gateR.position.x = 25;
+        finishGroup.add(gateL, gateR); finishGroup.position.set(finishPos.x, 0, finishPos.z);
+        scene.add(finishGroup);
+
+        // VEHICLE SPALWNERS
+        function createGenericCarMesh(bodyColor, isBot = false) {
+            const group = new THREE.Group();
+            const carMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.2, metalness: 0.7 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 4.4), carMat); body.position.y = 0.35; group.add(body);
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.45, 2.2), new THREE.MeshStandardMaterial({ color: 0x0a1018 })); cabin.position.set(0, 0.72, -0.2); group.add(cabin);
+            const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.05, 0.4), carMat); spoiler.position.set(0, 0.9, -2.0); group.add(spoiler);
+            
+            const lightGeo = new THREE.BoxGeometry(0.4, 0.1, 0.1);
+            const lightMat = new THREE.MeshBasicMaterial({ color: isBot ? 0xffaa00 : 0xffffff });
+            const lL = new THREE.Mesh(lightGeo, lightMat); lL.position.set(-0.8, 0.42, 2.15);
+            const lR = lL.clone(); lR.position.x = 0.8; group.add(lL, lR);
+
+            const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.45, 12);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x181818 });
+            [[-1.1, 0.45, 1.2], [1.1, 0.45, 1.2], [-1.1, 0.45, -1.3], [1.1, 0.45, -1.3]].forEach(pos => {
+                const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2; w.position.set(pos[0], pos[1], pos[2]); group.add(w);
+            });
+            return group;
+        }
+
+        // PLAYER
+        const carGroup = new THREE.Group(); scene.add(carGroup);
+        function buildCar3D() {
+            while(carGroup.children.length > 0) carGroup.remove(carGroup.children[0]);
+            const config = carDatabase[currentCarId];
+            const mesh = createGenericCarMesh(config.color, false);
+            carGroup.add(mesh);
+        }
+        buildCar3D();
+        carGroup.position.set(roadPoints[15].x, 0, roadPoints[15].z);
+
+        // BOT
+        const botGroup = createGenericCarMesh(0xff2233, true); 
+
+        // PHYSICS STATES
+        let carPhysic = { speed: 0, angle: 3.14, driftAngle: 0, dec: 0.012, vx: 0, vz: 0 };
+        let botProgress = 15; let botSpeed = 0;
+        let currentDriftPoints = 0; let scoreMultiplier = 1.0; let scoreResetTimer = 0; 
+        let isUIOpen = false; let activeRebindAction = null;
+
+        let isRaceActive = false;
+        let countdownActive = false;
+        let playerProgressIndex = 15;
+        const entryFee = 500;
+
+        const inputStates = { forward: false, backward: false, left: false, right: false, handbrake: false };
+
+        window.addEventListener("keydown", e => {
+            if (activeRebindAction) {
+                let pressedKey = e.key.toLowerCase(); if (e.key === " ") pressedKey = " ";
+                controlsMapping[activeRebindAction] = pressedKey;
+                localStorage.setItem("forza_controls", JSON.stringify(controlsMapping));
+                updateSettingsUI(); activeRebindAction = null; return;
+            }
+            if (isUIOpen || countdownActive) return;
+            if (e.key === " ") e.preventDefault();
+            let key = e.key.toLowerCase();
+            if (key === controlsMapping.forward) inputStates.forward = true;
+            if (key === controlsMapping.backward) inputStates.backward = true;
+            if (key === controlsMapping.left) inputStates.left = true;
+            if (key === controlsMapping.right) inputStates.right = true;
+            if (key === controlsMapping.handbrake) inputStates.handbrake = true;
+        });
+
+        window.addEventListener("keyup", e => {
+            if (isUIOpen) return;
+            let key = e.key.toLowerCase();
+            if (key === controlsMapping.forward) inputStates.forward = false;
+            if (key === controlsMapping.backward) inputStates.backward = false;
+            if (key === controlsMapping.left) inputStates.left = false;
+            if (key === controlsMapping.right) inputStates.right = false;
+            if (key === controlsMapping.handbrake) inputStates.handbrake = false;
+        });
+
+        const smokeParticles = [];
+        function createSmoke(x, z, customColor = 0xeeeeee) {
+            const p = new THREE.Mesh(new THREE.SphereGeometry(0.35, 4, 4), new THREE.MeshBasicMaterial({ color: customColor, transparent: true, opacity: 0.35 }));
+            p.position.set(x, 0.3, z); scene.add(p); smokeParticles.push(p);
+        }
+
+        function startRaceMode() {
+            if (isRaceActive) return;
+            if (userWallet < entryFee) { alert("Du hast nicht genug Credits! Ein Rennen kostet " + entryFee + " CR."); return; }
+
+            userWallet -= entryFee; updateWalletUI();
+            closeModals();
+            isRaceActive = true; countdownActive = true; clearInputs();
+
+            carPhysic.speed = 0; carPhysic.vx = 0; carPhysic.vz = 0; carPhysic.driftAngle = 0;
+            carPhysic.angle = Math.atan2(roadPoints[16].x - roadPoints[14].x, roadPoints[16].z - roadPoints[14].z);
+            carGroup.position.set(roadPoints[14].x - 4, 0, roadPoints[14].z);
+            
+            botProgress = 14; botSpeed = 0;
+            botGroup.position.set(roadPoints[14].x + 4, 0, roadPoints[14].z);
+            scene.add(botGroup);
+
+            const cdUI = document.getElementById("countdown");
+            const rUI = document.getElementById("race-ui");
+            rUI.style.display = "block"; cdUI.style.display = "block";
+            
+            let count = 3; cdUI.innerText = count;
+            let interval = setInterval(() => {
+                count--;
+                if (count > 0) { cdUI.innerText = count; } 
+                else if (count === 0) { cdUI.innerText = "GO!"; countdownActive = false; } 
+                else { clearInterval(interval); cdUI.style.display = "none"; }
+            }, 1000);
+        }
+
+        function openShop() { isUIOpen = true; clearInputs(); document.getElementById("shop-modal").style.display = "flex"; renderShopGrid(); updateWalletUI(); }
+        function openSettings() { isUIOpen = true; clearInputs(); document.getElementById("settings-modal").style.display = "flex"; updateSettingsUI(); }
+        function closeModals() { document.getElementById("shop-modal").style.display = "none"; document.getElementById("settings-modal").style.display = "none"; isUIOpen = false; activeRebindAction = null; }
+        function clearInputs() { for(let k in inputStates) inputStates[k] = false; }
+
+        function updateSettingsUI() {
+            for(let action in controlsMapping) {
+                let val = controlsMapping[action]; if (val === " ") val = "SPACE";
+                let btn = document.getElementById("key-" + action); if (btn) { btn.innerText = val; btn.classList.remove("waiting"); }
+            }
+        }
+        function startRebind(action) { updateSettingsUI(); activeRebindAction = action; document.getElementById("key-" + action).innerText = "DRÜCKE TASTE..."; document.getElementById("key-" + action).classList.add("waiting"); }
+        function resetControlsToDefault() { controlsMapping = { forward: "w", backward: "s", left: "a", right: "d", handbrake: " " }; localStorage.setItem("forza_controls", JSON.stringify(controlsMapping)); updateSettingsUI(); }
+
+        function renderShopGrid() {
+            const grid = document.getElementById("car-shop-grid"); grid.innerHTML = "";
+            for(let id in carDatabase) {
+                const car = carDatabase[id]; const isUnlocked = unlockedCars.includes(id); const isActive = currentCarId === id;
+                let btnHtml = isActive ? `<button class="btn" style="background:#00ec42;" disabled>Ausgewählt</button>` : (isUnlocked ? `<button class="btn" style="background:#3498db;" onclick="selectCar('${id}')">Einsteigen</button>` : `<button class="btn" onclick="buyCar('${id}')">${car.price.toLocaleString()} CR</button>`);
+                grid.innerHTML += `<div class="car-card ${isActive ? 'active' : ''}"><div><div class="car-name">${car.name}</div><div class="car-specs"><b>V-Max:</b> ${(car.maxSpeed * 125).toFixed(0)} km/h</div></div><div style="margin-top:10px;">${btnHtml}</div></div>`;
+            }
+        }
+        function buyCar(id) { if(userWallet >= carDatabase[id].price) { userWallet -= carDatabase[id].price; unlockedCars.push(id); localStorage.setItem("forza_unlocked_cars", JSON.stringify(unlockedCars)); selectCar(id); } }
+        function selectCar(id) { currentCarId = id; localStorage.setItem("forza_current_car", id); buildCar3D(); carPhysic.speed = 0; renderShopGrid(); updateWalletUI(); }
+        updateWalletUI();
+
+        // MAIN LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isUIOpen) { renderer.render(scene, camera); return; }
+
+            const config = carDatabase[currentCarId];
+
+            // PRÜFEN OB SPIELER AUF DER STRASSE ODER AUF DER WIESE IST
+            let playerSegmentIndex = 15;
+            let closestRoadDist = 9999;
+            let searchStart = Math.max(0, playerProgressIndex - 50);
+            let searchEnd = Math.min(totalPoints, playerProgressIndex + 50);
+            for(let i = searchStart; i < searchEnd; i++) {
+                let d = carGroup.position.distanceTo(roadPoints[i]);
+                if(d < closestRoadDist) { closestRoadDist = d; playerSegmentIndex = i; }
+            }
+            playerProgressIndex = playerSegmentIndex;
+
+            const isOnGrass = closestRoadDist > 25.5; 
+            
+            let effectiveMaxSpeed = config.maxSpeed;
+            let effectiveAcc = config.acc;
+            
+            if (isOnGrass) {
+                effectiveMaxSpeed = 0.36; 
+                effectiveAcc = config.acc * 0.3; 
+                document.getElementById("drift-angle").innerText = "WIESE (SLOW)";
+                document.getElementById("drift-angle").style.color = "#ff4757";
+            } else {
+                document.getElementById("drift-angle").innerText = "STRASSE";
+                document.getElementById("drift-angle").style.color = "#00ec42";
+            }
+
+            // SPIELER-PHYSIK
+            if (!countdownActive) {
+                if (inputStates.handbrake) { carPhysic.speed *= 0.94; } 
+                else if (inputStates.forward) { 
+                    if (carPhysic.speed < effectiveMaxSpeed) {
+                        carPhysic.speed += effectiveAcc; 
+                    } else if (isOnGrass && carPhysic.speed > effectiveMaxSpeed) {
+                        carPhysic.speed *= 0.92; 
+                    }
+                } 
+                else if (inputStates.backward) { 
+                    if (carPhysic.speed > -effectiveMaxSpeed / 2) carPhysic.speed -= effectiveAcc * 2.5; 
+                } 
+                else {
+                    if (carPhysic.speed > 0) carPhysic.speed -= carPhysic.dec;
+                    if (carPhysic.speed < 0) carPhysic.speed += carPhysic.dec;
+                    if (Math.abs(carPhysic.speed) < 0.005) carPhysic.speed = 0;
+                }
+            }
+
+            let driftAngleRad = Math.abs(carPhysic.driftAngle);
+            let isDrifting = (driftAngleRad > 0.22 || inputStates.handbrake) && Math.abs(carPhysic.speed) > 0.3 && !isOnGrass;
+
+            if (isDrifting && !inputStates.backward) {
+                carPhysic.speed *= (config.driftDrag - (driftAngleRad * 0.035));
+            }
+
+            let steerInput = inputStates.left ? config.steerSpeed : (inputStates.right ? -config.steerSpeed : 0);
+            if (isOnGrass) steerInput *= 0.75; 
+
+            if (carPhysic.speed !== 0) {
+                carPhysic.angle += steerInput * (carPhysic.speed > 0 ? 1 : -1);
+                if (inputStates.handbrake && !isOnGrass) {
+                    carPhysic.driftAngle += (steerInput !== 0 ? steerInput * 2.5 : (Math.random() - 0.5) * 0.06);
+                } else if (Math.abs(steerInput) > 0 && Math.abs(carPhysic.speed) > 0.4 && !isOnGrass) {
+                    carPhysic.driftAngle += steerInput * ((config.baseGrip < 0.15) ? 1.6 : 0.7);
+                } else { carPhysic.driftAngle *= 0.82; }
+            }
+            carPhysic.driftAngle = THREE.MathUtils.clamp(carPhysic.driftAngle, -config.maxDrift, config.maxDrift);
+            carGroup.rotation.y = carPhysic.angle + carPhysic.driftAngle;
+
+            let currentGrip = isDrifting ? config.driftGrip : (isOnGrass ? 0.04 : config.baseGrip);
+            let targetVx = Math.sin(carPhysic.angle + carPhysic.driftAngle * 0.35) * carPhysic.speed;
+            let targetVz = Math.cos(carPhysic.angle + carPhysic.driftAngle * 0.35) * carPhysic.speed;
+            carPhysic.vx += (targetVx - carPhysic.vx) * currentGrip;
+            carPhysic.vz += (targetVz - carPhysic.vz) * currentGrip;
+
+            carGroup.position.x += carPhysic.vx;
+            carGroup.position.z += carPhysic.vz;
+
+            // BAUM-KOLLISIONSABFRAGE
+            const crashRadius = 3.5; 
+            for (let i = 0; i < treePositions.length; i++) {
+                let tree = treePositions[i];
+                let dx = carGroup.position.x - tree.x;
+                let dz = carGroup.position.z - tree.z;
+                let distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < crashRadius) {
+                    let pushX = dx / distance;
+                    let pushZ = dz / distance;
+
+                    carGroup.position.x = tree.x + pushX * crashRadius;
+                    carGroup.position.z = tree.z + pushZ * crashRadius;
+
+                    carPhysic.speed *= -0.3; 
+                    carPhysic.vx *= -0.4;
+                    carPhysic.vz *= -0.4;
+                    currentDriftPoints = 0; 
+                    scoreMultiplier = 1.0;
+                    document.getElementById("drift-points").style.display = "none";
+                    break; 
+                }
+            }
+
+            // DRIFT POINTS & SMOKE EFFECTS
+            if (isDrifting) {
+                scoreResetTimer = 0; document.getElementById("drift-points").style.display = "block";
+                currentDriftPoints += Math.round(driftAngleRad * 3.5);
+                scoreMultiplier = Math.min(scoreMultiplier + 0.006, 5.0);
+                document.getElementById("pts-val").innerText = currentDriftPoints;
+                document.getElementById("pts-mult").innerText = "x" + scoreMultiplier.toFixed(1);
+                if (Math.random() > 0.2) createSmoke(carGroup.position.x, carGroup.position.z);
+            } else if (isOnGrass && Math.abs(carPhysic.speed) > 0.05) {
+                if (Math.random() > 0.3) createSmoke(carGroup.position.x, carGroup.position.z, 0x447a4c);
+                currentDriftPoints = 0; scoreMultiplier = 1.0; document.getElementById("drift-points").style.display = "none";
+            } else if (currentDriftPoints > 0) {
+                scoreResetTimer++;
+                if (scoreResetTimer > 40) {
+                    userWallet += Math.round(currentDriftPoints * scoreMultiplier); updateWalletUI();
+                    currentDriftPoints = 0; scoreMultiplier = 1.0; document.getElementById("drift-points").style.display = "none";
+                }
+            }
+
+            // BOT-KI HANDLING
+            if (isRaceActive) {
+                if (!countdownActive) {
+                    botSpeed = Math.min(botSpeed + 0.004, 1.4); 
+                }
+                botProgress += botSpeed * 0.18;
+                
+                if (botProgress < roadPoints.length - 2) {
+                    let currIndex = Math.floor(botProgress);
+                    let weight = botProgress - currIndex;
+                    let p1 = roadPoints[currIndex];
+                    let p2 = roadPoints[currIndex + 1];
+                    
+                    let targetX = p1.x + (p2.x - p1.x) * weight;
+                    let targetZ = p1.z + (p2.z - p1.z) * weight;
+                    
+                    let angle = Math.atan2(p2.x - p1.x, p2.z - p1.z);
+                    botGroup.position.set(targetX, 0, targetZ);
+                    botGroup.rotation.y = angle;
+                }
+
+                let playerDistToFinish = carGroup.position.distanceTo(finishPos);
+                document.getElementById("race-dist").innerText = Math.round(playerDistToFinish);
+
+                let posStr = "1/2";
+                if (botProgress > playerProgressIndex) posStr = "2/2";
+                document.getElementById("race-pos").innerText = posStr;
+
+                // PRÜFE ZIELLINIE
+                if (playerProgressIndex >= totalPoints - 30 || botProgress >= totalPoints - 30) {
+                    isRaceActive = false;
+                    document.getElementById("race-ui").style.display = "none";
+                    scene.remove(botGroup);
+
+                    if (playerProgressIndex >= botProgress) {
+                        userWallet += 2000; updateWalletUI();
+                        alert("SIEG! Du hast den Bot geschlagen und gewinnst 2.000 CR! (1.500 CR Reingewinn)");
+                    } else {
+                        alert("Zweiter Platz! Der Bot war schneller. Deine 500 CR Startgebühr sind verloren.");
+                    }
+                }
+            }
+
+            // QUALM-ANIMATION
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                const p = smokeParticles[i]; p.scale.addScalar(0.04); p.material.opacity -= 0.035;
+                if (p.material.opacity <= 0) { scene.remove(p); smokeParticles.splice(i, 1); }
+            }
+
+            // KAMERA
+            const dynamicDist = 11 + (carPhysic.speed * 1.8) + (Math.abs(carPhysic.driftAngle) * 3);
+            camera.position.x += ((carGroup.position.x - Math.sin(carPhysic.angle) * dynamicDist) - camera.position.x) * 0.07;
+            camera.position.z += ((carGroup.position.z - Math.cos(carPhysic.angle) * dynamicDist) - camera.position.z) * 0.07;
+            camera.position.y += ((carGroup.position.y + 4.2) - camera.position.y) * 0.07;
+            camera.lookAt(carGroup.position.x, carGroup.position.y + 0.3, carGroup.position.z);
+
+            document.getElementById("speedo").innerText = Math.round(Math.abs(carPhysic.speed) * 125);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        animate();
+    </script>
+</body>
+</html>
