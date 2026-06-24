@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Honigbrot: Pizzateig-Rechner, Lernspiele und EDL-Textbausteine." />
+  <meta name="description" content="Honigbrot: Pizzateig-Rechner, Lernspiele, EDL-Textbausteine und NotebookLM." />
   <title>Honigbrot</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
@@ -16,6 +16,7 @@
       --accent: #e8622a;
       --accent-blue: #3f8cff;
       --accent-teal: #32b8a4;
+      --accent-gold: #d8a72d;
       --text: #f0ede8;
       --text-dim: #bbb;
       --radius: 8px;
@@ -60,7 +61,7 @@
     .hub {
       display: grid;
       gap: 14px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       margin: 0 auto;
       max-width: 1060px;
       width: 100%;
@@ -89,6 +90,7 @@
     .hub-card-pizza { --card-accent: var(--accent); }
     .hub-card-games { --card-accent: var(--accent-blue); }
     .hub-card-edl { --card-accent: var(--accent-teal); }
+    .hub-card-notebook { --card-accent: var(--accent-gold); }
     .hub-icon {
       align-items: center;
       background: rgba(255, 255, 255, 0.05);
@@ -133,13 +135,16 @@
         width: 44px;
       }
     }
+    @media (min-width: 681px) and (max-width: 980px) {
+      .hub { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 <body class="hub-page">
   <header class="hub-header">
     <p class="hub-brand">Honigbrot</p>
     <h1>Wähle einen Bereich</h1>
-    <p>Direkt zum Pizzateig-Rechner, zu den Spielen oder zum EDL-Bereich.</p>
+    <p>Direkt zum Pizzateig-Rechner, zu den Spielen, zum EDL-Bereich oder zum NotebookLM.</p>
   </header>
 
   <main class="hub" aria-label="Bereich auswählen">
@@ -166,6 +171,15 @@
       <span class="hub-card-text">
         <strong>EDL</strong>
         <span>Direkt zum EDL-Bereich wechseln.</span>
+      </span>
+      <span class="hub-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="hub-card hub-card-notebook" href="https://notebooklm.google.com/notebook/56fb6763-fdf5-441d-9616-8360734699b8?authuser=1">
+      <span class="hub-icon" aria-hidden="true">📒</span>
+      <span class="hub-card-text">
+        <strong>NotebookLM</strong>
+        <span>Administration und Pädagogik an oberösterreichischen Mittelschulen.</span>
       </span>
       <span class="hub-arrow" aria-hidden="true">→</span>
     </a>
