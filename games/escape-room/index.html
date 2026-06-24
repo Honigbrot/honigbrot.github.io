@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escape Room: Zinsalarm in Europa</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #f59e0b;
+      --accent2: #38bdf8;
+      --good: #22c55e;
+      --bad: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1d4ed8 0, var(--bg) 42%, #020617 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app { max-width: 1150px; margin: 0 auto; padding: 24px; }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
+    h2 { margin-top: 0; font-size: 1.65rem; }
+    h3 { margin-top: 0; color: #fde68a; }
+
+    .subtitle { margin-top: 8px; color: var(--muted); font-size: 1.05rem; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .box, .room, .final-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      border-radius: 24px;
+    }
+
+    .box { padding: 18px; margin-bottom: 18px; }
+    .teacher-box { max-width: 370px; color: var(--muted); font-size: .95rem; }
+
+    .progress-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 8px; }
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: .9rem;
+    }
+    .badge.done {
+      background: rgba(34,197,94,.18);
+      color: #bbf7d0;
+      border-color: rgba(34,197,94,.45);
+      cursor: pointer;
+    }
+    .badge.done:hover { background: rgba(34,197,94,.28); }
+
+    .room { display: none; padding: 24px; margin-top: 18px; animation: appear .25s ease-out; }
+    .room.active { display: block; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .story { color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+
+    .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 18px 0; }
+    .mini-card {
+      background: rgba(15,23,42,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(2,6,23,.7);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      margin-top: 6px;
+    }
+
+    input:focus, select:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(56,189,248,.16); }
+
+    button {
+      border: 0;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      color: #111827;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button.secondary { background: rgba(255,255,255,.11); color: var(--text); }
+    button.small { padding: 8px 11px; font-size: .92rem; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .feedback { min-height: 28px; margin-top: 12px; font-weight: 750; }
+    .feedback.ok { color: #86efac; }
+    .feedback.no { color: #fca5a5; }
+
+    .hint {
+      display: none;
+      margin-top: 12px;
+      color: #dbeafe;
+      background: rgba(56,189,248,.12);
+      border: 1px solid rgba(56,189,248,.25);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .clue {
+      background: rgba(245,158,11,.12);
+      border: 1px dashed rgba(245,158,11,.55);
+      border-radius: 16px;
+      padding: 12px;
+      color: #fde68a;
+    }
+
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: .08em;
+      font-size: 1.35rem;
+      color: #fde68a;
+      background: rgba(0,0,0,.28);
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      margin-top: 10px;
+      background: rgba(15,23,42,.75);
+    }
+    th, td { padding: 11px; border-bottom: 1px solid rgba(255,255,255,.1); text-align: left; }
+    th { color: #fde68a; }
+    .right { text-align: right; }
+
+    .countries { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .country {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      cursor: pointer;
+    }
+    .country.selected { outline: 3px solid rgba(245,158,11,.5); background: rgba(245,158,11,.16); }
+
+    .final-card { display: none; padding: 26px; margin-top: 20px; text-align: center; }
+    .final-card.active { display: block; }
+    .big { font-size: 1.22rem; }
+    .muted { color: var(--muted); }
+
+    @media print {
+      body { background: white; color: black; }
+      .room, .box, .final-card { box-shadow: none; border: 1px solid #ddd; }
+      button, input, select { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <a class="back-link" href="../../">← Zurück zur Übersicht</a>
+
+    <header>
+      <div>
+        <h1>💰 Escape Room: Zinsalarm in Europa</h1>
+        <div class="subtitle">Mathematik × Geographie × Wirtschaftsbildung | 3. Klasse Mittelschule</div>
+      </div>
+      <div class="box teacher-box">
+        <strong>Für die Lehrperson:</strong><br>
+        Dauer: ca. 45–60 Minuten. Ideal für Partnerarbeit. Taschenrechner erlaubt. Jede richtige Lösung öffnet den nächsten Raum.
+      </div>
+    </header>
+
+    <section class="box">
+      <p class="big"><strong>Story:</strong> Die Europäische Jugendbank wurde gehackt. Nur Teams, die Zinsen, Inflation, Länder-Vergleiche und Kreditkosten verstehen, können alle Räume öffnen. Manche Antworten sind nicht direkt gefragt — ihr müsst genau lesen.</p>
+      <div class="progress-wrap" id="progress"></div>
+      <div class="actions">
+        <button class="secondary" onclick="resetGame()">🔄 Neu starten</button>
+      </div>
+    </section>
+
+    <section class="room active" id="room1">
+      <h2>Raum 1: Der Kontoauszug 🏦</h2>
+      <p class="story">Auf dem Bildschirm erscheinen drei Konten. Nur ein Konto passt zur geheimen Notiz. Findet das richtige Konto und gebt den <strong>Endbetrag</strong> ein.</p>
+      <div class="task-grid">
+        <div class="mini-card">
+          <h3>Konten</h3>
+          <table>
+            <tr><th>Konto</th><th>Start</th><th>Zinssatz</th><th>Dauer</th></tr>
+            <tr><td>A</td><td>800 €</td><td>3 %</td><td>1 Jahr</td></tr>
+            <tr><td>B</td><td>1.200 €</td><td>2,5 %</td><td>1 Jahr</td></tr>
+            <tr><td>C</td><td>950 €</td><td>4 %</td><td>1 Jahr</td></tr>
+          </table>
+        </div>
+        <div class="mini-card">
+          <h3>Geheime Notiz</h3>
+          <div class="clue">„Suche das Konto, bei dem die Jahreszinsen genau 30 € betragen. Gib den Endbetrag dieses Kontos ein."</div>
+          <label>Endbetrag des richtigen Kontos:</label>
+          <input id="answer1" placeholder="Antwort hier eingeben" />
+          <div class="actions">
+            <button onclick="checkRoom1()">Prüfen</button>
+            <button class="secondary" onclick="toggleHint(1)">Hinweis</button>
+          </div>
+          <div class="hint" id="hint1">Berechne zuerst nur die Zinsen: Startbetrag · Zinssatz. Konto B: 2,5 % von 1.200 €.</div>
+          <div class="feedback" id="feedback1"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="room" id="room2">
+      <h2>Raum 2: Europa-Vergleich 🌍</h2>
+      <p class="story">Ihr sollt 2.000 € für ein Jahr anlegen. Aber hoher Zinssatz allein reicht nicht: Die Inflation frisst Kaufkraft. Findet das Land mit dem höchsten ungefähren Realzins.</p>
+      <div class="task-grid">
+        <div class="mini-card">
+          <h3>Länderdaten</h3>
+          <table>
+            <tr><th>Land</th><th>Zinsen</th><th>Inflation</th></tr>
+            <tr><td>🇦🇹 Österreich</td><td>3,2 %</td><td>2,9 %</td></tr>
+            <tr><td>🇭🇺 Ungarn</td><td>6,0 %</td><td>5,7 %</td></tr>
+            <tr><td>🇸🇪 Schweden</td><td>4,1 %</td><td>2,8 %</td></tr>
+            <tr><td>🇮🇹 Italien</td><td>3,8 %</td><td>3,1 %</td></tr>
+          </table>
+        </div>
+        <div class="mini-card">
+          <h3>Auftrag</h3>
+          <p>Realzins ungefähr = Zinssatz − Inflation.</p>
+          <div class="countries">
+            <div class="country" data-value="at" onclick="selectCountry(this)">🇦🇹 Österreich</div>
+            <div class="country" data-value="hu" onclick="selectCountry(this)">🇭🇺 Ungarn</div>
+            <div class="country" data-value="se" onclick="selectCountry(this)">🇸🇪 Schweden</div>
+            <div class="country" data-value="it" onclick="selectCountry(this)">🇮🇹 Italien</div>
+          </div>
+          <label>Wie hoch ist der Realzins dieses Landes ungefähr?</label>
+          <input id="answer2" placeholder="Antwort hier eingeben" />
+          <div class="actions">
+            <button onclick="checkRoom2()">Prüfen</button>
+            <button class="secondary" onclick="toggleHint(2)">Hinweis</button>
+          </div>
+          <div class="hint" id="hint2">Ungarn hat zwar hohe Zinsen, aber auch hohe Inflation. Rechne bei jedem Land die Differenz aus.</div>
+          <div class="feedback" id="feedback2"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="room" id="room3">
+      <h2>Raum 3: Der kaputte Finanzplan 📊</h2>
+      <p class="story">Ein Finanzplan wurde beschädigt. Drei Zahlen fehlen. Füllt sie aus und nutzt danach die geheime Regel.</p>
+      <div class="task-grid">
+        <div class="mini-card">
+          <h3>Sparplan</h3>
+          <table>
+            <tr><th>Person</th><th>Start</th><th>Zinsen</th><th>Endbetrag</th></tr>
+            <tr><td>Mira</td><td>500 €</td><td>5 %</td><td>?</td></tr>
+            <tr><td>Jonas</td><td>750 €</td><td>4 %</td><td>?</td></tr>
+            <tr><td>Elif</td><td>900 €</td><td>3 %</td><td>?</td></tr>
+          </table>
+          <p class="muted">Alle sparen genau 1 Jahr.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Geheime Regel</h3>
+          <div class="clue">„Addiere nur die drei <strong>Zinsbeträge</strong>, nicht die Endbeträge."</div>
+          <label>Summe der drei Zinsbeträge:</label>
+          <input id="answer3" placeholder="Antwort hier eingeben" />
+          <div class="actions">
+            <button onclick="checkRoom3()">Prüfen</button>
+            <button class="secondary" onclick="toggleHint(3)">Hinweis</button>
+          </div>
+          <div class="hint" id="hint3">Mira: 5 % von 500 € = 25 €. Rechne so auch Jonas und Elif und addiere nur diese Zinsen.</div>
+          <div class="feedback" id="feedback3"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="room" id="room4">
+      <h2>Raum 4: Kredit-Detektiv 🚲</h2>
+      <p class="story">Drei Jugendliche kaufen ein E-Bike. Nicht der niedrigste Monatsbetrag ist automatisch am günstigsten. Findet den Kredit mit den niedrigsten Gesamtkosten.</p>
+      <div class="task-grid">
+        <div class="mini-card">
+          <h3>Kreditangebote</h3>
+          <table>
+            <tr><th>Angebot</th><th>Monatsrate</th><th>Dauer</th><th>Bearbeitungsgebühr</th></tr>
+            <tr><td>A</td><td>42 €</td><td>24 Monate</td><td>30 €</td></tr>
+            <tr><td>B</td><td>55 €</td><td>18 Monate</td><td>20 €</td></tr>
+            <tr><td>C</td><td>75 €</td><td>12 Monate</td><td>60 €</td></tr>
+          </table>
+          <p class="muted">Das E-Bike kostet bei Sofortzahlung 900 €.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Auftrag</h3>
+          <p>Gesamtkosten = Monatsrate · Monate + Gebühr.</p>
+          <label>Günstigstes Angebot:</label>
+          <select id="answer4a">
+            <option value="">Bitte wählen</option>
+            <option value="A">Angebot A</option>
+            <option value="B">Angebot B</option>
+            <option value="C">Angebot C</option>
+          </select>
+          <label>Wie viel teurer ist es als Sofortzahlung?</label>
+          <input id="answer4b" placeholder="Antwort hier eingeben" />
+          <div class="actions">
+            <button onclick="checkRoom4()">Prüfen</button>
+            <button class="secondary" onclick="toggleHint(4)">Hinweis</button>
+          </div>
+          <div class="hint" id="hint4">A: 42 · 24 + 30. Danach ziehst du 900 € ab, um die Mehrkosten zu finden.</div>
+          <div class="feedback" id="feedback4"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="room" id="room5">
+      <h2>Raum 5: Der Zinseszins-Tresor 🔐</h2>
+      <p class="story">Der letzte Tresor öffnet sich nur, wenn ihr Zinseszins versteht. Die Zinsen bleiben jedes Jahr am Konto.</p>
+      <div class="task-grid">
+        <div class="mini-card">
+          <h3>Rätsel</h3>
+          <p>1.500 € werden 3 Jahre lang mit 4 % pro Jahr angelegt.</p>
+          <table>
+            <tr><th>Jahr</th><th>Betrag am Ende des Jahres</th></tr>
+            <tr><td>Start</td><td>1.500,00 €</td></tr>
+            <tr><td>Jahr 1</td><td>?</td></tr>
+            <tr><td>Jahr 2</td><td>?</td></tr>
+            <tr><td>Jahr 3</td><td>?</td></tr>
+          </table>
+        </div>
+        <div class="mini-card">
+          <h3>Finale Eingabe</h3>
+          <div class="clue">„Runde den Endbetrag nach 3 Jahren auf ganze Euro."</div>
+          <label>Gerundeter Endbetrag nach 3 Jahren:</label>
+          <input id="answer5" placeholder="Antwort hier eingeben" />
+          <div class="actions">
+            <button onclick="checkRoom5()">Tresor öffnen</button>
+            <button class="secondary" onclick="toggleHint(5)">Hinweis</button>
+          </div>
+          <div class="hint" id="hint5">Jedes Jahr wird der aktuelle Betrag mit 1,04 multipliziert. Nicht jedes Jahr nur 4 % von 1.500 € rechnen!</div>
+          <div class="feedback" id="feedback5"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-card" id="finalCard">
+      <h2>🎉 Escape geschafft!</h2>
+      <p class="big">Ihr habt den Tresor geöffnet und den Finanzplan gerettet.</p>
+      <p><strong>Mission erfolgreich abgeschlossen!</strong></p>
+      <p class="muted">Abschlussfrage: Warum kann ein Land mit hohem Zinssatz trotzdem nicht automatisch die beste Wahl sein?</p>
+    </section>
+  </div>
+
+  <script>
+    let solved = JSON.parse(localStorage.getItem('zinsEscapeSolvedHarder') || '[false,false,false,false,false]');
+    let selectedCountry = null;
+
+    function save() {
+      localStorage.setItem('zinsEscapeSolvedHarder', JSON.stringify(solved));
+      renderProgress();
+    }
+
+    function renderProgress() {
+      const labels = ['Kontoauszug', 'Europa', 'Finanzplan', 'Kredit', 'Zinseszins'];
+      document.getElementById('progress').innerHTML = labels.map((label, i) =>
+        solved[i]
+          ? `<span class="badge done" onclick="showRoom(${i + 1})" title="Zu Raum ${i + 1} springen">✅ ${label}</span>`
+          : `<span class="badge">🔒 ${label}</span>`
+      ).join('');
+
+      if (solved.every(Boolean)) {
+        document.getElementById('finalCard').classList.add('active');
+      } else {
+        document.getElementById('finalCard').classList.remove('active');
+      }
+    }
+
+    function showRoom(num) {
+      document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+      const room = document.getElementById('room' + num);
+      room.classList.add('active');
+      window.scrollTo({ top: room.offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function cleanNumber(value) {
+      return String(value).trim().replace('€', '').replace('%', '').replace(/\s/g, '').replace(',', '.');
+    }
+
+    function approx(value, target, tolerance = 0.02) {
+      return Math.abs(Number(cleanNumber(value)) - target) <= tolerance;
+    }
+
+    function markSolved(index, feedbackId, message, nextRoom) {
+      solved[index] = true;
+      save();
+      const f = document.getElementById(feedbackId);
+      f.textContent = '✅ Richtig! ' + message;
+      f.className = 'feedback ok';
+      if (nextRoom) setTimeout(() => showRoom(nextRoom), 1000);
+    }
+
+    function wrong(feedbackId, message = 'Noch nicht ganz. Lies die Aufgabe genau und rechne Schritt für Schritt.') {
+      const f = document.getElementById(feedbackId);
+      f.textContent = '❌ ' + message;
+      f.className = 'feedback no';
+    }
+
+    function checkRoom1() {
+      const val = Number(cleanNumber(document.getElementById('answer1').value));
+      // Konto B: 1200 * 2.5% = 30 € Zinsen → Endbetrag 1230
+      if (val === 1230) markSolved(0, 'feedback1', 'Konto B passt. Weiter geht es mit Raum 2.', 2);
+      else wrong('feedback1');
+    }
+
+    function selectCountry(el) {
+      document.querySelectorAll('.country').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedCountry = el.dataset.value;
+    }
+
+    function checkRoom2() {
+      if (!selectedCountry) {
+        wrong('feedback2', 'Bitte erst ein Land auswählen.');
+        return;
+      }
+      const real = document.getElementById('answer2').value;
+      // Schweden: 4.1 - 2.8 = 1.3 (bester Realzins)
+      if (selectedCountry === 'se' && approx(real, 1.3, 0.05)) {
+        markSolved(1, 'feedback2', 'Schweden hat hier den besten ungefähren Realzins. Weiter geht es mit Raum 3.', 3);
+      } else if (selectedCountry === 'hu') {
+        wrong('feedback2', 'Falle! Ungarn hat hohe Zinsen, aber auch hohe Inflation. Rechne den Realzins.');
+      } else {
+        wrong('feedback2');
+      }
+    }
+
+    function checkRoom3() {
+      const val = Number(cleanNumber(document.getElementById('answer3').value));
+      // Mira: 25 €, Jonas: 30 €, Elif: 27 € → Summe 82 €
+      if (val === 82) markSolved(2, 'feedback3', 'Die Summe der Zinsen ist 82 €. Weiter geht es mit Raum 4.', 4);
+      else wrong('feedback3', 'Achtung: Nicht die Endbeträge addieren, sondern nur die Zinsbeträge.');
+    }
+
+    function checkRoom4() {
+      const offer = document.getElementById('answer4a').value;
+      const extra = Number(cleanNumber(document.getElementById('answer4b').value));
+      // A: 42·24+30 = 1038 (+138), B: 55·18+20 = 1010 (+110), C: 75·12+60 = 960 (+60) → C ist günstigster
+      if (offer === 'C' && extra === 60) markSolved(3, 'feedback4', 'Angebot C ist trotz hoher Monatsrate insgesamt am günstigsten. Weiter geht es mit Raum 5.', 5);
+      else wrong('feedback4', 'Rechne alle Gesamtkosten aus. Die niedrigste Monatsrate ist nicht automatisch am billigsten.');
+    }
+
+    function checkRoom5() {
+      const val = Number(cleanNumber(document.getElementById('answer5').value));
+      // 1500 * 1.04^3 = 1687.296 → gerundet 1687
+      if (val === 1687) {
+        markSolved(4, 'feedback5', 'Der Tresor öffnet sich!', null);
+        setTimeout(() => document.getElementById('finalCard').scrollIntoView({ behavior: 'smooth' }), 600);
+      } else {
+        wrong('feedback5', 'Achtung Zinseszins: Nach jedem Jahr ist die Grundlage etwas größer.');
+      }
+    }
+
+    function toggleHint(num) {
+      const h = document.getElementById('hint' + num);
+      h.style.display = h.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function resetGame() {
+      solved = [false, false, false, false, false];
+      selectedCountry = null;
+      localStorage.removeItem('zinsEscapeSolvedHarder');
+      document.querySelectorAll('input').forEach(i => i.value = '');
+      document.querySelectorAll('select').forEach(s => s.value = '');
+      document.querySelectorAll('.feedback').forEach(f => { f.textContent = ''; f.className = 'feedback'; });
+      document.querySelectorAll('.hint').forEach(h => h.style.display = 'none');
+      document.querySelectorAll('.country').forEach(c => c.classList.remove('selected'));
+      document.getElementById('finalCard').classList.remove('active');
+      renderProgress();
+      showRoom(1);
+    }
+
+    // Restore progress: show the first unsolved room (or room 1 if all done)
+    renderProgress();
+    const firstUnsolved = solved.findIndex(s => !s);
+    if (firstUnsolved > 0) showRoom(firstUnsolved + 1);
+  </script>
+</body>
+</html>

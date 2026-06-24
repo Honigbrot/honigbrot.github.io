@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Category Sort - Stoffe &amp; Systeme</title>
+    <meta
+      name="description"
+      content="Ein Sortierspiel fuer den Unterricht: Karten den richtigen Kategorien zuordnen."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7faf5;
+        --ink: #1f2937;
+        --muted: #64748b;
+        --panel: #ffffff;
+        --line: #cbd5e1;
+        --accent: #2563eb;
+        --accent-dark: #1d4ed8;
+        --good: #dcfce7;
+        --bad: #fee2e2;
+        --warm: #fff7ed;
+        --cool: #eff6ff;
+        --fresh: #ecfdf5;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+          linear-gradient(180deg, rgba(37, 99, 235, 0.14), transparent 330px),
+          var(--bg);
+        color: var(--ink);
+      }
+
+      .app {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 32px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1.02;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .stats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .pill,
+      .reset {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 10px 12px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .reset {
+        background: var(--accent);
+        border-color: var(--accent-dark);
+        color: white;
+        cursor: pointer;
+      }
+
+      .reset:hover {
+        background: var(--accent-dark);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+
+      .stack,
+      .zone {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      }
+
+      .stack {
+        padding: 14px;
+      }
+
+      .stack h2,
+      .zone h2 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .stack p,
+      .zone p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .cards {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .item {
+        width: 100%;
+        min-height: 48px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        color: var(--ink);
+        cursor: pointer;
+        padding: 10px 12px;
+        text-align: left;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .item:hover {
+        border-color: var(--accent);
+      }
+
+      .item.selected {
+        border-color: var(--accent);
+        outline: 3px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .item.correct {
+        background: var(--good);
+        border-color: #16a34a;
+        cursor: default;
+      }
+
+      .item.wrong {
+        background: var(--bad);
+        border-color: #ef4444;
+      }
+
+      .zones {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .zone {
+        min-height: 420px;
+        padding: 14px;
+      }
+
+      .zone[data-category="atmung"] {
+        background: var(--cool);
+      }
+
+      .zone[data-category="photosynthese"] {
+        background: var(--fresh);
+      }
+
+      .zone[data-category="kreislauf"] {
+        background: var(--warm);
+      }
+
+      .drop-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+        min-height: 220px;
+      }
+
+      .status {
+        margin-top: 16px;
+        min-height: 28px;
+        color: var(--accent-dark);
+        font-weight: 700;
+      }
+
+      @media (max-width: 920px) {
+        header,
+        .layout {
+          display: block;
+        }
+
+        .stats {
+          justify-content: flex-start;
+          margin-top: 14px;
+        }
+
+        .zones {
+          grid-template-columns: 1fr;
+          margin-top: 14px;
+        }
+
+        .zone {
+          min-height: 210px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <h1>Category Sort</h1>
+          <p class="subtitle">Ordne jede Karte der passenden biologischen Kategorie zu.</p>
+        </div>
+        <div class="stats" aria-label="Spielstand">
+          <div class="pill" id="score">Richtig: 0/12</div>
+          <div class="pill" id="tries">Versuche: 0</div>
+          <button class="reset" type="button" id="reset">Neu starten</button>
+        </div>
+      </header>
+
+      <section class="layout">
+        <aside class="stack" aria-label="Kartenstapel">
+          <h2>Karten</h2>
+          <p>Waehle eine Karte aus und klicke dann auf die passende Kategorie.</p>
+          <div class="cards" id="cards"></div>
+        </aside>
+
+        <div class="zones" aria-label="Kategorien">
+          <section class="zone" role="button" tabindex="0" data-category="atmung">
+            <h2>Atmung</h2>
+            <p>Luft, Sauerstoffaufnahme und Gasaustausch.</p>
+            <span class="drop-list" id="zone-atmung"></span>
+          </section>
+          <section class="zone" role="button" tabindex="0" data-category="photosynthese">
+            <h2>Photosynthese</h2>
+            <p>Pflanzen, Lichtenergie und Zuckerbildung.</p>
+            <span class="drop-list" id="zone-photosynthese"></span>
+          </section>
+          <section class="zone" role="button" tabindex="0" data-category="kreislauf">
+            <h2>Kreislauf</h2>
+            <p>Herz, Blut und Transport im Koerper.</p>
+            <span class="drop-list" id="zone-kreislauf"></span>
+          </section>
+        </div>
+      </section>
+
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </main>
+
+    <script>
+      const items = [
+        ["Bronchien", "atmung"],
+        ["Lungenblaeschen", "atmung"],
+        ["Einatmen", "atmung"],
+        ["Kohlendioxidabgabe", "atmung"],
+        ["Chlorophyll", "photosynthese"],
+        ["Lichtenergie", "photosynthese"],
+        ["Traubenzucker", "photosynthese"],
+        ["Blattgruen", "photosynthese"],
+        ["Herzmuskel", "kreislauf"],
+        ["Arterie", "kreislauf"],
+        ["Blutplasma", "kreislauf"],
+        ["Puls", "kreislauf"],
+      ];
+
+      const cardsEl = document.getElementById("cards");
+      const scoreEl = document.getElementById("score");
+      const triesEl = document.getElementById("tries");
+      const statusEl = document.getElementById("status");
+      const resetEl = document.getElementById("reset");
+      const zones = document.querySelectorAll(".zone");
+
+      let selected = null;
+      let score = 0;
+      let tries = 0;
+
+      function shuffle(values) {
+        const copy = [...values];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function render() {
+        selected = null;
+        score = 0;
+        tries = 0;
+        cardsEl.innerHTML = "";
+        document.querySelectorAll(".drop-list").forEach((zone) => {
+          zone.innerHTML = "";
+        });
+        updateStats();
+        statusEl.textContent = "Waehle eine Karte.";
+
+        shuffle(items).forEach(([label, category]) => {
+          const card = document.createElement("button");
+          card.className = "item";
+          card.type = "button";
+          card.textContent = label;
+          card.dataset.category = category;
+          card.addEventListener("click", (event) => {
+            event.stopPropagation();
+            selectCard(card);
+          });
+          cardsEl.appendChild(card);
+        });
+      }
+
+      function selectCard(card) {
+        if (card.classList.contains("correct")) return;
+        if (selected) selected.classList.remove("selected");
+
+        selected = card;
+        selected.classList.add("selected");
+        statusEl.textContent = `Ausgewaehlt: ${card.textContent}`;
+      }
+
+      function chooseZone(zone) {
+        if (!selected) {
+          statusEl.textContent = "Waehle zuerst eine Karte.";
+          return;
+        }
+
+        tries++;
+
+        if (selected.dataset.category === zone.dataset.category) {
+          selected.classList.remove("selected", "wrong");
+          selected.classList.add("correct");
+          zone.querySelector(".drop-list").appendChild(selected);
+          selected = null;
+          score++;
+          statusEl.textContent =
+            score === items.length ? "Alle Karten richtig sortiert." : "Richtig zugeordnet.";
+          updateStats();
+          return;
+        }
+
+        selected.classList.add("wrong");
+        statusEl.textContent = "Diese Kategorie passt nicht.";
+        window.setTimeout(() => {
+          if (selected) selected.classList.remove("wrong");
+        }, 750);
+        updateStats();
+      }
+
+      function updateStats() {
+        scoreEl.textContent = `Richtig: ${score}/${items.length}`;
+        triesEl.textContent = `Versuche: ${tries}`;
+      }
+
+      zones.forEach((zone) => {
+        zone.addEventListener("click", () => chooseZone(zone));
+        zone.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            chooseZone(zone);
+          }
+        });
+      });
+      resetEl.addEventListener("click", render);
+      render();
+    </script>
+  </body>
+</html>

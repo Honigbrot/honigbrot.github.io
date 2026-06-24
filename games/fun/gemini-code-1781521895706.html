@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Neon Racer</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin: 5px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 20px #ff007f;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        canvas {
+            background: #222;
+            display: block;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        button {
+            background: #00ffcc;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffcc;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            background: #ff007f;
+            box-shadow: 0 0 10px #ff007f;
+            color: white;
+        }
+
+        .controls {
+            margin-top: 15px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>NEON RACER</h1>
+    
+    <div id="gameContainer">
+        <div id="ui">Score: <span id="score">0</span></div>
+        
+        <div id="gameOverScreen">
+            <h2 style="color: #ff007f; font-size: 40px; margin-bottom: 10px;">GAME OVER</h2>
+            <p style="font-size: 20px; margin-bottom: 20px;">Deine Punkte: <span id="finalScore">0</span></p>
+            <button onclick="resetGame()">Nochmal spielen</button>
+        </div>
+
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+
+    <div class="controls">Steuerung: Pfeiltasten ◄ ► oder A / D</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        const finalScoreElement = document.getElementById("finalScore");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+
+        // Spielvariablen
+        let gameActive = true;
+        let score = 0;
+        let speed = 5;
+
+        // Spieler-Auto
+        const player = {
+            x: 175,
+            y: 480,
+            width: 40,
+            height: 70,
+            color: "#00ffcc",
+            dx: 0,
+            speed: 7
+        };
+
+        // Hindernisse (Gegner-Autos)
+        let obstacles = [];
+        const obstacleColors = ["#ff007f", "#ff9900", "#ff0000", "#9900ff"];
+
+        function spawnObstacle() {
+            // Zufällige Spur (es gibt 3 virtuelle Spuren)
+            const lanes = [45, 145, 245, 315];
+            const randomX = lanes[Math.floor(Math.random() * lanes.length)];
+            
+            obstacles.push({
+                x: randomX,
+                y: -100,
+                width: 40,
+                height: 70,
+                color: obstacleColors[Math.floor(Math.random() * obstacleColors.length)]
+            });
+        }
+
+        // Tasten-Steuerung
+        let keys = {};
+        document.addEventListener("keydown", (e) => keys[e.key] = true);
+        document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+        function movePlayer() {
+            if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+                player.dx = -player.speed;
+            } else if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+                player.dx = player.speed;
+            } else {
+                player.dx = 0;
+            }
+
+            player.x += player.dx;
+
+            // Grenzen der Straße einhalten
+            if (player.x < 30) player.x = 30;
+            if (player.x > canvas.width - 30 - player.width) player.x = canvas.width - 30 - player.width;
+        }
+
+        // Hintergrund/Straße zeichnen
+        let lineOffset = 0;
+        function drawRoad() {
+            // Asphalt
+            ctx.fillStyle = "#222";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Straßenränder
+            ctx.fillStyle = "#444";
+            ctx.fillRect(0, 0, 30, canvas.height);
+            ctx.fillRect(canvas.width - 30, 0, 30, canvas.height);
+
+            // Gestreifte Mittellinien (Animationseffekt)
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
+            ctx.setLineDash([30, 30]);
+            ctx.lineDashOffset = -lineOffset;
+            
+            // Spur 1
+            ctx.beginPath();
+            ctx.moveTo(133, 0); ctx.lineTo(133, canvas.height);
+            ctx.stroke();
+
+            // Spur 2
+            ctx.beginPath();
+            ctx.moveTo(266, 0); ctx.lineTo(266, canvas.height);
+            ctx.stroke();
+
+            if (gameActive) {
+                lineOffset += speed;
+            }
+        }
+
+        // Auto zeichnen (Stylischer Neon-Look)
+        function drawCar(car) {
+            ctx.fillStyle = car.color;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = car.color;
+            
+            // Hauptkarosserie
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+            
+            // Räder
+            ctx.fillStyle = "#111";
+            ctx.shadowBlur = 0;
+            ctx.fillRect(car.x - 5, car.y + 10, 5, 15);
+            ctx.fillRect(car.x + car.width, car.y + 10, 5, 15);
+            ctx.fillRect(car.x - 5, car.y + 45, 5, 15);
+            ctx.fillRect(car.x + car.width, car.y + 45, 5, 15);
+
+            // Cockpit/Scheibe
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.fillRect(car.x + 5, car.y + 25, car.width - 10, 15);
+        }
+
+        // Kollisionsabfrage
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        // Spiel-Update-Schleife
+        let frames = 0;
+        function update() {
+            if (!gameActive) return;
+
+            frames++;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawRoad();
+            movePlayer();
+            drawCar(player);
+
+            // Hindernisse spawnen
+            if (frames % 90 === 0) {
+                spawnObstacle();
+            }
+
+            // Hindernisse bewegen und zeichnen
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].y += speed;
+                drawCar(obstacles[i]);
+
+                // Kollision prüfen
+                if (checkCollision(player, obstacles[i])) {
+                    endGame();
+                }
+
+                // Aus dem Bildschirm gelaufen -> Punkt bekommen
+                if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreElement.innerText = score;
+
+                    // Schwierigkeit erhöhen
+                    if (score % 5 === 0) {
+                        speed += 0.5;
+                    }
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function endGame() {
+            gameActive = false;
+            finalScoreElement.innerText = score;
+            gameOverScreen.style.display = "flex";
+        }
+
+        function resetGame() {
+            obstacles = [];
+            score = 0;
+            speed = 5;
+            player.x = 175;
+            scoreElement.innerText = score;
+            gameOverScreen.style.display = "none";
+            gameActive = true;
+            frames = 0;
+            update();
+        }
+
+        // Spiel starten
+        update();
+    </script>
+</body>
+</html>

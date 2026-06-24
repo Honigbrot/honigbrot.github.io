@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gamified Teacher</title>
+    <meta name="description" content="Quick in-class games hosted on GitHub Pages." />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg1: #0b1020;
+        --bg2: #070a12;
+        --card: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.68);
+        --accent: #4cc9f0;
+        --accent2: #f72585;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg1: #f6f7fb;
+          --bg2: #eef1f8;
+          --card: rgba(0, 0, 0, 0.04);
+          --card-border: rgba(0, 0, 0, 0.08);
+          --text: rgba(15, 20, 35, 0.92);
+          --muted: rgba(15, 20, 35, 0.62);
+          --accent: #2563eb;
+          --accent2: #db2777;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(1200px 800px at 20% 10%, rgba(76, 201, 240, 0.25), transparent 55%),
+          radial-gradient(1000px 700px at 90% 20%, rgba(247, 37, 133, 0.18), transparent 50%),
+          linear-gradient(180deg, var(--bg1), var(--bg2));
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 980px;
+        padding: 40px 20px 56px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 3.2vw, 40px);
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.45;
+        max-width: 68ch;
+      }
+
+      .grid {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
+
+      .card {
+        grid-column: span 12;
+        padding: 16px;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        border-radius: 14px;
+        backdrop-filter: blur(8px);
+      }
+
+      @media (min-width: 760px) {
+        .card {
+          grid-column: span 6;
+        }
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+
+      .meta {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      a.button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 650;
+        font-size: 14px;
+        border: 1px solid var(--card-border);
+        color: var(--text);
+      }
+
+      a.primary {
+        border-color: color-mix(in oklab, var(--accent) 50%, var(--card-border));
+        background: color-mix(in oklab, var(--accent) 20%, transparent);
+      }
+
+      a.secondary {
+        background: color-mix(in oklab, var(--accent2) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent2) 40%, var(--card-border));
+      }
+
+      footer {
+        margin-top: 34px;
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-size: 0.95em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>Gamified Teacher</h1>
+          <p class="subtitle">
+            Simple, no-login, in-class games hosted on GitHub Pages.
+          </p>
+        </div>
+      </header>
+
+      <section class="grid" aria-label="Games">
+        <article class="card">
+          <h2>Wissenswand – Atmung</h2>
+          <p class="meta">
+            Team quiz board (4 teams). Categories: Atmung, Energiegewinnung, Photosynthese, Herz‑Kreislauf‑System.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/wissenswand-atmung/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Wissenswand – Alltagswissen</h2>
+          <p class="meta">
+            Team quiz board (4 teams). Categories: Haushalt, Technik, Gesundheit, Österreich &amp; Welt.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/wissenswand-alltagswissen/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Jump &amp; Run – Quiz Runner</h2>
+          <p class="meta">
+            Single-player runner. Answer quiz questions correctly to clear obstacles and keep running.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/jump-run/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Matching Pairs – Biologie Begriffe</h2>
+          <p class="meta">
+            Pair-matching game. Students connect biology terms with the correct explanations.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/matching-pairs/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Category Sort – Stoffe &amp; Systeme</h2>
+          <p class="meta">
+            Sorting game. Students assign biology cards to the right category with instant feedback.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/category-sort/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Adaptives Schall-Quiz</h2>
+          <p class="meta">
+            Physics quiz with 10 questions about sound. The next question becomes harder or easier based on the previous answer.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/schall-quiz/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Escape Room – Zinsalarm in Europa</h2>
+          <p class="meta">
+            5-room escape room. Maths × geography × economics. Students crack a vault code by solving interest, inflation, and credit problems. Grade 3 MS.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="games/escape-room/">Open game</a>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Fun Games</h2>
+          <p class="meta">
+            A separate shelf for quick, chaotic games that are more about reflexes and persistence than classroom content.
+          </p>
+          <div class="actions">
+            <a class="button secondary" href="games/fun/">Open fun games</a>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <div>Tip: Bookmark this page as the classroom “launcher”.</div>
+        <div><code>games/</code> is the stable URL space for new games.</div>
+      </footer>
+    </div>
+  </body>
+</html>

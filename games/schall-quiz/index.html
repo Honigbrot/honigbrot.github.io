@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Adaptives Schall-Quiz</title>
+    <meta
+      name="description"
+      content="Ein adaptives Physik-Quiz zum Thema Schall: Die naechste Frage wird nach jeder Antwort schwerer oder leichter."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f8fb;
+        --ink: #172033;
+        --muted: #64748b;
+        --panel: #ffffff;
+        --line: #cbd5e1;
+        --accent: #0f766e;
+        --accent-dark: #115e59;
+        --accent-soft: #ccfbf1;
+        --warn: #fff7ed;
+        --good: #dcfce7;
+        --bad: #fee2e2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+          linear-gradient(135deg, rgba(15, 118, 110, 0.18), transparent 360px),
+          linear-gradient(180deg, #ffffff 0, var(--bg) 420px);
+        color: var(--ink);
+      }
+
+      .app {
+        width: min(960px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 36px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 5vw, 52px);
+        line-height: 1.02;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      .home-link {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--panel);
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
+      }
+
+      .status {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .pill {
+        min-height: 52px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 9px 12px;
+      }
+
+      .label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .value {
+        display: block;
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .progress-track {
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0;
+        background: var(--accent);
+        transition: width 0.25s ease;
+      }
+
+      .quiz {
+        padding: clamp(18px, 4vw, 34px);
+      }
+
+      .difficulty {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        border-radius: 8px;
+        padding: 7px 10px;
+        background: var(--accent-soft);
+        color: var(--accent-dark);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .question {
+        margin: 18px 0 8px;
+        font-size: clamp(22px, 3.4vw, 34px);
+        line-height: 1.15;
+      }
+
+      .hint {
+        min-height: 24px;
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .answers {
+        display: grid;
+        gap: 10px;
+      }
+
+      .answer {
+        width: 100%;
+        min-height: 58px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 14px 16px;
+        cursor: pointer;
+        text-align: left;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .answer:hover:not(:disabled),
+      .answer:focus-visible {
+        border-color: var(--accent);
+        outline: 3px solid rgba(15, 118, 110, 0.18);
+      }
+
+      .answer:disabled {
+        cursor: default;
+      }
+
+      .answer.correct {
+        background: var(--good);
+        border-color: #16a34a;
+      }
+
+      .answer.wrong {
+        background: var(--bad);
+        border-color: #ef4444;
+      }
+
+      .feedback {
+        min-height: 86px;
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--warn);
+        padding: 14px;
+        line-height: 1.45;
+      }
+
+      .feedback strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      button.action {
+        min-height: 44px;
+        border: 1px solid var(--accent-dark);
+        border-radius: 8px;
+        background: var(--accent);
+        color: white;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      button.action:hover {
+        background: var(--accent-dark);
+      }
+
+      button.secondary {
+        border-color: var(--line);
+        background: var(--panel);
+        color: var(--ink);
+      }
+
+      button.secondary:hover {
+        background: #f8fafc;
+      }
+
+      .result {
+        display: none;
+        padding: clamp(18px, 4vw, 34px);
+      }
+
+      .result h2 {
+        margin: 0 0 10px;
+        font-size: clamp(26px, 4vw, 42px);
+      }
+
+      .result p {
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+
+      .history {
+        display: grid;
+        gap: 8px;
+        margin: 18px 0;
+      }
+
+      .history-row {
+        display: grid;
+        grid-template-columns: 54px 90px 1fr;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: #f8fafc;
+        font-size: 14px;
+      }
+
+      .history-row .ok {
+        color: #15803d;
+        font-weight: 800;
+      }
+
+      .history-row .no {
+        color: #b91c1c;
+        font-weight: 800;
+      }
+
+      @media (max-width: 720px) {
+        header {
+          display: block;
+        }
+
+        .home-link {
+          margin-top: 14px;
+        }
+
+        .status,
+        .history-row {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .history-row span:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <h1>Schall-Quiz</h1>
+          <p class="subtitle">
+            10 Fragen zur Physik des Schalls. Nach jeder Antwort passt sich die
+            Schwierigkeit der naechsten Frage an.
+          </p>
+        </div>
+        <a class="home-link" href="../../">Zurueck zur Uebersicht</a>
+      </header>
+
+      <section class="status" aria-label="Spielstand">
+        <div class="pill">
+          <span class="label">Frage</span>
+          <span class="value" id="question-count">1 / 10</span>
+        </div>
+        <div class="pill">
+          <span class="label">Punkte</span>
+          <span class="value" id="score">0</span>
+        </div>
+        <div class="pill">
+          <span class="label">Schwierigkeit</span>
+          <span class="value" id="difficulty-value">3</span>
+        </div>
+        <div class="pill">
+          <span class="label">Anpassung</span>
+          <span class="value" id="trend">Start</span>
+        </div>
+      </section>
+
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+
+      <section class="panel quiz" id="quiz-panel" aria-live="polite">
+        <span class="difficulty" id="difficulty-label">Stufe 3 von 5</span>
+        <h2 class="question" id="question-text"></h2>
+        <p class="hint" id="topic-text"></p>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback">
+          Waehle eine Antwort aus. Danach wird erklaert, warum sie richtig oder falsch ist.
+        </div>
+        <div class="actions">
+          <button class="action" id="next-button" type="button" disabled>Naechste Frage</button>
+        </div>
+      </section>
+
+      <section class="panel result" id="result-panel">
+        <h2 id="result-title"></h2>
+        <p id="result-text"></p>
+        <div class="history" id="history"></div>
+        <div class="actions">
+          <button class="action secondary" id="restart-button" type="button">Neu starten</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const TOTAL_QUESTIONS = 10;
+      const MIN_DIFFICULTY = 1;
+      const MAX_DIFFICULTY = 5;
+
+      const questions = [
+        {
+          difficulty: 1,
+          topic: "Grundbegriff",
+          text: "Was ist Schall?",
+          answers: [
+            "Eine mechanische Schwingung, die sich in einem Medium ausbreitet",
+            "Eine Form von Licht",
+            "Ein elektrischer Strom in der Luft",
+            "Eine chemische Reaktion im Ohr",
+          ],
+          correct: 0,
+          explanation:
+            "Schall entsteht durch Schwingungen und braucht ein Medium wie Luft, Wasser oder Festkoerper, um sich auszubreiten.",
+        },
+        {
+          difficulty: 1,
+          topic: "Hoeren",
+          text: "Welches Organ nimmt Schall beim Menschen auf?",
+          answers: ["Das Ohr", "Die Haut", "Die Lunge", "Der Magen"],
+          correct: 0,
+          explanation:
+            "Das Ohr wandelt Schallschwingungen in Nervensignale um, die das Gehirn auswertet.",
+        },
+        {
+          difficulty: 1,
+          topic: "Schallquelle",
+          text: "Was macht ein Lautsprecher, wenn er einen Ton erzeugt?",
+          answers: [
+            "Er schwingt und versetzt die Luft in Schwingung",
+            "Er kuehlt die Luft stark ab",
+            "Er macht Lichtwellen sichtbar",
+            "Er erzeugt nur magnetische Teilchen",
+          ],
+          correct: 0,
+          explanation:
+            "Die Lautsprechermembran bewegt sich schnell vor und zurueck. Dadurch entstehen Druckschwankungen in der Luft.",
+        },
+        {
+          difficulty: 2,
+          topic: "Medium",
+          text: "Warum hoert man im luftleeren Raum keinen Schall?",
+          answers: [
+            "Weil dort kein Medium die Schwingungen weitergeben kann",
+            "Weil Schall dort zu hell wird",
+            "Weil das Ohr dort automatisch abschaltet",
+            "Weil Schall nur nach unten wandert",
+          ],
+          correct: 0,
+          explanation:
+            "Schall ist an Materie gebunden. Ohne Teilchen, die schwingen und die Stoerung weitergeben, breitet sich kein Schall aus.",
+        },
+        {
+          difficulty: 2,
+          topic: "Tonhoehe",
+          text: "Welche Groesse bestimmt vor allem, ob ein Ton hoch oder tief klingt?",
+          answers: ["Die Frequenz", "Die Farbe der Schallquelle", "Die Temperatur des Ohrs", "Die Laenge des Kabels"],
+          correct: 0,
+          explanation:
+            "Hohe Frequenz bedeutet viele Schwingungen pro Sekunde und wird als hoher Ton wahrgenommen.",
+        },
+        {
+          difficulty: 2,
+          topic: "Lautstaerke",
+          text: "Womit haengt die Lautstaerke eines Tons besonders zusammen?",
+          answers: ["Mit der Amplitude der Schwingung", "Mit der Richtung Norden", "Mit der Farbe des Tons", "Mit der Uhrzeit"],
+          correct: 0,
+          explanation:
+            "Eine groessere Amplitude bedeutet staerkere Druckschwankungen. Das hoeren wir als lauter.",
+        },
+        {
+          difficulty: 3,
+          topic: "Einheiten",
+          text: "In welcher Einheit wird die Frequenz angegeben?",
+          answers: ["Hertz (Hz)", "Meter (m)", "Newton (N)", "Grad Celsius (C)"],
+          correct: 0,
+          explanation:
+            "Hertz gibt an, wie viele Schwingungen pro Sekunde stattfinden.",
+        },
+        {
+          difficulty: 3,
+          topic: "Schallgeschwindigkeit",
+          text: "Wie schnell breitet sich Schall in Luft bei Raumtemperatur ungefaehr aus?",
+          answers: ["340 m/s", "3 m/s", "3 000 000 m/s", "300 000 km/s"],
+          correct: 0,
+          explanation:
+            "In Luft liegt die Schallgeschwindigkeit bei etwa 343 m/s. Der genaue Wert haengt von der Temperatur ab.",
+        },
+        {
+          difficulty: 3,
+          topic: "Echo",
+          text: "Warum hoert man manchmal ein Echo?",
+          answers: [
+            "Schall wird an einer Flaeche reflektiert und kommt verzoegert zurueck",
+            "Schall verwandelt sich in Licht und wieder zurueck",
+            "Das Ohr sendet den Ton ein zweites Mal aus",
+            "Ein Echo entsteht nur durch elektrische Geraete",
+          ],
+          correct: 0,
+          explanation:
+            "Trifft Schall auf eine entfernte Wand oder Felsflaeche, kann er reflektiert werden. Die Rueckkehr braucht Zeit.",
+        },
+        {
+          difficulty: 4,
+          topic: "Berechnung",
+          text: "Ein Blitz ist zu sehen, der Donner kommt 3 Sekunden spaeter. Wie weit ist das Gewitter ungefaehr entfernt?",
+          answers: ["Etwa 1 km", "Etwa 10 m", "Etwa 100 km", "Etwa 300 km"],
+          correct: 0,
+          explanation:
+            "Schall legt in 3 Sekunden etwa 3 mal 340 m zurueck, also ungefaehr 1020 m.",
+        },
+        {
+          difficulty: 4,
+          topic: "Ausbreitung",
+          text: "In welchem Medium ist Schall typischerweise am schnellsten?",
+          answers: ["In Festkoerpern", "In Gasen", "Im Vakuum", "In Nebel ohne Luft"],
+          correct: 0,
+          explanation:
+            "In Festkoerpern sind die Teilchen stark gekoppelt. Deshalb werden Schwingungen meist schneller weitergegeben als in Gasen.",
+        },
+        {
+          difficulty: 4,
+          topic: "Ultraschall",
+          text: "Was bezeichnet man als Ultraschall?",
+          answers: [
+            "Schall mit Frequenzen oberhalb des menschlichen Hoerbereichs",
+            "Besonders lauten Schall unter 20 Hz",
+            "Schall, der sich ohne Medium ausbreitet",
+            "Jeden Ton aus einem Lautsprecher",
+          ],
+          correct: 0,
+          explanation:
+            "Ultraschall liegt oberhalb von etwa 20 000 Hz und ist fuer Menschen normalerweise nicht hoerbar.",
+        },
+        {
+          difficulty: 5,
+          topic: "Wellenlaenge",
+          text: "Ein Ton hat in Luft die Frequenz 170 Hz. Welche Wellenlaenge hat er bei 340 m/s Schallgeschwindigkeit?",
+          answers: ["2 m", "0,5 m", "20 m", "57800 m"],
+          correct: 0,
+          explanation:
+            "Die Wellenlaenge ist Geschwindigkeit geteilt durch Frequenz: 340 m/s geteilt durch 170 Hz ergibt 2 m.",
+        },
+        {
+          difficulty: 5,
+          topic: "Doppler-Effekt",
+          text: "Warum klingt die Sirene eines vorbeifahrenden Rettungswagens beim Naeherkommen hoeher?",
+          answers: [
+            "Die Wellenfronten werden vor dem Fahrzeug zusammengedrueckt, dadurch steigt die wahrgenommene Frequenz",
+            "Die Sirene wird automatisch lauter und dadurch immer hoeher",
+            "Der Schall bewegt sich im Vakuum schneller als in Luft",
+            "Das Ohr erzeugt beim Naeherkommen zusaetzliche Schallwellen",
+          ],
+          correct: 0,
+          explanation:
+            "Beim Naeherkommen treffen die Wellenfronten dichter aufeinander. Die beobachtete Frequenz steigt.",
+        },
+        {
+          difficulty: 5,
+          topic: "Interferenz",
+          text: "Was passiert bei destruktiver Interferenz zweier Schallwellen gleicher Frequenz?",
+          answers: [
+            "Sie koennen sich teilweise oder fast vollstaendig ausloeschen",
+            "Sie werden immer doppelt so schnell",
+            "Sie verwandeln sich in Ultraschall",
+            "Sie breiten sich danach ohne Medium aus",
+          ],
+          correct: 0,
+          explanation:
+            "Treffen Wellenberge und Wellentaeler passend aufeinander, werden die Auslenkungen kleiner. Das nutzt man z. B. bei aktiver Geraeuschunterdrueckung.",
+        },
+      ];
+
+      let currentDifficulty = 3;
+      let currentQuestion = null;
+      let currentRound = 1;
+      let score = 0;
+      let answered = false;
+      let usedIndexes = new Set();
+      let history = [];
+      let currentAnswerOptions = [];
+
+      const questionCountEl = document.querySelector("#question-count");
+      const scoreEl = document.querySelector("#score");
+      const difficultyValueEl = document.querySelector("#difficulty-value");
+      const trendEl = document.querySelector("#trend");
+      const progressBarEl = document.querySelector("#progress-bar");
+      const difficultyLabelEl = document.querySelector("#difficulty-label");
+      const questionTextEl = document.querySelector("#question-text");
+      const topicTextEl = document.querySelector("#topic-text");
+      const answersEl = document.querySelector("#answers");
+      const feedbackEl = document.querySelector("#feedback");
+      const nextButtonEl = document.querySelector("#next-button");
+      const quizPanelEl = document.querySelector("#quiz-panel");
+      const resultPanelEl = document.querySelector("#result-panel");
+      const resultTitleEl = document.querySelector("#result-title");
+      const resultTextEl = document.querySelector("#result-text");
+      const historyEl = document.querySelector("#history");
+      const restartButtonEl = document.querySelector("#restart-button");
+
+      function findQuestionForDifficulty(targetDifficulty) {
+        const available = questions
+          .map((question, index) => ({ question, index }))
+          .filter((entry) => !usedIndexes.has(entry.index));
+
+        available.sort((a, b) => {
+          const distanceA = Math.abs(a.question.difficulty - targetDifficulty);
+          const distanceB = Math.abs(b.question.difficulty - targetDifficulty);
+
+          if (distanceA !== distanceB) {
+            return distanceA - distanceB;
+          }
+
+          return a.question.difficulty - b.question.difficulty;
+        });
+
+        return available[0];
+      }
+
+      function renderQuestion() {
+        const nextEntry = findQuestionForDifficulty(currentDifficulty);
+        currentQuestion = nextEntry.question;
+        usedIndexes.add(nextEntry.index);
+        answered = false;
+        currentAnswerOptions = currentQuestion.answers
+          .map((answer, index) => ({ answer, correct: index === currentQuestion.correct }))
+          .sort(() => Math.random() - 0.5);
+
+        questionCountEl.textContent = `${currentRound} / ${TOTAL_QUESTIONS}`;
+        scoreEl.textContent = score;
+        difficultyValueEl.textContent = currentQuestion.difficulty;
+        progressBarEl.style.width = `${((currentRound - 1) / TOTAL_QUESTIONS) * 100}%`;
+        difficultyLabelEl.textContent = `Stufe ${currentQuestion.difficulty} von 5`;
+        questionTextEl.textContent = currentQuestion.text;
+        topicTextEl.textContent = `Thema: ${currentQuestion.topic}`;
+        feedbackEl.textContent =
+          "Waehle eine Antwort aus. Danach wird erklaert, warum sie richtig oder falsch ist.";
+        nextButtonEl.disabled = true;
+        nextButtonEl.textContent = currentRound === TOTAL_QUESTIONS ? "Auswertung anzeigen" : "Naechste Frage";
+
+        answersEl.innerHTML = "";
+        currentAnswerOptions.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.className = "answer";
+          button.type = "button";
+          button.textContent = option.answer;
+          button.addEventListener("click", () => checkAnswer(index, button));
+          answersEl.appendChild(button);
+        });
+      }
+
+      function checkAnswer(selectedIndex, selectedButton) {
+        if (answered) {
+          return;
+        }
+
+        answered = true;
+        const isCorrect = currentAnswerOptions[selectedIndex].correct;
+        const previousDifficulty = currentDifficulty;
+
+        if (isCorrect) {
+          score += 1;
+          currentDifficulty = Math.min(MAX_DIFFICULTY, currentDifficulty + 1);
+          trendEl.textContent = "Schwerer";
+        } else {
+          currentDifficulty = Math.max(MIN_DIFFICULTY, currentDifficulty - 1);
+          trendEl.textContent = "Leichter";
+        }
+
+        [...answersEl.children].forEach((button, index) => {
+          button.disabled = true;
+          if (currentAnswerOptions[index].correct) {
+            button.classList.add("correct");
+          }
+        });
+
+        if (!isCorrect) {
+          selectedButton.classList.add("wrong");
+        }
+
+        scoreEl.textContent = score;
+        feedbackEl.innerHTML = `<strong>${isCorrect ? "Richtig." : "Nicht richtig."}</strong>${currentQuestion.explanation}`;
+        nextButtonEl.disabled = false;
+
+        history.push({
+          round: currentRound,
+          difficulty: currentQuestion.difficulty,
+          text: currentQuestion.text,
+          correct: isCorrect,
+          nextDifficulty: currentDifficulty,
+          previousDifficulty,
+        });
+      }
+
+      function nextStep() {
+        if (currentRound >= TOTAL_QUESTIONS) {
+          showResult();
+          return;
+        }
+
+        currentRound += 1;
+        renderQuestion();
+      }
+
+      function showResult() {
+        progressBarEl.style.width = "100%";
+        quizPanelEl.style.display = "none";
+        resultPanelEl.style.display = "block";
+        questionCountEl.textContent = `${TOTAL_QUESTIONS} / ${TOTAL_QUESTIONS}`;
+        difficultyValueEl.textContent = currentDifficulty;
+        trendEl.textContent = "Fertig";
+
+        resultTitleEl.textContent = `${score} von ${TOTAL_QUESTIONS} Punkten`;
+        resultTextEl.textContent =
+          score >= 8
+            ? "Sehr stark. Du hast auch bei hoeherer Schwierigkeit sicher gearbeitet."
+            : score >= 5
+              ? "Solide Leistung. Schau dir besonders die Fragen an, bei denen das Quiz leichter wurde."
+              : "Wiederhole Grundbegriffe wie Frequenz, Amplitude, Medium und Schallgeschwindigkeit und starte dann erneut.";
+
+        historyEl.innerHTML = "";
+        history.forEach((entry) => {
+          const row = document.createElement("div");
+          row.className = "history-row";
+          row.innerHTML = `
+            <span>Frage ${entry.round}</span>
+            <span>Stufe ${entry.difficulty}</span>
+            <span><span class="${entry.correct ? "ok" : "no"}">${entry.correct ? "richtig" : "falsch"}</span> - ${entry.text}</span>
+          `;
+          historyEl.appendChild(row);
+        });
+      }
+
+      function restart() {
+        currentDifficulty = 3;
+        currentQuestion = null;
+        currentRound = 1;
+        score = 0;
+        answered = false;
+        usedIndexes = new Set();
+        history = [];
+        currentAnswerOptions = [];
+        trendEl.textContent = "Start";
+        quizPanelEl.style.display = "block";
+        resultPanelEl.style.display = "none";
+        renderQuestion();
+      }
+
+      nextButtonEl.addEventListener("click", nextStep);
+      restartButtonEl.addEventListener("click", restart);
+
+      renderQuestion();
+    </script>
+  </body>
+</html>

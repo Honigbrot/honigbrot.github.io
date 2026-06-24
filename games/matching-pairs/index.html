@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Matching Pairs - Biologie Begriffe</title>
+    <meta
+      name="description"
+      content="Ein Zuordnungsspiel fuer den Unterricht: Begriffe und Erklaerungen paarweise finden."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f8fb;
+        --panel: #ffffff;
+        --ink: #1f2937;
+        --muted: #64748b;
+        --accent: #0f766e;
+        --accent-strong: #115e59;
+        --term: #e0f2fe;
+        --definition: #fef3c7;
+        --matched: #dcfce7;
+        --wrong: #fee2e2;
+        --border: #cbd5e1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+          linear-gradient(180deg, rgba(15, 118, 110, 0.16), transparent 340px),
+          var(--bg);
+        color: var(--ink);
+      }
+
+      .app {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 32px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1.02;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .stats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .pill,
+      .restart {
+        min-height: 42px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--ink);
+        padding: 10px 12px;
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .restart {
+        cursor: pointer;
+        background: var(--accent);
+        border-color: var(--accent-strong);
+        color: white;
+      }
+
+      .restart:hover {
+        background: var(--accent-strong);
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .card {
+        min-height: 142px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+        padding: 14px;
+        text-align: left;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+      }
+
+      .card.term {
+        background: var(--term);
+      }
+
+      .card.definition {
+        background: var(--definition);
+      }
+
+      .card.selected {
+        border-color: var(--accent);
+        outline: 3px solid rgba(15, 118, 110, 0.22);
+      }
+
+      .card.matched {
+        background: var(--matched);
+        border-color: #16a34a;
+        cursor: default;
+        transform: none;
+      }
+
+      .card.wrong {
+        background: var(--wrong);
+        border-color: #ef4444;
+      }
+
+      .type {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .text {
+        display: block;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .status {
+        margin-top: 16px;
+        min-height: 28px;
+        color: var(--accent-strong);
+        font-weight: 700;
+      }
+
+      @media (max-width: 820px) {
+        header {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .stats {
+          justify-content: flex-start;
+        }
+
+        .board {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .app {
+          width: min(100vw - 20px, 1120px);
+          padding-top: 16px;
+        }
+
+        .board {
+          gap: 8px;
+        }
+
+        .card {
+          min-height: 132px;
+          padding: 10px;
+        }
+
+        .text {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <h1>Matching Pairs</h1>
+          <p class="subtitle">Finde die passenden Biologie-Begriffe und Erklaerungen.</p>
+        </div>
+        <div class="stats" aria-label="Spielstand">
+          <div class="pill" id="moves">Zuege: 0</div>
+          <div class="pill" id="matches">Paare: 0/6</div>
+          <button class="restart" type="button" id="restart">Neu mischen</button>
+        </div>
+      </header>
+
+      <section class="board" id="board" aria-label="Matching Pairs Spielfeld"></section>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </main>
+
+    <script>
+      const pairs = [
+        ["Lunge", "Organ, in dem Sauerstoff aufgenommen wird"],
+        ["Herz", "Pumpt Blut durch den Koerper"],
+        ["Photosynthese", "Pflanzen bilden Zucker mithilfe von Licht"],
+        ["Zellatmung", "Zellen gewinnen Energie aus Naehrstoffen"],
+        ["Blut", "Transportiert Sauerstoff und Naehrstoffe"],
+        ["Stomata", "Spaltoeffnungen auf Blaettern fuer den Gasaustausch"],
+      ];
+
+      const boardEl = document.getElementById("board");
+      const movesEl = document.getElementById("moves");
+      const matchesEl = document.getElementById("matches");
+      const statusEl = document.getElementById("status");
+      const restartEl = document.getElementById("restart");
+
+      let firstCard = null;
+      let secondCard = null;
+      let locked = false;
+      let moves = 0;
+      let matches = 0;
+
+      function shuffle(items) {
+        const copy = [...items];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function createCards() {
+        return pairs.flatMap(([term, definition], index) => [
+          { id: index, type: "Begriff", text: term, kind: "term" },
+          { id: index, type: "Erklaerung", text: definition, kind: "definition" },
+        ]);
+      }
+
+      function render() {
+        boardEl.innerHTML = "";
+        firstCard = null;
+        secondCard = null;
+        locked = false;
+        moves = 0;
+        matches = 0;
+        statusEl.textContent = "Waehle einen Begriff und die passende Erklaerung.";
+        updateStats();
+
+        shuffle(createCards()).forEach((card) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `card ${card.kind}`;
+          button.dataset.id = card.id;
+          button.dataset.kind = card.kind;
+          button.innerHTML = `<span class="type">${card.type}</span><span class="text">${card.text}</span>`;
+          button.addEventListener("click", () => selectCard(button));
+          boardEl.appendChild(button);
+        });
+      }
+
+      function selectCard(card) {
+        if (locked || card.classList.contains("matched") || card === firstCard) return;
+
+        card.classList.add("selected");
+
+        if (!firstCard) {
+          firstCard = card;
+          return;
+        }
+
+        secondCard = card;
+        locked = true;
+        moves++;
+        updateStats();
+        checkPair();
+      }
+
+      function checkPair() {
+        const samePair = firstCard.dataset.id === secondCard.dataset.id;
+        const differentKinds = firstCard.dataset.kind !== secondCard.dataset.kind;
+
+        if (samePair && differentKinds) {
+          firstCard.classList.add("matched");
+          secondCard.classList.add("matched");
+          firstCard.classList.remove("selected");
+          secondCard.classList.remove("selected");
+          matches++;
+          statusEl.textContent =
+            matches === pairs.length ? "Alle Paare gefunden." : "Richtiges Paar gefunden.";
+          resetSelection();
+          updateStats();
+          return;
+        }
+
+        firstCard.classList.add("wrong");
+        secondCard.classList.add("wrong");
+        statusEl.textContent = "Das passt noch nicht zusammen.";
+
+        window.setTimeout(() => {
+          firstCard.classList.remove("selected", "wrong");
+          secondCard.classList.remove("selected", "wrong");
+          resetSelection();
+        }, 850);
+      }
+
+      function resetSelection() {
+        firstCard = null;
+        secondCard = null;
+        locked = false;
+      }
+
+      function updateStats() {
+        movesEl.textContent = `Zuege: ${moves}`;
+        matchesEl.textContent = `Paare: ${matches}/${pairs.length}`;
+      }
+
+      restartEl.addEventListener("click", render);
+      render();
+    </script>
+  </body>
+</html>

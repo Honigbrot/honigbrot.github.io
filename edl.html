@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDL-Textbausteine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7;
+    --surface:#FFFFFF;
+    --ink:#1F2A37;
+    --ink-soft:#52606D;
+    --muted:#8A95A1;
+    --line:#E7E3DA;
+    --blue:#2D5BA0;
+    --blue-deep:#1E3F73;
+    --blue-tint:#EDF2FA;
+    --good:#2E7D52;
+    --good-tint:#E9F4ED;
+    --good-line:#BFE0CD;
+    --shadow:0 1px 2px rgba(31,42,55,.04), 0 8px 24px rgba(31,42,55,.06);
+    --radius:14px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);}
+
+  /* ---------- Header ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .head-inner{
+    max-width:1120px;margin:0 auto;padding:26px 22px 0;
+  }
+  .eyebrow{
+    font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin:0 0 6px;
+  }
+  h1{
+    font-family:'Spectral',Georgia,serif;
+    font-weight:600;font-size:2rem;line-height:1.1;margin:0;
+    color:var(--ink);
+  }
+  .sub{color:var(--ink-soft);font-size:.95rem;margin:8px 0 20px;max-width:60ch;}
+
+  .tabs{display:flex;gap:2px;flex-wrap:wrap;}
+  .tab{
+    appearance:none;border:none;background:transparent;
+    font:inherit;font-weight:600;color:var(--ink-soft);
+    padding:12px 18px;cursor:pointer;border-radius:10px 10px 0 0;
+    border-bottom:3px solid transparent;position:relative;top:1px;
+    transition:color .15s, border-color .15s, background .15s;
+  }
+  .tab:hover{color:var(--blue);background:var(--blue-tint);}
+  .tab[aria-selected="true"]{
+    color:var(--blue-deep);border-bottom-color:var(--blue);
+  }
+  .tab .num{font-family:'Spectral',serif;font-size:1.15rem;margin-right:.35em;}
+  .tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+
+  /* ---------- Layout ---------- */
+  main{
+    max-width:1120px;margin:0 auto;padding:26px 22px 80px;
+    display:grid;grid-template-columns:1fr 380px;gap:34px;align-items:start;
+  }
+  @media (max-width:900px){
+    main{grid-template-columns:1fr;gap:18px;padding-top:0;}
+  }
+
+  /* ---------- Preview panel ---------- */
+  .preview{
+    position:sticky;top:18px;
+    background:var(--surface);border:1px solid var(--line);
+    border-left:4px solid var(--blue);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:18px 18px 16px;
+  }
+  @media (max-width:900px){
+    .preview{
+      position:sticky;top:0;z-index:20;order:-1;
+      margin:0 -22px;border-radius:0;border-left:none;border-top:none;
+      border-bottom:3px solid var(--blue);box-shadow:0 6px 16px rgba(31,42,55,.08);
+      padding:14px 22px 14px;
+    }
+  }
+  .preview h2{
+    font-family:'Inter',sans-serif;font-size:.72rem;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .count{
+    font-family:'Inter';font-size:.72rem;letter-spacing:.04em;text-transform:none;
+    color:var(--blue-deep);background:var(--blue-tint);
+    padding:3px 9px;border-radius:999px;font-weight:600;
+  }
+  #output{
+    width:100%;border:1px solid var(--line);border-radius:10px;
+    background:#FCFBF9;color:var(--ink);
+    font-family:'Spectral',Georgia,serif;font-size:1.02rem;line-height:1.55;
+    padding:14px;resize:vertical;min-height:190px;
+  }
+  @media (max-width:900px){ #output{min-height:96px;} }
+  #output:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue);}
+  #output.empty{color:var(--muted);font-style:italic;}
+
+  .actions{display:flex;gap:10px;margin-top:12px;}
+  .btn{
+    appearance:none;border:1px solid var(--line);font:inherit;font-weight:600;
+    padding:11px 14px;border-radius:10px;cursor:pointer;flex:1;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    transition:background .15s,border-color .15s,color .15s,transform .05s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+  .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .btn-primary:hover{background:var(--blue-deep);border-color:var(--blue-deep);}
+  .btn-primary.copied{background:var(--good);border-color:var(--good);}
+  .btn-ghost{background:var(--surface);color:var(--ink-soft);}
+  .btn-ghost:hover{border-color:var(--muted);color:var(--ink);}
+  .hint{font-size:.78rem;color:var(--muted);margin:11px 2px 0;line-height:1.4;}
+
+  /* ---------- Categories ---------- */
+  .cats{display:flex;flex-direction:column;gap:18px;}
+  .cat{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .cat > h3{
+    margin:0;font-family:'Spectral',serif;font-weight:600;font-size:1.12rem;
+    color:var(--blue-deep);padding:14px 18px;border-bottom:1px solid var(--line);
+    background:linear-gradient(0deg,transparent,var(--blue-tint) 220%);
+    display:flex;align-items:center;gap:10px;
+  }
+  .cat > h3 .dot{width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none;}
+  .opt{
+    display:flex;gap:12px;align-items:flex-start;
+    padding:11px 18px;cursor:pointer;border-top:1px solid #F2EFE8;
+    transition:background .12s;
+  }
+  .opt:first-of-type{border-top:none;}
+  .opt:hover{background:#FAF8F3;}
+  .opt.on{background:var(--good-tint);}
+  .opt input{
+    appearance:none;width:21px;height:21px;flex:none;margin-top:1px;
+    border:2px solid #C7CDD4;border-radius:6px;background:#fff;cursor:pointer;
+    position:relative;transition:border-color .12s,background .12s;
+  }
+  .opt input:hover{border-color:var(--good);}
+  .opt input:checked{background:var(--good);border-color:var(--good);}
+  .opt input:checked::after{
+    content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);
+  }
+  .opt input:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+  .opt .txt{font-size:.96rem;color:var(--ink);padding-top:1px;}
+  .opt.on .txt{color:#21503a;}
+
+  footer{
+    max-width:1120px;margin:0 auto;padding:0 22px 40px;
+    color:var(--muted);font-size:.8rem;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <p class="eyebrow">Ergänzende differenzierte Leistungsbeschreibung</p>
+    <h1>EDL-Textbausteine</h1>
+    <p class="sub">Schulstufe wählen, passende Stärken anhaken – der Satz baut sich rechts automatisch auf. Dann kopieren und ins e*SA übertragen.</p>
+    <div class="tabs" role="tablist" aria-label="Schulstufe"></div>
+  </div>
+</header>
+
+<main>
+  <section class="cats" id="cats" aria-live="polite"></section>
+
+  <aside class="preview" aria-label="Vorschau und Aktionen">
+    <h2>Vorschau <span class="count" id="count">0 Bausteine</span></h2>
+    <textarea id="output" rows="6" spellcheck="true" aria-label="Erzeugter Text"></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="copy" type="button">Text kopieren</button>
+      <button class="btn btn-ghost" id="reset" type="button">Zurücksetzen</button>
+    </div>
+    <p class="hint">Der Text wird bei jedem Anhaken neu erzeugt. Eigene Feinanpassungen am besten erst kurz vor dem Kopieren vornehmen.</p>
+  </aside>
+</main>
+
+<footer>EDL-Textbausteine · läuft offline im Browser, keine Daten werden gespeichert oder gesendet.</footer>
+
+<script>
+const INTRO = "Der Schüler/die Schülerin zeichnet sich in der Schule durch folgende Stärken aus:";
+const PLACEHOLDER = "Noch keine Bausteine ausgewählt. Hake links die passenden Stärken an.";
+
+const DATA = {
+  "5": { label:"5. Schulstufe", groups:[
+    {title:"Wahrnehmung mit allen Sinnen", items:[
+      "ist bereit, Sachverhalte zu illustrieren oder zu demonstrieren",
+      "bemerkt Details und nimmt aktiv an Prozessen teil",
+      "ist offen für neue Sinneserfahrungen",
+      "nimmt Informationen mit allen Sinnen wahr",
+      "nimmt das Umfeld bewusst wahr"]},
+    {title:"Kreativität", items:[
+      "präsentiert gerne eigene Ergebnisse, um Rückmeldung zu bekommen",
+      "zeigt Kreativität",
+      "interessiert sich für neue Ausdrucksformen und Lösungen",
+      "genießt es, etwas zu schaffen",
+      "ist offen für Kritik"]},
+    {title:"Staunen und Wissbegierde", items:[
+      "ist neugierig, sucht neue Herausforderungen",
+      "lässt sich auf harte Denkarbeit ein",
+      "macht sich Gedanken über das, was er/sie beobachtet",
+      "zeigt Wissbegierde",
+      "genießt es, eigenes Wissen zu erweitern"]},
+    {title:"Forschende Haltung / Wissbegierde", items:[
+      "sucht neue Herausforderungen",
+      "will neue Erkenntnisse gewinnen",
+      "stellt komplexe Fragen",
+      "probiert mehrere Lösungswege",
+      "will Zusammenhänge verstehen"]}
+  ]},
+  "6": { label:"6. Schulstufe", groups:[
+    {title:"Ausdauer", items:[
+      "bleibt dran, bis eine Aufgabe erledigt ist",
+      "zeigt Ausdauer, gibt nicht leicht auf",
+      "nimmt sich Zeit, bis eine Lösung gefunden wird",
+      "geht mit Frustration konstruktiv um",
+      "hält es aus, wenn der Weg schwierig ist und das Problem nicht leicht lösbar ist"]},
+    {title:"Überlegt sein", items:[
+      "ist überlegt und fragt nach",
+      "erkundigt sich bei Unklarheiten",
+      "verschafft sich Klarheit über das Ziel",
+      "überlegt sich Lösungsmöglichkeiten und deren Auswirkungen",
+      "fängt erst an zu arbeiten, wenn die Aufgabe klar ist"]},
+    {title:"Empathisches Zuhören / Hinhören", items:[
+      "hört anderen zu, mit dem Ziel, sie zu verstehen",
+      "zeigt Mitgefühl",
+      "bringt Ideen und Gefühle von anderen zum Ausdruck",
+      "versucht Gedankengängen anderer zu folgen",
+      "versucht andere zu verstehen"]},
+    {title:"Empfänglichkeit und Offenheit", items:[
+      "kann sich gut auf unterschiedliche Situationen einstellen",
+      "berücksichtigt unterschiedliche Aussagen und Meinungen",
+      "ist empfänglich für Neues",
+      "berücksichtigt unterschiedliche Perspektiven",
+      "geht mit Unsicherheiten und Unklarheit gut um"]},
+    {title:"Forschende Haltung / Wissbegierde", items:[
+      "fordert sich selber bei schwierigen Aufgaben",
+      "ist experimentierfreudig",
+      "hat keine Angst vor dem Scheitern",
+      "will auch Schwieriges lösen und wissen",
+      "testet die eigenen Grenzen"]}
+  ]},
+  "7": { label:"7. Schulstufe", groups:[
+    {title:"Metakognition und Reflexion", items:[
+      "ist offen für das, was er/sie nicht weiß",
+      "ist in der Lage, eigenes Handeln zu reflektieren",
+      "geht bewusst mit eigenem Wissen um",
+      "probiert neue Wege, die wirksamer sein könnten",
+      "reflektiert eigene Entwicklung und zieht daraus Schlüsse"]},
+    {title:"Kooperation", items:[
+      "trägt zur Teamarbeit bei",
+      "geht sensibel mit anderen um",
+      "teilt eigenes Wissen anderen mit und versucht es zu erklären",
+      "ist kooperativ",
+      "gibt und nimmt Rückmeldung"]},
+    {title:"Vernetztes Denken", items:[
+      "versucht Zusammenhänge zu verstehen und mit Neuem zu verknüpfen",
+      "findet Lösungen für neue Herausforderungen",
+      "erkennt eigenes Wissen und eigene Erfahrung als Ressourcen",
+      "begründet eigene Handlungen",
+      "erkennt Muster und Faktoren, die aus anderen Erfahrungen bekannt sind"]},
+    {title:"Lernziel- und Prozessorientierung", items:[
+      "geht mit Schwierigkeiten konstruktiv um",
+      "hinterfragt Informationen",
+      "will eigene Handlungsfähigkeit optimieren",
+      "sucht nach Alternativen",
+      "erkennt, dass es selten eine einzige richtige Antwort gibt"]}
+  ]},
+  "8": { label:"8. Schulstufe", groups:[
+    {title:"Überlegtheit", items:[
+      "ist überlegt, fragt nach, klärt Anleitungen",
+      "überlegt sich Alternativen und deren Auswirkungen",
+      "fängt erst an zu arbeiten, wenn die Aufgabe klar ist",
+      "sichert im Vorfeld, was das Ziel ist",
+      "hält die eigene Meinung zurück, bis genug Informationen vorhanden sind"]},
+    {title:"Metakognition & Reflexion", items:[
+      "ist offen für das, was er/sie nicht weiß",
+      "ist in der Lage, eigenes Handeln zu reflektieren",
+      "probiert neue Wege, die wirksamer sein könnten",
+      "reflektiert persönliche Entwicklung und zieht daraus Schlüsse für nächste Entwicklungsschritte",
+      "schafft Distanz zu sich, um sich auf der Metaebene zu betrachten"]},
+    {title:"Qualitätsorientierung", items:[
+      "strebt in der eigenen Arbeit eine hohe Qualität an und ist stolz auf die eigene Arbeit",
+      "arbeitet sorgfältig, optimiert laufend eigene Prozesse",
+      "berücksichtigt Anleitungen, Prozesse, Zielbilder und Kriterien",
+      "legt Wert auf Präzision und Prägnanz, Akkuratheit und Qualität",
+      "nimmt sich Zeit, eigene Arbeitsqualität zu kontrollieren"]},
+    {title:"Klarheit und Präzision in der Kommunikation", items:[
+      "drückt sich klar und präzise aus",
+      "beschreibt Sachverhalte verständlich",
+      "verwendet gehobene Umgangssprache",
+      "verwendet exakte Sprache, um Sachverhalte zu unterscheiden",
+      "geht sensibel mit Sprache um"]},
+    {title:"Wissbegierde", items:[
+      "stellt sich Herausforderungen",
+      "ist experimentierfreudig",
+      "sieht Fehler und Scheitern als einen natürlichen Teil des Lernens",
+      "testet die eigenen Grenzen",
+      "hat keine Angst vor dem Scheitern"]},
+    {title:"Kooperation", items:[
+      "nützt den Vorteil von Zusammenarbeit",
+      "ist kooperativ",
+      "teilt eigenes Wissen mit anderen",
+      "gibt und nimmt Rückmeldung",
+      "trägt zur Teamarbeit bei und lässt andere ihre Beiträge machen"]}
+  ]}
+};
+
+const ORDER = ["5","6","7","8"];
+let current = "5";
+let userEdited = false;
+
+const tabsEl  = document.querySelector('.tabs');
+const catsEl  = document.getElementById('cats');
+const outEl   = document.getElementById('output');
+const countEl = document.getElementById('count');
+const copyBtn = document.getElementById('copy');
+const resetBtn= document.getElementById('reset');
+
+// Build tabs
+ORDER.forEach(g=>{
+  const b=document.createElement('button');
+  b.className='tab';b.type='button';b.setAttribute('role','tab');
+  b.dataset.grade=g;
+  b.innerHTML='<span class="num">'+g+'.</span>Schulstufe';
+  b.addEventListener('click',()=>selectGrade(g));
+  tabsEl.appendChild(b);
+});
+
+function selectGrade(g){
+  current=g; userEdited=false;
+  [...tabsEl.children].forEach(t=>t.setAttribute('aria-selected', t.dataset.grade===g));
+  renderCats();
+  buildText();
+}
+
+function renderCats(){
+  catsEl.innerHTML='';
+  DATA[current].groups.forEach((grp,gi)=>{
+    const card=document.createElement('div');card.className='cat';
+    const h=document.createElement('h3');
+    h.innerHTML='<span class="dot"></span>'+grp.title;
+    card.appendChild(h);
+    grp.items.forEach((txt,ii)=>{
+      const lab=document.createElement('label');lab.className='opt';
+      const cb=document.createElement('input');
+      cb.type='checkbox';cb.dataset.text=txt;
+      cb.addEventListener('change',()=>{
+        lab.classList.toggle('on',cb.checked);
+        userEdited=false;
+        buildText();
+      });
+      const span=document.createElement('span');span.className='txt';span.textContent=txt;
+      lab.appendChild(cb);lab.appendChild(span);
+      card.appendChild(lab);
+    });
+    catsEl.appendChild(card);
+  });
+}
+
+function selectedTexts(){
+  return [...catsEl.querySelectorAll('input:checked')].map(c=>c.dataset.text);
+}
+
+function compose(frags){
+  if(frags.length===0) return "";
+  const bullets=frags.map(f=>"• "+f).join("\n");
+  return INTRO+"\nEr/Sie\n"+bullets;
+}
+
+function buildText(){
+  const frags=selectedTexts();
+  countEl.textContent=frags.length+(frags.length===1?" Baustein":" Bausteine");
+  if(userEdited) return;            // respect manual edits until selection changes
+  const text=compose(frags);
+  if(text){ outEl.value=text; outEl.classList.remove('empty'); }
+  else    { outEl.value=PLACEHOLDER; outEl.classList.add('empty'); }
+}
+
+outEl.addEventListener('focus',()=>{
+  if(outEl.classList.contains('empty')){ outEl.value=''; outEl.classList.remove('empty'); }
+});
+outEl.addEventListener('input',()=>{ userEdited=true; });
+
+async function copyText(){
+  if(outEl.classList.contains('empty')||!outEl.value.trim()) return;
+  const text=outEl.value;
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    outEl.select();document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+  }
+  const old=copyBtn.textContent;
+  copyBtn.textContent='Kopiert ✓';copyBtn.classList.add('copied');
+  setTimeout(()=>{copyBtn.textContent=old;copyBtn.classList.remove('copied');},1600);
+}
+
+function resetAll(){
+  catsEl.querySelectorAll('input:checked').forEach(c=>{
+    c.checked=false;c.closest('.opt').classList.remove('on');
+  });
+  userEdited=false;
+  buildText();
+  catsEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+copyBtn.addEventListener('click',copyText);
+resetBtn.addEventListener('click',resetAll);
+
+selectGrade('5');
+</script>
+</body>
+</html>

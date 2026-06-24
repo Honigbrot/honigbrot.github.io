@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full select-none">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rage Quit: Challenge Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for retro/modern UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Font Awesome for retro-styled icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .retro-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+        /* Neon border effects for the game board */
+        .neon-border {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4), inset 0 0 15px rgba(239, 68, 68, 0.15);
+            border: 2px solid rgb(239, 68, 68);
+        }
+        .neon-text-red {
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+        }
+        /* CRT overlay scanline effect */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            aspect-ratio: 16/9;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+        /* Canvas earthquake shaking animation trigger on death */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-3px, -2px); }
+            30% { transform: translate(3px, 2px); }
+            50% { transform: translate(-2px, 3px); }
+            70% { transform: translate(2px, -3px); }
+            90% { transform: translate(-1px, 1px); }
+        }
+        .shake-active {
+            animation: shake 0.15s infinite;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col justify-between p-2 md:p-4">
+
+    <header class="w-full max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4 bg-slate-900/80 backdrop-blur border border-slate-800 p-4 rounded-xl shadow-2xl mb-2">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-red-600/20 border border-red-500 rounded-lg text-red-500 animate-pulse">
+                <i class="fa-solid fa-skull-crossbones text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    RAGE QUIT <span class="text-[10px] bg-red-600 text-white font-mono px-2 py-0.5 rounded uppercase tracking-widest">Challenge Edition</span>
+                </h1>
+                <p class="text-xs text-slate-400">Pure level design. No random variables. Just pure, unadulterated mechanics-based bait.</p>
+            </div>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="flex items-center gap-4 flex-wrap">
+            <div class="bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 flex items-center gap-2">
+                <span class="text-[10px] text-slate-400 uppercase">Deaths:</span>
+                <span id="death-count" class="retro-font text-red-500 text-base md:text-lg">0</span>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 flex items-center gap-2">
+                <span class="text-[10px] text-slate-400 uppercase">Time:</span>
+                <span id="timer-count" class="retro-font text-yellow-500 text-base md:text-lg">00:00</span>
+            </div>
+            <button id="mute-btn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition" title="Toggle Sound">
+                <i id="mute-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col gap-2 relative justify-center mb-2">
+        
+        <!-- Level Information Alert Bar -->
+        <div id="game-banner" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs py-2.5 px-4 rounded-lg flex items-center justify-between">
+            <span id="banner-text">🎮 Keyboard: A/D (or arrows) to move, Space/W to jump. Touch controls below.</span>
+            <span id="level-indicator" class="font-mono text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded">Level 1/10</span>
+        </div>
+
+        <!-- Canvas Container -->
+        <div id="canvas-container" class="relative flex-1 bg-slate-950 rounded-2xl overflow-hidden neon-border flex items-center justify-center min-h-[350px] md:min-h-[450px]">
+            <canvas id="gameCanvas" width="800" height="450" class="block max-w-full h-auto cursor-pointer aspect-[16/9] bg-gradient-to-b from-slate-950 to-slate-900"></canvas>
+            
+            <!-- CRT Scanline overlay -->
+            <div class="crt absolute inset-0 pointer-events-none rounded-2xl"></div>
+
+            <!-- Custom Overlays -->
+            <!-- 1. Intro Click to Play screen -->
+            <div id="screen-intro" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-30">
+                <div class="retro-font text-red-500 text-xl md:text-3xl mb-4 animate-pulse neon-text-red">RAGE QUIT: 10 CHAMBERS</div>
+                <p class="text-slate-300 text-sm max-w-md mb-6 leading-relaxed">
+                    Welcome to 10 meticulously compiled level configurations. Every trap is 100% deterministic, physical, and avoidable. Prepare to hate yourself.
+                </p>
+                <button id="start-game-btn" class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white retro-font text-xs rounded-xl shadow-lg border border-red-400 transition-all active:scale-95">
+                    ENTER GAUNTLET
+                </button>
+            </div>
+
+            <!-- 2. Game Win Screen -->
+            <div id="screen-victory" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-30">
+                <div class="p-3 bg-yellow-500/20 text-yellow-500 border border-yellow-500 rounded-2xl animate-bounce mb-4">
+                    <i class="fa-solid fa-trophy text-4xl"></i>
+                </div>
+                <h2 class="retro-font text-green-500 text-xl md:text-2xl mb-2">GAUNTLET CONQUERED!</h2>
+                <p class="text-slate-300 text-xs max-w-md mb-6 leading-relaxed">
+                    You survived all 10 developer-configured challenge chambers. You are either a legendary gamer or completely unstoppable.
+                </p>
+                <div class="grid grid-cols-2 gap-4 max-w-sm w-full mb-6">
+                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800">
+                        <div class="text-[10px] text-slate-400">TOTAL DEATHS</div>
+                        <div id="victory-deaths" class="retro-font text-red-500 text-sm mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800">
+                        <div class="text-[10px] text-slate-400">TOTAL TIME</div>
+                        <div id="victory-time" class="retro-font text-yellow-500 text-sm mt-1">00:00</div>
+                    </div>
+                </div>
+                <button id="restart-game-btn" class="px-6 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition active:scale-95">
+                    REPLAY GAUNTLET
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="grid grid-cols-2 gap-4 items-center bg-slate-900/40 p-2 rounded-xl border border-slate-800 lg:hidden">
+            <!-- D-pad Left/Right -->
+            <div class="flex gap-2">
+                <button id="btn-left" class="flex-1 py-4 bg-slate-800 active:bg-red-600 text-white rounded-xl border border-slate-700 flex items-center justify-center text-xl select-none active:scale-95 transition">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button id="btn-right" class="flex-1 py-4 bg-slate-800 active:bg-red-600 text-white rounded-xl border border-slate-700 flex items-center justify-center text-xl select-none active:scale-95 transition">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+            <!-- Jump Action -->
+            <button id="btn-jump" class="py-4 bg-red-600 active:bg-red-500 text-white font-bold rounded-xl border border-red-500 flex items-center justify-center text-lg gap-2 select-none active:scale-95 transition">
+                <i class="fa-solid fa-circle-up"></i> JUMP
+            </button>
+        </div>
+    </main>
+
+    <!-- Bottom instructions -->
+    <footer class="w-full max-w-5xl mx-auto flex flex-wrap items-center justify-between text-[11px] text-slate-500 border-t border-slate-900 pt-3">
+        <div>Keyboard Navigation: <kbd class="px-1.5 py-0.5 bg-slate-900 text-slate-300 rounded font-mono border border-slate-800 text-[10px]">A</kbd>/<kbd class="px-1.5 py-0.5 bg-slate-900 text-slate-300 rounded font-mono border border-slate-800 text-[10px]">D</kbd> or <kbd class="px-1.5 py-0.5 bg-slate-900 text-slate-300 rounded font-mono border border-slate-800 text-[10px]">◀</kbd>/<kbd class="px-1.5 py-0.5 bg-slate-900 text-slate-300 rounded font-mono border border-slate-800 text-[10px]">▶</kbd>, jump with <kbd class="px-1.5 py-0.5 bg-slate-900 text-slate-300 rounded font-mono border border-slate-800 text-[10px]">SPACE</kbd>.</div>
+        <div class="text-right">Challenge Engine v2.5 © 2026.</div>
+    </footer>
+
+    <script>
+        // Retro Audio synthesizer using Web Audio API (no external sound file dependencies)
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playJump() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+
+            playExplosion() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                const bufferSize = this.ctx.sampleRate * 0.3;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+                filter.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                noise.start(now);
+                noise.stop(now + 0.3);
+            }
+
+            playTrollLaugh() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                for (let i = 0; i < 3; i++) {
+                    const start = now + (i * 0.1);
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(250 + (i * 60), start);
+                    osc.frequency.linearRampToValueAtTime(120 + (i * 30), start + 0.08);
+                    
+                    gain.gain.setValueAtTime(0.08, start);
+                    gain.gain.linearRampToValueAtTime(0.01, start + 0.08);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(start);
+                    osc.stop(start + 0.08);
+                }
+            }
+
+            playAlertBeep() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+
+            playSpring() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+
+            playWin() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const notes = [261.63, 329.63, 392.00, 523.25]; // C major chord arpeggio
+                
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + (idx * 0.12));
+                    
+                    gain.gain.setValueAtTime(0.12, now + (idx * 0.12));
+                    gain.gain.linearRampToValueAtTime(0.01, now + (idx * 0.12) + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(now + (idx * 0.12));
+                    osc.stop(now + (idx * 0.12) + 0.3);
+                });
+            }
+        }
+
+        const synth = new AudioSynth();
+
+        // Audio controls UI coupling
+        const muteBtn = document.getElementById('mute-btn');
+        const muteIcon = document.getElementById('mute-icon');
+        muteBtn.addEventListener('click', () => {
+            synth.muted = !synth.muted;
+            if (synth.muted) {
+                muteIcon.className = "fa-solid fa-volume-xmark";
+                muteBtn.classList.add('bg-red-950/40', 'border-red-800');
+            } else {
+                muteIcon.className = "fa-solid fa-volume-high";
+                muteBtn.classList.remove('bg-red-950/40', 'border-red-800');
+                synth.init();
+            }
+        });
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const deathCountText = document.getElementById('death-count');
+        const timerCountText = document.getElementById('timer-count');
+        const bannerText = document.getElementById('banner-text');
+        const levelIndicator = document.getElementById('level-indicator');
+
+        let keys = {};
+        let deaths = 0;
+        let playTime = 0; 
+        let gameTimer = null;
+        let currentLevel = 0; 
+        let isRunning = false;
+        let particles = [];
+
+        // Toxic quotes to mock deaths
+        const deathInsults = [
+            "Was that jump calculated, or are you just bad at math?",
+            "My grandmother jumps faster than that.",
+            "That trap was completely obvious.",
+            "Gravity: 1 | You: 0",
+            "Have you tried keeping your eyes open?",
+            "Is your spacebar unplugged?",
+            "Imagine falling for that.",
+            "Was that a lag spike, or just a skill issue?",
+            "You are providing excellent metrics for my death counter.",
+            "Press restart. Go on. Let's see it again.",
+            "A rock would have dodged that spike.",
+            "That platform was completely invisible to talent.",
+            "You found the secret floor! Oh wait, that's just lava."
+        ];
+
+        // 10 levels meticulously constructed with physical traps, crumbling frames, slippery plates, and control inverters.
+        const levels = [
+            // LEVEL 1: The Trap Floor
+            {
+                spawn: { x: 50, y: 350 },
+                goal: { x: 740, y: 240, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 400, width: 220, height: 50 },
+                    { x: 280, y: 320, width: 100, height: 20, fake: true }, // Crumbling block
+                    { x: 440, y: 240, width: 90, height: 20, ghost: true }, // GHOST! You drop right through!
+                    { x: 440, y: 340, width: 90, height: 20 }, // Real safe platform underneath the ghost
+                    { x: 580, y: 180, width: 80, height: 20 },
+                    { x: 700, y: 300, width: 100, height: 150 }
+                ],
+                spikes: [
+                    { x: 220, y: 430, width: 480, height: 20, visible: true },
+                    { x: 700, y: 280, width: 20, height: 20, visible: false, triggerId: 'popup-spike-l1' } // Sudden popup at goal
+                ],
+                trolls: [
+                    {
+                        type: 'falling-block',
+                        x: 310, y: -50, width: 40, height: 40,
+                        triggered: false, triggerX: 280, triggerW: 100, vy: 0
+                    },
+                    {
+                        type: 'ceiling-spike',
+                        x: 610, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 580, triggerW: 80, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 2: The Slip & Dodge
+            {
+                spawn: { x: 50, y: 370 },
+                goal: { x: 730, y: 120, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 420, width: 140, height: 30 },
+                    { x: 220, y: 340, width: 120, height: 20, slippery: true }, // Zero friction ice plate
+                    { x: 400, y: 260, width: 120, height: 20 },
+                    { x: 570, y: 180, width: 80, height: 20, behavior: 'dodge', originalX: 570 }, // Shifts right when jumped to
+                    { x: 700, y: 180, width: 100, height: 270 }
+                ],
+                spikes: [
+                    { x: 140, y: 430, width: 560, height: 20, visible: true },
+                    { x: 450, y: 240, width: 20, height: 20, visible: true, expanding: true } // EXPANDING! Grows when close!
+                ],
+                trolls: [
+                    {
+                        type: 'ceiling-spike',
+                        x: 265, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 220, triggerW: 120, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 3: The Double Drop
+            {
+                spawn: { x: 50, y: 340 },
+                goal: { x: 730, y: 340, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 390, width: 120, height: 60 },
+                    { x: 190, y: 320, width: 80, height: 20, fake: true }, // Crumbling block
+                    { x: 340, y: 250, width: 100, height: 20, behavior: 'falling-bridge', originalY: 250 }, // Elevator drops down rapidly (widened from 80 to 100 for safety room)
+                    { x: 490, y: 250, width: 80, height: 20 },
+                    { x: 620, y: 310, width: 80, height: 20 },
+                    { x: 710, y: 400, width: 90, height: 50 }
+                ],
+                spikes: [
+                    { x: 120, y: 430, width: 590, height: 20, visible: true },
+                    { x: 710, y: 380, width: 25, height: 20, visible: false, triggerId: 'popup-spike-l3' } // Spike blocking directly under the flag
+                ],
+                trolls: [
+                    {
+                        type: 'ceiling-spike',
+                        x: 515, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 490, triggerW: 80, vy: 0
+                    },
+                    {
+                        type: 'fake-checkpoint', // Fake-out flag that pops up spikes when touched! (Narrowed to 16 and shifted to allow jumping space)
+                        x: 395, y: 215, width: 16, height: 35,
+                        triggered: false
+                    }
+                ]
+            },
+            // LEVEL 4: Control Inversion
+            {
+                spawn: { x: 50, y: 350 },
+                goal: { x: 730, y: 120, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 400, width: 120, height: 50 },
+                    { x: 180, y: 330, width: 100, height: 20, behavior: 'invert-walk' }, // Inverts left/right keys!
+                    { x: 330, y: 260, width: 110, height: 20 },
+                    { x: 490, y: 190, width: 100, height: 20, fake: true }, // Crumbles
+                    { x: 620, y: 250, width: 70, height: 20 },
+                    { x: 710, y: 180, width: 90, height: 270 }
+                ],
+                spikes: [
+                    { x: 120, y: 430, width: 590, height: 20, visible: true },
+                    { x: 375, y: 240, width: 20, height: 20, visible: false, triggerId: 'surprise-spike-l4' }
+                ],
+                trolls: [
+                    {
+                        type: 'falling-block',
+                        x: 210, y: -50, width: 40, height: 40,
+                        triggered: false, triggerX: 180, triggerW: 100, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 5: The Ultimate Gauntlet
+            {
+                spawn: { x: 50, y: 370 },
+                goal: { x: 740, y: 340, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 420, width: 110, height: 30 },
+                    { x: 160, y: 320, width: 70, height: 20 },
+                    { x: 280, y: 240, width: 80, height: 20, slippery: true },
+                    { x: 410, y: 160, width: 80, height: 20, fake: true },
+                    { x: 540, y: 260, width: 80, height: 20, behavior: 'trampoline-trap' }, // Looks helper-friendly but fires you straight up!
+                    { x: 710, y: 400, width: 90, height: 50 }
+                ],
+                spikes: [
+                    { x: 110, y: 430, width: 600, height: 20, visible: true },
+                    { x: 310, y: 220, width: 20, height: 20, visible: true, expanding: true }, // Growing spike
+                    { x: 540, y: 100, width: 80, height: 20, visible: true }, // Death trap for trampoline jump
+                    { x: 710, y: 380, width: 20, height: 20, visible: false, triggerId: 'final-spike' } // Spike guarding the flag, jump carefully!
+                ],
+                trolls: [
+                    {
+                        type: 'ceiling-spike',
+                        x: 435, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 410, triggerW: 80, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 6: The Vertical Shaft
+            {
+                spawn: { x: 50, y: 350 },
+                goal: { x: 740, y: 120, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 400, width: 100, height: 50 },
+                    { x: 180, y: 290, width: 60, height: 20 },
+                    { x: 300, y: 210, width: 60, height: 20, slippery: true }, // Zero friction ice plate
+                    { x: 420, y: 140, width: 60, height: 20, ghost: true }, // Ghost platform trap!
+                    { x: 560, y: 210, width: 80, height: 20, fake: true }, // Crumbling high-stress jump
+                    { x: 700, y: 180, width: 100, height: 270 }
+                ],
+                spikes: [
+                    { x: 100, y: 430, width: 600, height: 20, visible: true },
+                    { x: 420, y: 120, width: 20, height: 20, visible: true }, // Small stationary obstacle block
+                    { x: 700, y: 160, width: 20, height: 20, visible: false, triggerId: 'popup-spike-l6' } // Sudden popup spike right before the platform zone ends
+                ],
+                trolls: [
+                    {
+                        type: 'falling-block',
+                        x: 310, y: -50, width: 40, height: 40,
+                        triggered: false, triggerX: 180, triggerW: 100, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 7: The Momentum Leap
+            {
+                spawn: { x: 50, y: 370 },
+                goal: { x: 730, y: 340, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 420, width: 120, height: 30 },
+                    { x: 180, y: 320, width: 180, height: 20, slippery: true }, // Ice ramp
+                    { x: 410, y: 380, width: 70, height: 20, fake: true }, // Expanded width slightly to make jumping and avoiding flag possible
+                    { x: 540, y: 240, width: 80, height: 20 },
+                    { x: 700, y: 400, width: 100, height: 50 }
+                ],
+                spikes: [
+                    { x: 120, y: 430, width: 580, height: 20, visible: true },
+                    { x: 480, y: 300, width: 20, height: 20, visible: true, expanding: true }, // Grows as you leap!
+                    { x: 700, y: 380, width: 20, height: 20, visible: false, triggerId: 'popup-spike-l7' } // Blocker guarding victory
+                ],
+                trolls: [
+                    {
+                        type: 'ceiling-spike',
+                        x: 250, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 200, triggerW: 100, vy: 0
+                    },
+                    {
+                        type: 'fake-checkpoint-teleport', // Teleports you back to start instead of killing you! (Shrunk to width 14)
+                        x: 445, y: 345, width: 14, height: 35,
+                        triggered: false
+                    }
+                ]
+            },
+            // LEVEL 8: The Inversion Climb
+            {
+                spawn: { x: 50, y: 350 },
+                goal: { x: 730, y: 210, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 400, width: 100, height: 50 },
+                    { x: 160, y: 320, width: 100, height: 20, behavior: 'invert-walk' }, // Flips controls midair
+                    { x: 320, y: 240, width: 100, height: 20 },
+                    { x: 480, y: 180, width: 100, height: 20, behavior: 'invert-walk' }, // Double invert tests logic!
+                    { x: 620, y: 220, width: 40, height: 20, fake: true },
+                    { x: 710, y: 270, width: 90, height: 180 }
+                ],
+                spikes: [
+                    { x: 100, y: 430, width: 610, height: 20, visible: true },
+                    { x: 360, y: 220, width: 20, height: 20, visible: true },
+                    { x: 710, y: 250, width: 20, height: 20, visible: false, triggerId: 'popup-spike-l8' }
+                ],
+                trolls: [
+                    {
+                        type: 'falling-block',
+                        x: 350, y: -50, width: 40, height: 40,
+                        triggered: false, triggerX: 320, triggerW: 100, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 9: Split Decision
+            {
+                spawn: { x: 50, y: 370 },
+                goal: { x: 740, y: 240, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 420, width: 100, height: 30 },
+                    // Lower Path (Slippery, feels hard but safe)
+                    { x: 160, y: 360, width: 120, height: 20 },
+                    { x: 340, y: 360, width: 120, height: 20, slippery: true },
+                    { x: 520, y: 300, width: 100, height: 20 },
+                    // Upper Path (Crumbling and falling - looks easy, complete bait!)
+                    { x: 160, y: 200, width: 120, height: 20, fake: true },
+                    { x: 340, y: 150, width: 120, height: 20, behavior: 'falling-bridge' },
+                    { x: 520, y: 150, width: 100, height: 20, ghost: true }, // Ghost platform at upper path!
+                    { x: 700, y: 300, width: 100, height: 150 }
+                ],
+                spikes: [
+                    { x: 100, y: 430, width: 600, height: 20, visible: true },
+                    { x: 520, y: 130, width: 20, height: 20, visible: false, triggerId: 'popup-spike-l9' } // Upper-path trap
+                ],
+                trolls: [
+                    {
+                        type: 'ceiling-spike',
+                        x: 380, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 340, triggerW: 120, vy: 0
+                    }
+                ]
+            },
+            // LEVEL 10: The Final Ascent
+            {
+                spawn: { x: 50, y: 350 },
+                goal: { x: 730, y: 150, width: 35, height: 60 },
+                platforms: [
+                    { x: 0, y: 400, width: 80, height: 50 },
+                    { x: 120, y: 330, width: 80, height: 20, slippery: true },
+                    { x: 240, y: 260, width: 80, height: 20, behavior: 'invert-walk' },
+                    { x: 360, y: 190, width: 80, height: 20, fake: true },
+                    { x: 480, y: 240, width: 80, height: 20, behavior: 'falling-bridge' },
+                    { x: 600, y: 180, width: 80, height: 20, behavior: 'dodge', originalX: 600 },
+                    { x: 700, y: 210, width: 100, height: 240 }
+                ],
+                spikes: [
+                    { x: 80, y: 430, width: 620, height: 20, visible: true },
+                    { x: 270, y: 240, width: 20, height: 20, visible: true, expanding: true }, // Final growing trap!
+                    { x: 700, y: 190, width: 20, height: 20, visible: false, triggerId: 'final-spike-l10' } // Ultimate end-flag guard
+                ],
+                trolls: [
+                    {
+                        type: 'falling-block',
+                        x: 150, y: -50, width: 40, height: 40,
+                        triggered: false, triggerX: 120, triggerW: 80, vy: 0
+                    },
+                    {
+                        type: 'ceiling-spike',
+                        x: 510, y: -50, width: 30, height: 30,
+                        triggered: false, triggerX: 480, triggerW: 80, vy: 0
+                    }
+                ]
+            }
+        ];
+
+        const player = {
+            x: 50,
+            y: 350,
+            width: 24,
+            height: 24,
+            vx: 0,
+            vy: 0,
+            isGrounded: false,
+            coyoteTimer: 0,      
+            jumpBufferTimer: 0,  
+            speed: 5.5,
+            jumpForce: 10.5,
+            gravity: 0.5,
+            friction: 0.8,
+            deathTriggered: false,
+            face: '🙂',
+            invertedControls: false,
+            
+            reset(levelObj) {
+                if (!levelObj) return;
+                this.x = levelObj.spawn.x;
+                this.y = levelObj.spawn.y;
+                this.vx = 0;
+                this.vy = 0;
+                this.isGrounded = false;
+                this.coyoteTimer = 0;
+                this.jumpBufferTimer = 0;
+                this.deathTriggered = false;
+                this.face = '🙂';
+                this.invertedControls = false;
+            },
+
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.invertedControls ? '#c084fc' : '#3b82f6';
+                
+                ctx.fillStyle = this.invertedControls ? '#a855f7' : '#3b82f6';
+                ctx.beginPath();
+                ctx.roundRect(this.x, this.y, this.width, this.height, 6);
+                ctx.fill();
+                ctx.strokeStyle = this.invertedControls ? '#d8b4fe' : '#60a5fa';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.face, this.x + this.width / 2, this.y + this.height / 2 + 1);
+            }
+        };
+
+        // Standard keyboard input tracking
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (!isRunning && (e.code === 'KeyD' || e.code === 'KeyA' || e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowRight' || e.code === 'ArrowLeft')) {
+                startTimer();
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // Touch input mapping
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnJump = document.getElementById('btn-jump');
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; startTimer(); });
+        btnLeft.addEventListener('touchend', () => { keys['ArrowLeft'] = false; });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; startTimer(); });
+        btnRight.addEventListener('touchend', () => { keys['ArrowRight'] = false; });
+        btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Space'] = true; startTimer(); });
+        btnJump.addEventListener('touchend', () => { keys['Space'] = false; });
+
+        // Save initial positions to reset properly
+        levels.forEach(lvl => {
+            lvl.platforms.forEach(p => {
+                p.initialX = p.x;
+                p.initialY = p.y;
+                p.initialHeight = p.height;
+                p.isCrumbling = false;
+                p.crumbleTimer = 0;
+                p.dodged = false;
+                p.vy = 0;
+            });
+            lvl.spikes.forEach(s => {
+                s.initialX = s.x;
+                s.initialY = s.y;
+                s.initialHeight = s.height;
+                s.heightVar = s.height;
+            });
+        });
+
+        function triggerDeath() {
+            if (player.deathTriggered) return;
+            player.deathTriggered = true;
+            player.face = '😵';
+            
+            deaths++;
+            deathCountText.textContent = deaths;
+
+            // Pick a random toxic quote to mock the player
+            const randomQuote = deathInsults[Math.floor(Math.random() * deathInsults.length)];
+            bannerText.innerHTML = `💀 <span class="text-red-400 font-bold">DEFEAT:</span> "${randomQuote}"`;
+            
+            createExplosion(player.x + player.width/2, player.y + player.height/2);
+            synth.playExplosion();
+
+            // Trigger screen-shake style on death
+            document.getElementById('canvas-container').classList.add('shake-active');
+
+            setTimeout(() => {
+                document.getElementById('canvas-container').classList.remove('shake-active');
+                resetLevel();
+            }, 600);
+        }
+
+        // Particle System Factory
+        function createExplosion(x, y) {
+            particles = [];
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    size: Math.random() * 5 + 3,
+                    color: `hsl(${Math.random() * 40 + 340}, 100%, 60%)`, 
+                    life: 1.0,
+                    decay: Math.random() * 0.05 + 0.02
+                });
+            }
+        }
+
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        // Timer control systems
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            
+            gameTimer = setInterval(() => {
+                playTime++;
+                const mins = String(Math.floor(playTime / 60)).padStart(2, '0');
+                const secs = String(playTime % 60).padStart(2, '0');
+                timerCountText.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(gameTimer);
+            isRunning = false;
+        }
+
+        function resetLevel() {
+            if (currentLevel >= levels.length) return;
+            const lvl = levels[currentLevel];
+            player.reset(lvl);
+            
+            lvl.platforms.forEach(p => {
+                p.x = p.initialX;
+                p.y = p.initialY;
+                p.isCrumbling = false;
+                p.crumbleTimer = 0;
+                p.dodged = false;
+                p.vy = 0;
+            });
+
+            lvl.spikes.forEach(s => {
+                s.y = s.initialY;
+                s.heightVar = s.initialHeight;
+                if (s.triggerId && s.triggerId.startsWith('popup-spike-')) {
+                    s.visible = false;
+                }
+                if (s.triggerId === 'surprise-spike-l4' || s.triggerId === 'final-spike' || s.triggerId === 'final-spike-l10') {
+                    s.visible = false;
+                }
+            });
+
+            lvl.trolls.forEach(t => {
+                t.triggered = false;
+                if (t.type === 'ceiling-spike' || t.type === 'falling-block') {
+                    t.y = -50;
+                    t.vy = 0;
+                }
+            });
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel >= levels.length) {
+                stopTimer();
+                synth.playWin();
+                
+                document.getElementById('screen-victory').classList.remove('hidden');
+                document.getElementById('victory-deaths').textContent = deaths;
+                const mins = String(Math.floor(playTime / 60)).padStart(2, '0');
+                const secs = String(playTime % 60).padStart(2, '0');
+                document.getElementById('victory-time').textContent = `${mins}:${secs}`;
+                return;
+            }
+
+            synth.playWin();
+            bannerText.textContent = `🎯 LEVEL ${currentLevel + 1}/10: Watch your step. The design becomes less forgiving from here.`;
+            levelIndicator.textContent = `Level ${currentLevel + 1}/10`;
+            resetLevel();
+        }
+
+        function checkOverlap(r1, r2) {
+            return r1.x < r2.x + r2.width &&
+                   r1.x + r1.width > r2.x &&
+                   r1.y < r2.y + r2.height &&
+                   r1.y + r1.height > r2.y;
+        }
+
+        function update() {
+            if (player.deathTriggered) return;
+            if (currentLevel >= levels.length) return; // Prevent updating player physics if game is finished
+
+            const currentLvlObj = levels[currentLevel];
+
+            // Update platform crumbling timers
+            currentLvlObj.platforms.forEach(p => {
+                if (p.fake && p.isCrumbling) {
+                    p.crumbleTimer--;
+                    if (p.crumbleTimer <= 0) {
+                        p.x = -1000; 
+                    }
+                }
+                
+                // Falling bridges / elevator blocks behavior
+                if (p.behavior === 'falling-bridge' && p.isCrumbling) {
+                    p.vy += 0.4;
+                    p.y += p.vy;
+                }
+            });
+
+            // Platform dodging
+            const dodgePlat = currentLvlObj.platforms.find(p => p.behavior === 'dodge');
+            if (dodgePlat) {
+                const dist = Math.abs(player.x - dodgePlat.x);
+                if (dist < 110 && player.y < dodgePlat.y + 120 && player.y > dodgePlat.y - 120) {
+                    if (!dodgePlat.dodged) {
+                        dodgePlat.dodged = true;
+                        dodgePlat.x += 100; // shift rapidly away
+                        synth.playTrollLaugh();
+                    }
+                }
+            }
+
+            // 1. Horizontal Movement & Acceleration
+            let moveSpeed = player.speed;
+            let currentFriction = player.friction;
+
+            // Detect if player is on a slippery platform
+            let onSlipperyPlatform = false;
+            currentLvlObj.platforms.forEach(p => {
+                if (p.slippery && 
+                    player.x + player.width > p.x && 
+                    player.x < p.x + p.width && 
+                    Math.abs((player.y + player.height) - p.y) < 2) {
+                    onSlipperyPlatform = true;
+                }
+            });
+
+            if (onSlipperyPlatform) {
+                currentFriction = 0.985; // Low friction sliding 
+                moveSpeed = 3.0; 
+            }
+
+            // Left/Right inputs
+            let dir = 0;
+            if (keys['ArrowLeft'] || keys['KeyA']) {
+                dir = -1;
+            } else if (keys['ArrowRight'] || keys['KeyD']) {
+                dir = 1;
+            }
+
+            if (player.invertedControls) {
+                dir = -dir;
+            }
+
+            if (dir < 0) {
+                player.vx -= moveSpeed * 0.15;
+                if (player.vx < -moveSpeed) player.vx = -moveSpeed;
+                player.face = player.invertedControls ? '😵‍💫' : '😮';
+            } else if (dir > 0) {
+                player.vx += moveSpeed * 0.15;
+                if (player.vx > moveSpeed) player.vx = moveSpeed;
+                player.face = player.invertedControls ? '😵‍💫' : '😮';
+            } else {
+                player.vx *= currentFriction;
+                if (Math.abs(player.vx) < 0.1) player.vx = 0;
+                player.face = player.invertedControls ? '🥴' : '🙂';
+            }
+
+            // 2. Vertical Dynamics
+            player.vy += player.gravity;
+            if (player.vy > 12) player.vy = 12; 
+
+            if (player.isGrounded) {
+                player.coyoteTimer = 6; 
+            } else {
+                if (player.coyoteTimer > 0) player.coyoteTimer--;
+            }
+
+            if (keys['Space'] || keys['KeyW'] || keys['ArrowUp']) {
+                player.jumpBufferTimer = 6; 
+            } else {
+                if (player.jumpBufferTimer > 0) player.jumpBufferTimer--;
+            }
+
+            if (player.jumpBufferTimer > 0 && (player.isGrounded || player.coyoteTimer > 0)) {
+                player.vy = -player.jumpForce;
+                player.isGrounded = false;
+                player.coyoteTimer = 0;
+                player.jumpBufferTimer = 0;
+                synth.playJump();
+                player.face = '🤩';
+            }
+
+            // Apply horizontal velocity
+            player.x += player.vx;
+            player.isGrounded = false;
+
+            // X-Axis Platform boundaries check
+            currentLvlObj.platforms.forEach(p => {
+                if (p.ghost) return; // Skip collision entirely for ghost platforms!
+                if (checkOverlap(player, p)) {
+                    if (p.fake) {
+                        if (!p.isCrumbling) {
+                            p.isCrumbling = true;
+                            p.crumbleTimer = 15; // Delay window before collapsing
+                            synth.playTrollLaugh();
+                        }
+                    } else {
+                        if (player.vx > 0) player.x = p.x - player.width;
+                        else if (player.vx < 0) player.x = p.x + p.width;
+                    }
+                }
+            });
+
+            // Apply vertical velocity
+            player.y += player.vy;
+
+            // Y-Axis Platform boundaries check
+            currentLvlObj.platforms.forEach(p => {
+                if (p.ghost) return; // Skip collision entirely for ghost platforms!
+                if (checkOverlap(player, p)) {
+                    if (p.fake) {
+                        if (!p.isCrumbling) {
+                            p.isCrumbling = true;
+                            p.crumbleTimer = 15; 
+                            synth.playTrollLaugh();
+                        }
+                        if (p.crumbleTimer > 0) {
+                            if (player.vy > 0) { 
+                                player.y = p.y - player.height;
+                                player.vy = 0;
+                                player.isGrounded = true;
+                            } else if (player.vy < 0) { 
+                                player.y = p.y + p.height;
+                                player.vy = 0;
+                            }
+                        }
+                    } else if (p.behavior === 'falling-bridge') {
+                        if (!p.isCrumbling) {
+                            p.isCrumbling = true;
+                            synth.playTrollLaugh();
+                        }
+                        if (player.vy > 0) {
+                            player.y = p.y - player.height;
+                            player.vy = p.vy; 
+                            player.isGrounded = true;
+                        }
+                    } else if (p.behavior === 'trampoline-trap') {
+                        if (player.vy > 0) {
+                            player.y = p.y - player.height;
+                            player.vy = -14.5; // Launches player sky-high into danger
+                            synth.playSpring();
+                            synth.playTrollLaugh();
+                        }
+                    } else {
+                        if (player.vy > 0) { 
+                            player.y = p.y - player.height;
+                            player.vy = 0;
+                            player.isGrounded = true;
+
+                            if (p.behavior === 'invert-walk') {
+                                if (!player.invertedControls) {
+                                    player.invertedControls = true;
+                                    synth.playTrollLaugh();
+                                }
+                            }
+                        } else if (player.vy < 0) { 
+                            player.y = p.y + p.height;
+                            player.vy = 0;
+                        }
+                    }
+                }
+            });
+
+            // Trigger and Move Ceiling Falling Traps
+            currentLvlObj.trolls.forEach(t => {
+                if (!t.triggered && player.x + player.width > t.triggerX && player.x < t.triggerX + t.triggerW) {
+                    t.triggered = true;
+                    if (t.type === 'ceiling-spike' || t.type === 'falling-block') {
+                        t.vy = 4;
+                        synth.playExplosion();
+                    } else if (t.type === 'fake-checkpoint' || t.type === 'fake-checkpoint-teleport') {
+                        t.triggered = true;
+                    }
+                }
+
+                if (t.triggered) {
+                    if (t.type === 'ceiling-spike' || t.type === 'falling-block') {
+                        t.y += t.vy;
+                        t.vy += 0.5; // Acceleration downwards
+                    }
+                }
+            });
+
+            // Check boundary edges
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+            // Falling off map
+            if (player.y > canvas.height) {
+                triggerDeath();
+            }
+
+            // Spike popup tracking & execution
+            currentLvlObj.spikes.forEach(s => {
+                // Expanding Spike Mechanics
+                if (s.expanding) {
+                    const centerPlayerX = player.x + player.width / 2;
+                    const centerSpikeX = s.x + s.width / 2;
+                    // If player is horizontally within 70 pixels, grow spike rapidly upwards relative to its true base anchor
+                    if (Math.abs(centerPlayerX - centerSpikeX) < 70) {
+                        s.heightVar = 55; // Grow tall
+                        s.y = (s.initialY + s.initialHeight) - s.heightVar; 
+                    } else {
+                        s.heightVar = s.initialHeight;
+                        s.y = s.initialY; // Default baseline platform top position
+                    }
+                }
+
+                if (s.visible && checkOverlap(player, s)) {
+                    triggerDeath();
+                }
+                
+                // Active trigger spike popups across levels
+                if (s.triggerId === 'popup-spike-l1' && !s.visible && player.x > 670) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'popup-spike-l3' && !s.visible && player.x > 690) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'surprise-spike-l4' && !s.visible && player.x > 330) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'final-spike' && !s.visible && player.x > 690) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'popup-spike-l6' && !s.visible && player.x > 670) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'popup-spike-l7' && !s.visible && player.x > 670) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'popup-spike-l8' && !s.visible && player.x > 680) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'popup-spike-l9' && !s.visible && player.x > 490) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+                if (s.triggerId === 'final-spike-l10' && !s.visible && player.x > 680) {
+                    s.visible = true;
+                    synth.playTrollLaugh();
+                }
+            });
+
+            // Collision against falling debris block hazards & fake flags
+            currentLvlObj.trolls.forEach(t => {
+                if (t.type === 'fake-checkpoint' && t.triggered) {
+                    if (checkOverlap(player, t)) {
+                        // Immediately trigger spike beneath the player
+                        triggerDeath();
+                    }
+                } else if (t.type === 'fake-checkpoint-teleport' && t.triggered) {
+                    if (checkOverlap(player, t)) {
+                        // Teleport player back to start instead of killing you! (Maximum frustration)
+                        synth.playTrollLaugh();
+                        player.x = currentLvlObj.spawn.x;
+                        player.y = currentLvlObj.spawn.y;
+                        player.vx = 0;
+                        player.vy = 0;
+                        t.triggered = false;
+                        bannerText.innerHTML = `🌀 <span class="text-indigo-400 font-bold">BAITED:</span> Teleported back to spawn! Zero deaths added, but all your progress was reset.`;
+                    }
+                } else {
+                    if (checkOverlap(player, t)) {
+                        triggerDeath();
+                    }
+                }
+            });
+
+            // Goal criteria checking
+            if (checkOverlap(player, currentLvlObj.goal)) {
+                nextLevel();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Safe fallback to draw the last available layout behind the victory screen
+            const safeLvlIndex = Math.min(currentLevel, levels.length - 1);
+            const lvl = levels[safeLvlIndex];
+
+            // Draw Background grid elements
+            ctx.strokeStyle = '#0e1726';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw Platforms
+            lvl.platforms.forEach(p => {
+                ctx.save();
+                ctx.shadowBlur = p.slippery ? 8 : (p.isCrumbling ? 10 : 0);
+                ctx.shadowColor = p.slippery ? '#06b6d4' : (p.isCrumbling ? '#ef4444' : '');
+                
+                if (p.isCrumbling) {
+                    ctx.fillStyle = p.crumbleTimer % 4 < 2 ? '#ef4444' : '#f97316';
+                    const shakeX = (Math.random() - 0.5) * 4;
+                    const shakeY = (Math.random() - 0.5) * 4;
+                    ctx.beginPath();
+                    ctx.roundRect(p.x + shakeX, p.y + shakeY, p.width, p.height, 4);
+                    ctx.fill();
+                } else {
+                    // Unique visual styles for different properties
+                    if (p.slippery) {
+                        ctx.fillStyle = '#0e7490';
+                    } else if (p.behavior === 'invert-walk') {
+                        ctx.fillStyle = '#4338ca';
+                    } else if (p.behavior === 'trampoline-trap') {
+                        ctx.fillStyle = '#22c55e'; // Bright warning-like green spring pad
+                    } else if (p.ghost) {
+                        ctx.fillStyle = '#1e293b'; // Looks completely identical to solid color to match trolling spec
+                    } else {
+                        ctx.fillStyle = '#1e293b';
+                    }
+                    ctx.beginPath();
+                    ctx.roundRect(p.x, p.y, p.width, p.height, 4);
+                    ctx.fill();
+                }
+                
+                ctx.strokeStyle = p.slippery ? '#06b6d4' : (p.isCrumbling ? '#f87171' : (p.behavior === 'trampoline-trap' ? '#4ade80' : '#334155'));
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Overlay a trampoline texture pattern on springboards
+                if (p.behavior === 'trampoline-trap') {
+                    ctx.fillStyle = '#15803d';
+                    ctx.fillRect(p.x + 5, p.y + 5, p.width - 10, p.height / 2);
+                }
+                
+                ctx.restore();
+            });
+
+            // Draw Spikes
+            lvl.spikes.forEach(s => {
+                if (!s.visible) return;
+                
+                ctx.fillStyle = '#ef4444';
+                ctx.strokeStyle = '#b91c1c';
+                ctx.lineWidth = 1.5;
+
+                const spikeWidth = 15;
+                const numSpikes = Math.ceil(s.width / spikeWidth);
+                const currentHeight = s.heightVar || s.height;
+                
+                for (let i = 0; i < numSpikes; i++) {
+                    const sx = s.x + (i * spikeWidth);
+                    ctx.beginPath();
+                    ctx.moveTo(sx, s.y + currentHeight);
+                    ctx.lineTo(sx + spikeWidth/2, s.y);
+                    ctx.lineTo(sx + spikeWidth, s.y + currentHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            });
+
+            // Draw falling hazards & fake flags
+            lvl.trolls.forEach(t => {
+                if (t.type === 'falling-block' && t.triggered) {
+                    ctx.fillStyle = '#ea580c';
+                    ctx.fillRect(t.x, t.y, t.width, t.height);
+                    ctx.strokeStyle = '#f97316';
+                    ctx.strokeRect(t.x, t.y, t.width, t.height);
+                } else if (t.type === 'ceiling-spike' && t.triggered) {
+                    ctx.fillStyle = '#dc2626';
+                    ctx.beginPath();
+                    ctx.moveTo(t.x, t.y);
+                    ctx.lineTo(t.x + t.width, t.y);
+                    ctx.lineTo(t.x + t.width/2, t.y + t.height);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (t.type === 'fake-checkpoint' || t.type === 'fake-checkpoint-teleport') {
+                    // Draw a highly convincing golden-yellow checkpoint flag scaled to custom dimensions
+                    ctx.save();
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#eab308';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(t.x, t.y, 3, t.height);
+                    
+                    ctx.fillStyle = '#eab308'; // Golden flag instead of safe green flag
+                    ctx.beginPath();
+                    ctx.moveTo(t.x + 3, t.y);
+                    ctx.lineTo(t.x + t.width, t.y + t.height * 0.25);
+                    ctx.lineTo(t.x + 3, t.y + t.height * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+
+            // Draw Goal Flag
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#22c55e';
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(lvl.goal.x, lvl.goal.y, 4, lvl.goal.height);
+            
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.moveTo(lvl.goal.x + 4, lvl.goal.y);
+            ctx.lineTo(lvl.goal.x + 30, lvl.goal.y + 12);
+            ctx.lineTo(lvl.goal.x + 4, lvl.goal.y + 24);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // Draw Player Cube (only if the game isn't finished and player didn't die)
+            if (!player.deathTriggered && currentLevel < levels.length) {
+                player.draw();
+            }
+
+            // Draw Particle explosions
+            drawParticles();
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        // Screen Intro button mapping
+        document.getElementById('start-game-btn').addEventListener('click', () => {
+            document.getElementById('screen-intro').classList.add('hidden');
+            synth.init();
+            synth.playJump();
+            resetLevel();
+        });
+
+        document.getElementById('restart-game-btn').addEventListener('click', () => {
+            document.getElementById('screen-victory').classList.add('hidden');
+            deaths = 0;
+            playTime = 0;
+            currentLevel = 0;
+            deathCountText.textContent = "0";
+            timerCountText.textContent = "00:00";
+            bannerText.textContent = "🎮 Keyboard: A/D (or arrows) to move, Space/W to jump. Touch controls below.";
+            levelIndicator.textContent = "Level 1/10";
+            resetLevel();
+        });
+
+        // Initialize loop on load
+        window.onload = function() {
+            loop();
+        };
+    </script>
+</body>
+</html>

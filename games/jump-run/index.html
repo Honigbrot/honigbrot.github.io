@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jump &amp; Run – Quiz Runner</title>
+  <meta
+    name="description"
+    content="A classroom jump and run quiz game where correct answers clear obstacles."
+  />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #87ceeb 0%, #dff6ff 100%);
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #ground {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 120px;
+      background: #4caf50;
+      border-top: 5px solid #2e7d32;
+    }
+
+    #player {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #ff9800;
+      border-radius: 12px;
+      bottom: 120px;
+      left: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 30px;
+    }
+
+    .obstacle {
+      position: absolute;
+      width: 50px;
+      height: 70px;
+      background: #e53935;
+      bottom: 120px;
+      border-radius: 8px;
+    }
+
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.9);
+      padding: 15px;
+      border-radius: 12px;
+      width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    #question {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .answer {
+      display: block;
+      width: 100%;
+      margin: 6px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .answer:hover {
+      background: #0d47a1;
+    }
+
+    #score {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    #startScreen,
+    #gameOver {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .big-btn {
+      margin-top: 20px;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      background: #ff9800;
+      color: black;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .big-btn:hover {
+      background: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="player">😀</div>
+    <div id="ground"></div>
+
+    <div id="ui">
+      <div id="question">Frage lädt...</div>
+      <div id="answers"></div>
+      <div id="score">Punkte: 0</div>
+    </div>
+
+    <div id="startScreen">
+      <h1>🏃 Jump &amp; Run – Quiz Runner</h1>
+      <p>
+        Beantworte Fragen richtig, um Hindernisse zu stoppen!<br><br>
+        Jede falsche Antwort macht das Spiel schneller.
+      </p>
+      <button class="big-btn" onclick="startGame()">Spiel starten</button>
+    </div>
+
+    <div id="gameOver" class="hidden">
+      <h1>💥 Game Over</h1>
+      <p id="finalScore"></p>
+      <button class="big-btn" onclick="restartGame()">Nochmal spielen</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Wie viele Kontinente gibt es?",
+        answers: ["5", "6", "7", "8"],
+        correct: 2,
+      },
+      {
+        question: "Was brauchen Pflanzen für die Photosynthese?",
+        answers: ["Licht", "Plastik", "Steine", "Milch"],
+        correct: 0,
+      },
+      {
+        question: "Wie heißt die Hauptstadt von Österreich?",
+        answers: ["Linz", "Salzburg", "Graz", "Wien"],
+        correct: 3,
+      },
+      {
+        question: "Welche Sprache spricht man in England?",
+        answers: ["Deutsch", "Englisch", "Spanisch", "Italienisch"],
+        correct: 1,
+      },
+      {
+        question: "Wie viele Minuten hat eine Stunde?",
+        answers: ["100", "30", "60", "90"],
+        correct: 2,
+      }
+    ];
+
+    const player = document.getElementById("player");
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const scoreEl = document.getElementById("score");
+    const gameOverScreen = document.getElementById("gameOver");
+    const finalScoreEl = document.getElementById("finalScore");
+
+    let currentQuestion = 0;
+    let score = 0;
+    let obstacle;
+    let obstacleX = window.innerWidth;
+    let gameSpeed = 6;
+    let gameRunning = false;
+
+    function loadQuestion() {
+      const q = questions[currentQuestion % questions.length];
+      questionEl.textContent = q.question;
+      answersEl.innerHTML = "";
+
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.className = "answer";
+        btn.textContent = answer;
+        btn.onclick = () => checkAnswer(index);
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(index) {
+      const q = questions[currentQuestion % questions.length];
+
+      if (index === q.correct) {
+        score++;
+        scoreEl.textContent = `Punkte: ${score}`;
+
+        if (obstacle) {
+          obstacle.remove();
+          obstacle = null;
+        }
+
+        obstacleX = window.innerWidth;
+      } else {
+        gameSpeed += 1;
+      }
+
+      currentQuestion++;
+      loadQuestion();
+    }
+
+    function createObstacle() {
+      obstacle = document.createElement("div");
+      obstacle.className = "obstacle";
+      obstacle.style.left = obstacleX + "px";
+      document.getElementById("game").appendChild(obstacle);
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      if (!obstacle) {
+        createObstacle();
+      }
+
+      obstacleX -= gameSpeed;
+      obstacle.style.left = obstacleX + "px";
+
+      const playerRect = player.getBoundingClientRect();
+      const obstacleRect = obstacle.getBoundingClientRect();
+
+      const collision = !(
+        playerRect.right < obstacleRect.left ||
+        playerRect.left > obstacleRect.right ||
+        playerRect.bottom < obstacleRect.top ||
+        playerRect.top > obstacleRect.bottom
+      );
+
+      if (collision) {
+        endGame();
+        return;
+      }
+
+      if (obstacleX < -60) {
+        obstacle.remove();
+        obstacle = null;
+        obstacleX = window.innerWidth;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+      document.getElementById("startScreen").classList.add("hidden");
+      gameRunning = true;
+      loadQuestion();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      finalScoreEl.textContent = `Du hast ${score} Punkte erreicht!`;
+      gameOverScreen.classList.remove("hidden");
+    }
+
+    function restartGame() {
+      location.reload();
+    }
+  </script>
+</body>
+</html>
