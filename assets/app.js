@@ -196,7 +196,9 @@ const output = {
   flourHint: $('#flourHint'),
 };
 
-const controlIds = Object.values(controls).map((control) => control.id);
+const controlIds = Object.values(controls)
+  .filter(Boolean)
+  .map(control => control.id);
 
 function formatDecimal(value, decimals = 1) {
   return Number(value).toFixed(decimals).replace('.', ',');
