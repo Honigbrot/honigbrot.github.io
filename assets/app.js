@@ -1,343 +1,29 @@
 const STYLES = [
-{
-  id: 'neapolitan',
-  name: 'Neapolitanisch',
-  emoji: '🇮🇹',
-  desc: 'Dünn, luftig, weicher Rand',
-  info: '<strong>Neapolitanische Pizza für Zuhause</strong> — Magerer Teig ohne Öl, lange kalte Fermentation und weicher, luftiger Cornicione. Für Home-Pizzaöfen wie den G3 Ferrari funktionieren etwa 63–66% Hydration besonders gut. Backzeit je nach Ofen meist ca. 4–6 Minuten.',
-  defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
-  hasOil: false,
-  ferment: '48h kalte Gare empfohlen',
-  flour: 'Starkes Tipo 00 Mehl empfohlen, z.B. Caputo Cuoco',
-  tip: 'Eine lange kalte Gare entwickelt komplexe Aromen und verbessert die Struktur. Der Teig soll weich und leicht klebrig sein – widerstehe dem Drang, zu viel zusätzliches Mehl einzuarbeiten.',
-  steps: (r) => [
-    {
-      emoji: '⚖️',
-      title: 'Zutaten abwiegen',
-      time: '5 Min',
-      detail: `<strong>${r.flour}g</strong> Caputo Cuoco Tipo 00 Mehl, <strong>${r.water}g</strong> Wasser (18–22°C), <strong>${r.salt}g</strong> feines Meersalz, <strong>${r.yeast}g</strong> Trockenhefe (oder ${(parseFloat(r.yeast) * 3).toFixed(1)}g Frischhefe) exakt abwiegen.`,
-      check: 'Alle Zutaten vorbereitet? ✓'
-    },
-
-    {
-      emoji: '💧',
-      title: 'Hefe einrühren',
-      time: '2 Min',
-      detail: 'Die Trockenhefe in etwa 80% des Wassers einrühren und kurz stehen lassen, damit sie sich gut verteilt und hydratisiert.'
-    },
-
-    {
-      emoji: '🌾',
-      title: 'Mehl und Wasser verbinden',
-      time: '5 Min',
-      detail: 'Das Hefewasser nach und nach zum Mehl geben und mit der Hand oder einer Teigkarte vermengen. Das restliche Wasser langsam einarbeiten. Nur so lange mischen, bis kein trockenes Mehl mehr sichtbar ist – der Teig darf noch rau und ungleichmäßig aussehen.'
-    },
-
-    {
-      emoji: '⏸️',
-      title: 'Erste Ruhephase',
-      time: '15 Min',
-      detail: 'Den grob vermischten Teig abgedeckt ruhen lassen. Dadurch hydratisiert das Mehl vollständig und das Gluten beginnt sich von selbst zu entwickeln – das erleichtert das spätere Handkneten deutlich.'
-    },
-
-    {
-      emoji: '🧂',
-      title: 'Salz einarbeiten',
-      time: '2–3 Min',
-      detail: `Das <strong>${r.salt}g</strong> Salz in einem kleinen Schluck Wasser auflösen und gleichmäßig in den Teig einkneten. Salz erst nach der Ruhephase hinzufügen – dadurch bleibt der Teig geschmeidiger und leichter zu bearbeiten.`
-    },
-
-    {
-      emoji: '💪',
-      title: 'Kneten',
-      time: '8–10 Min',
-      detail: 'Auf leicht bemehlter Arbeitsfläche mit der Drücken-Falten-Drehen-Methode kneten. Der Teig soll glatt, elastisch und leicht klebrig werden – aber nicht nass kleben. Ein leichter Fenstertest reicht: Der Teig muss nicht maximal straff ausgeknetet sein.'
-    },
-
-    {
-      emoji: '😴',
-      title: 'Zweite Ruhephase',
-      time: '15–20 Min',
-      detail: 'Den Teig nach dem Kneten erneut abgedeckt ruhen lassen. Dadurch entspannt sich das Gluten und der anschließende Stretch & Fold funktioniert deutlich besser.'
-    },
-
-    {
-      emoji: '🪢',
-      title: 'Stretch & Fold',
-      time: '1 Min',
-      detail: 'Einmal Stretch & Fold durchführen: Den Teig von jeder Seite vorsichtig nach oben ziehen und zur Mitte falten. Dadurch baut der Teig zusätzliche Spannung und Struktur auf, ohne zu fest zu werden.'
-    },
-
-    {
-      emoji: '🫙',
-      title: 'Kurze Stockgare',
-      time: '20–30 Min Raumtemperatur',
-      detail: 'Den Teig abgedeckt nur kurz bei Raumtemperatur anspringen lassen. Für eine lange kalte Gare nicht warten, bis er stark aufgeht – die Hauptfermentation passiert langsam im Kühlschrank.'
-    },
-
-    {
-      emoji: '⚙️',
-      title: 'Teilen & Kugeln formen',
-      time: '5–10 Min',
-      detail: `Den Teig in <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen. Die Teiglinge straff rundschleifen: Die Außenseiten nach unten ziehen und auf der Arbeitsfläche rotieren, bis Spannung entsteht.`
-    },
-
-    {
-  emoji: '❄️',
-  title: 'Kalte Gare',
-  time: '48h empfohlen',
-  detail: 'Die Teiglinge in einzelne leicht geölte Behälter geben und gut abdecken. Etwa 48 Stunden kalt führen.'
-},
-
-{
-  emoji: '🌡️',
-  title: 'Akklimatisieren',
-  time: '4–5h Raumtemperatur',
-  detail: 'Die Teiglinge 4–5 Stunden vor dem Backen aus dem Kühlschrank nehmen. Sie sollen weich, entspannt und leicht aufgegangen sein. Wenn der Teig noch stark zurückspringt oder kalt wirkt, benötigt er mehr Zeit.'
-},
-
-    {
-      emoji: '🔥',
-      title: 'Ofen vorheizen',
-      time: '20–30 Min',
-      detail: 'Den G3 Ferrari oder Pizzaofen auf maximale Temperatur vollständig vorheizen. Der Stein muss komplett durchgeheizt sein. Zwischen den Pizzen kurz regenerieren lassen.'
-    },
-
-    {
-      emoji: '🤌',
-      title: 'Teig ausbreiten',
-      time: '2–3 Min pro Pizza',
-      detail: 'Den Teigling vorsichtig in Semola oder wenig Mehl legen. Mit den Fingerspitzen von der Mitte nach außen drücken und dabei einen luftigen Rand stehen lassen. Nicht mit dem Nudelholz arbeiten und den Rand nicht entgasen.'
-    },
-
-    {
-      emoji: '🍕',
-      title: 'Belegen & backen',
-      time: '4–6 Min',
-      detail: 'Mit wenig Sauce und gut abgetropfter Mozzarella belegen. Die Pizza auf den heißen Stein geben und nach Bedarf drehen. Backen, bis der Rand stark aufgegangen ist und schöne dunkle Röststellen entstehen.'
-    },
-  ],
-},
-{
-  id: 'neapolitan-biga',
-  name: 'Neapolitanisch',
-  emoji: '🇮🇹',
-  desc: 'Mit Biga-Vorteig',
-  info: '<strong>Neapolitanische Pizza mit Biga</strong> — Die Biga ist ein fester italienischer Vorteig (ca. 50% Hydration). 30% des Mehls fermentieren 18–24 Stunden bei kühler Raumtemperatur. Das Ergebnis: tiefere, komplexere Aromen, bessere Teigstruktur und ein besonders luftiger Cornicione.',
-  defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
-  hasOil: false,
-  hasPreferment: true,
-  prefermentType: 'biga',
-  prefermentRatio: 0.30,
-  ferment: 'Biga 18–24h + 24–48h kalte Gare',
-  flour: 'Starkes Tipo 00 Mehl empfohlen, z.B. Caputo Cuoco',
-  tip: 'Die Biga ist fertig, wenn sie sichtlich aufgegangen ist, Risse an der Oberfläche zeigt und angenehm nach Alkohol riecht. Am einfachsten in den Hauptteig einarbeiten: Biga in kleine Stücke reißen und geduldig einkneten – sie löst sich langsam auf.',
-  steps: (r) => {
-    const bigaFlour = roundTo(r.flour * 0.30, 0);
-    const bigaWater = roundTo(bigaFlour * 0.50, 0);
-    const bigaYeast = Math.max(0.1, roundTo(bigaFlour * 0.001, 1));
-    const mainFlour = r.flour - bigaFlour;
-    const mainWater = r.water - bigaWater;
-    const mainYeast = Math.max(0, roundTo(r.yeast - bigaYeast, 2));
-    return [
-      {
-        emoji: '⚖️',
-        title: 'Biga abwiegen',
-        time: 'Tag 1 · 5 Min',
-        detail: `Für die Biga: <strong>${bigaFlour}g</strong> Caputo Cuoco Tipo 00, <strong>${bigaWater}g</strong> kaltes Wasser (15–18°C) und <strong>${bigaYeast}g</strong> Trockenhefe grob vermengen. Die Biga ist ein fester Vorteig – sie muss nicht glatt sein, nur gleichmäßig befeuchtet.`,
-        check: 'Alle Bigazutaten eingearbeitet? ✓'
-      },
-      {
-        emoji: '⏳',
-        title: 'Biga fermentieren lassen',
-        time: '18–24h bei 18–20°C',
-        detail: 'Die Biga abgedeckt bei kühler Raumtemperatur (18–20°C) 18–24 Stunden reifen lassen. Alternativ: 4–6h bei Zimmertemperatur, dann 48h im Kühlschrank. Die Biga ist reif, wenn sie sichtlich aufgegangen ist, Risse an der Oberfläche zeigt und angenehm nach Alkohol riecht.'
-      },
-      {
-        emoji: '⚖️',
-        title: 'Hauptteig abwiegen',
-        time: 'Tag 2 · 5 Min',
-        detail: `Für den Hauptteig: <strong>${mainFlour}g</strong> Mehl und <strong>${mainWater}g</strong> Wasser (18–22°C) abwiegen. <strong>${r.salt}g</strong> Salz bereitstellen.${mainYeast > 0 ? ` Zusätzlich <strong>${mainYeast}g</strong> Trockenhefe.` : ''} Die fermentierte Biga in kleine Stücke reißen.`
-      },
-      {
-        emoji: '💧',
-        title: 'Biga einarbeiten',
-        time: '10–15 Min',
-        detail: 'Das Wasser mit dem Mehl kurz vermengen. Die Bigastücke nach und nach einkneten – sie lösen sich langsam auf. Geduldig arbeiten: Die Biga braucht etwas Zeit, bis sie vollständig in den Teig integriert ist.'
-      },
-      {
-        emoji: '🧂',
-        title: 'Salz einarbeiten',
-        time: '2–3 Min',
-        detail: `Das <strong>${r.salt}g</strong> Salz in einem kleinen Schluck Wasser auflösen und gleichmäßig einkneten.`
-      },
-      {
-        emoji: '💪',
-        title: 'Kneten',
-        time: '6–8 Min',
-        detail: 'Auf leicht bemehlter Arbeitsfläche kneten, bis der Teig glatt und elastisch ist. Durch die Biga ist das Gluten bereits gut vorstrukturiert – kürzer kneten als beim direkten Teig.'
-      },
-      {
-        emoji: '😴',
-        title: 'Ruhephase',
-        time: '20 Min',
-        detail: 'Den Teig abgedeckt 20 Minuten ruhen lassen. Das Gluten entspannt sich und das folgende Stretch & Fold gelingt leichter.'
-      },
-      {
-        emoji: '🪢',
-        title: 'Stretch & Fold',
-        time: '1 Min',
-        detail: 'Einmal Stretch & Fold durchführen: Den Teig von jeder Seite vorsichtig hochziehen und zur Mitte falten.'
-      },
-      {
-        emoji: '⚙️',
-        title: 'Teilen & Kugeln formen',
-        time: '5–10 Min',
-        detail: `Den Teig in <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen und straff rundschleifen.`
-      },
-      {
-        emoji: '❄️',
-        title: 'Kalte Gare',
-        time: '24–48h',
-        detail: 'Die Teiglinge in einzelne leicht geölte Behälter geben, gut abdecken und 24–48 Stunden kühlstellen.'
-      },
-      {
-        emoji: '🌡️',
-        title: 'Akklimatisieren',
-        time: '4–5h Raumtemperatur',
-        detail: 'Die Teiglinge 4–5 Stunden vor dem Backen aus dem Kühlschrank nehmen. Sie sollen weich, entspannt und leicht aufgegangen sein.'
-      },
-      {
-        emoji: '🔥',
-        title: 'Ofen vorheizen',
-        time: '20–30 Min',
-        detail: 'Den G3 Ferrari oder Pizzaofen auf maximale Temperatur vollständig vorheizen. Der Stein muss komplett durchgeheizt sein.'
-      },
-      {
-        emoji: '🤌',
-        title: 'Teig ausbreiten',
-        time: '2–3 Min pro Pizza',
-        detail: 'Den Teigling in Semola legen. Mit den Fingerspitzen von der Mitte nach außen drücken und einen luftigen Rand stehen lassen. Nicht mit dem Nudelholz arbeiten.'
-      },
-      {
-        emoji: '🍕',
-        title: 'Belegen & backen',
-        time: '4–6 Min',
-        detail: 'Mit wenig Sauce und gut abgetropfter Mozzarella belegen. Backen, bis der Rand stark aufgegangen ist und schöne dunkle Röststellen entstehen.'
-      },
-    ];
+  {
+    id: 'neapolitan',
+    name: 'Neapolitanisch',
+    emoji: '🇮🇹',
+    desc: 'Dünn, luftig, Röststellen',
+    info: '<strong>Neapolitanische Pizza (Napoletana)</strong> — Die originale holzofengebackene Pizza. Hohe Hydration, kaum Öl, lange kalte Fermentation. Backzeit nur 60–90 Sekunden bei über 450°C. Weicher, luftiger Cornicione mit Leopardenflecken.',
+    defaults: { weight: 280, hydration: 65, salt: 2.5, yeast: 0.1, oil: 0 },
+    hasOil: false,
+    ferment: '24–72h kalte Gare',
+    flour: 'Tipo 00 Mehl empfohlen',
+    tip: 'Am besten mit Tipo 00 Mehl arbeiten. Eine lange kalte Gare (48–72h) entwickelt komplexe Aromen. Der Teig soll sehr weich sein – widerstehe dem Drang, mehr Mehl hinzuzufügen.',
+    steps: (r) => [
+      { emoji: '⚖️', title: 'Zutaten abwiegen', time: '5 Min', detail: `<strong>${r.flour}g</strong> Tipo 00 Mehl (oder Weizenmehl Type 550), <strong>${r.water}g</strong> Wasser (18–22°C), <strong>${r.salt}g</strong> feines Meersalz, <strong>${r.yeast}g</strong> Trockenhefe (oder ${(parseFloat(r.yeast)*3).toFixed(1)}g Frischhefe) abwiegen.`, check: 'Alle Zutaten abgewogen? ✓' },
+      { emoji: '💧', title: 'Hefe auflösen', time: '5 Min', detail: 'Die Hefe in etwa 80% des Wassers auflösen. Sanft umrühren und 2–3 Minuten warten, bis sich leichter Schaum bildet.' },
+      { emoji: '🌾', title: 'Mehl und Wasser verbinden', time: '5 Min', detail: 'Das Hefewasser nach und nach zum Mehl geben, mit der Hand oder einer Teigkarte vermischen. Das restliche Wasser langsam einarbeiten – der Teig sieht zunächst ungleichmäßig aus. Mischen, bis kein trockenes Mehl mehr sichtbar ist.' },
+      { emoji: '🧂', title: 'Salz einarbeiten', time: '2 Min', detail: `Das <strong>${r.salt}g</strong> Salz im restlichen Wasser auflösen und in den Teig einkneten. Salz niemals direkt mit der Hefe in Kontakt bringen.` },
+      { emoji: '💪', title: 'Kneten', time: '10–15 Min', detail: 'Auf leicht bemehlter Fläche mit der Drücken-Falten-Drehen-Methode kneten. Der Teig soll glatt, elastisch und leicht klebrig werden – aber nicht nass kleben. Fenstertest: Ein kleines Stück auseinanderziehen – es soll durchscheinend sein, ohne zu reißen.' },
+      { emoji: '🫙', title: 'Stockgare', time: '2h Raumtemperatur', detail: 'Den Teig in eine leicht geölte Schüssel legen, mit Frischhaltefolie abdecken. Bei Raumtemperatur (22–24°C) ca. 2 Stunden gehen lassen, bis er um etwa 50% größer ist.' },
+      { emoji: '⚙️', title: 'Teilen & Kugeln formen', time: '5 Min', detail: `In <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen. Zu straffen Kugeln formen: Die Ränder nach unten ziehen und den Teigling auf der Arbeitsfläche rotieren, um Oberflächenspannung aufzubauen.` },
+      { emoji: '❄️', title: 'Kalte Gare', time: '24–72h', detail: 'Teiglinge in einzelne geölte Behälter oder auf ein Blech legen, abdecken und 24–72 Stunden kühlstellen. Länger = mehr Aroma. 2–3 Stunden vor dem Backen aus dem Kühlschrank nehmen.' },
+      { emoji: '🔥', title: 'Ofen vorheizen', time: '45–60 Min', detail: 'Ofen auf maximale Temperatur (250–300°C) vorheizen. Einen Backstein, Backstahl oder umgedrehtes schweres Backblech auf dem obersten Rost platzieren. Er muss glühend heiß sein.' },
+      { emoji: '🤌', title: 'Teig ausbreiten', time: '3 Min pro Pizza', detail: 'Niemals ein Nudelholz verwenden! Mit den Fingerspitzen von der Mitte nach außen drücken, dann über die Knöchel stretchen oder die „Slap"-Technik anwenden. Dabei rotieren. Ziel: ~30cm Durchmesser mit dickerem Rand (Cornicione).' },
+      { emoji: '🍕', title: 'Belegen & backen', time: '6–10 Min', detail: 'San-Marzano-Tomaten (zerdrückt), frische Mozzarella und einen Schuss Olivenöl auftragen. Mit einer gut bemehlten Pizzaschaufel auf den heißen Stein schieben. Backen, bis der Rand stellenweise dunkel und der Käse blasig ist.' },
+    ],
   },
-},
-{
-  id: 'neapolitan-poolish',
-  name: 'Neapolitanisch',
-  emoji: '🇮🇹',
-  desc: 'Mit Poolish',
-  info: '<strong>Neapolitanische Pizza mit Poolish</strong> — Der Poolish ist ein flüssiger Vorteig mit 100% Hydration (gleiche Gewichte Mehl und Wasser). 30% des Mehls fermentieren 8–16 Stunden bei Raumtemperatur. Das Ergebnis: mildere, fein-aromatische Kruste mit offener Porung und besonders dehnbarem Teig.',
-  defaults: { weight: 280, hydration: 65, salt: 2.8, yeast: 0.07, oil: 0 },
-  hasOil: false,
-  hasPreferment: true,
-  prefermentType: 'poolish',
-  prefermentRatio: 0.30,
-  ferment: 'Poolish 8–16h + 24–48h kalte Gare',
-  flour: 'Starkes Tipo 00 Mehl empfohlen, z.B. Caputo Cuoco',
-  tip: 'Der Poolish ist auf dem Höhepunkt, wenn die Kuppel gerade beginnt einzufallen – dann ist er am aromatischsten. Zu kurz fermentierter Poolish gibt wenig Aroma; zu lang fermentierter Poolish macht den Teig zu sauer und schwer handhabbar.',
-  steps: (r) => {
-    const poolishFlour = roundTo(r.flour * 0.30, 0);
-    const poolishWater = poolishFlour;
-    const poolishYeast = Math.max(0.1, roundTo(poolishFlour * 0.001, 1));
-    const mainFlour = r.flour - poolishFlour;
-    const mainWater = r.water - poolishWater;
-    const mainYeast = Math.max(0, roundTo(r.yeast - poolishYeast, 2));
-    return [
-      {
-        emoji: '⚖️',
-        title: 'Poolish ansetzen',
-        time: 'Abends · 5 Min',
-        detail: `Für den Poolish: <strong>${poolishFlour}g</strong> Caputo Cuoco Tipo 00, <strong>${poolishWater}g</strong> Wasser (20°C) und <strong>${poolishYeast}g</strong> Trockenhefe glatt verrühren. Der Poolish hat die Konsistenz von dickem Pfannkuchenteig.`,
-        check: 'Poolish gleichmäßig verrührt? ✓'
-      },
-      {
-        emoji: '⏳',
-        title: 'Poolish fermentieren lassen',
-        time: '8–16h bei Raumtemperatur',
-        detail: 'Den Poolish abgedeckt bei Raumtemperatur (20–22°C) 8–16 Stunden reifen lassen. Er ist fertig, wenn er sich verdoppelt hat, die Oberfläche blasig ist und die Kuppel gerade beginnt einzufallen. Das ist der ideale Zeitpunkt.'
-      },
-      {
-        emoji: '⚖️',
-        title: 'Hauptteig abwiegen',
-        time: 'Am nächsten Morgen · 5 Min',
-        detail: `Für den Hauptteig: <strong>${mainFlour}g</strong> Mehl und <strong>${mainWater}g</strong> Wasser (18°C) abwiegen. <strong>${r.salt}g</strong> Salz bereitstellen.${mainYeast > 0 ? ` Zusätzlich <strong>${mainYeast}g</strong> Trockenhefe.` : ''} Den reifen Poolish bereithalten.`
-      },
-      {
-        emoji: '⏸️',
-        title: 'Autolyse',
-        time: '20 Min',
-        detail: 'Das Mehl mit dem Wasser vermengen, bis kein trockenes Mehl sichtbar ist. Abgedeckt 20 Minuten ruhen lassen. Das erleichtert das spätere Einarbeiten des Poolish deutlich.'
-      },
-      {
-        emoji: '💧',
-        title: 'Poolish einarbeiten',
-        time: '5–8 Min',
-        detail: 'Den reifen Poolish vollständig einkneten. Der flüssige Poolish lässt sich deutlich einfacher einarbeiten als eine Biga und verbindet sich schnell mit dem Teig.'
-      },
-      {
-        emoji: '🧂',
-        title: 'Salz einarbeiten',
-        time: '2–3 Min',
-        detail: `Das <strong>${r.salt}g</strong> Salz in einem kleinen Schluck Wasser auflösen und gleichmäßig einkneten.`
-      },
-      {
-        emoji: '💪',
-        title: 'Kneten',
-        time: '6–8 Min',
-        detail: 'Auf leicht bemehlter Arbeitsfläche kneten, bis der Teig glatt, elastisch und leicht klebrig ist. Durch den Poolish ist das Gluten bereits gut entwickelt – kürzer kneten als beim direkten Teig.'
-      },
-      {
-        emoji: '🪢',
-        title: 'Stretch & Fold',
-        time: '1 Min',
-        detail: 'Einmal Stretch & Fold durchführen: Den Teig von jeder Seite hochziehen und zur Mitte falten.'
-      },
-      {
-        emoji: '⚙️',
-        title: 'Teilen & Kugeln formen',
-        time: '5–10 Min',
-        detail: `Den Teig in <strong>${r.pizzas}</strong> gleich große Stücke (~${r.weight}g) teilen und straff rundschleifen.`
-      },
-      {
-        emoji: '❄️',
-        title: 'Kalte Gare',
-        time: '24–48h',
-        detail: 'Die Teiglinge in einzelne leicht geölte Behälter geben, gut abdecken und 24–48 Stunden kühlstellen.'
-      },
-      {
-        emoji: '🌡️',
-        title: 'Akklimatisieren',
-        time: '4–5h Raumtemperatur',
-        detail: 'Die Teiglinge 4–5 Stunden vor dem Backen aus dem Kühlschrank nehmen. Sie sollen weich, entspannt und leicht aufgegangen sein.'
-      },
-      {
-        emoji: '🔥',
-        title: 'Ofen vorheizen',
-        time: '20–30 Min',
-        detail: 'Den G3 Ferrari oder Pizzaofen auf maximale Temperatur vollständig vorheizen. Der Stein muss komplett durchgeheizt sein.'
-      },
-      {
-        emoji: '🤌',
-        title: 'Teig ausbreiten',
-        time: '2–3 Min pro Pizza',
-        detail: 'Den Teigling in Semola legen. Mit den Fingerspitzen von der Mitte nach außen drücken und einen luftigen Rand stehen lassen. Nicht mit dem Nudelholz arbeiten.'
-      },
-      {
-        emoji: '🍕',
-        title: 'Belegen & backen',
-        time: '4–6 Min',
-        detail: 'Mit wenig Sauce und gut abgetropfter Mozzarella belegen. Backen, bis der Rand stark aufgegangen ist und schöne dunkle Röststellen entstehen.'
-      },
-    ];
-  },
-},
   {
     id: 'new-york',
     name: 'New York',
@@ -433,14 +119,62 @@ const STYLES = [
 let currentStyle = STYLES[0];
 let doneSteps = new Set();
 
+const FERMENTATION = {
+  8: { yeast: 0.35, label: '8 Stunden bei Raumtemperatur' },
+  24: { yeast: 0.15, label: '24 Stunden (kalt)' },
+  48: { yeast: 0.08, label: '48 Stunden (kalt)' },
+  72: { yeast: 0.05, label: '72 Stunden (kalt)' },
+};
+const FERMENTATION_HOURS = [8, 24, 48, 72];
+
+const FLOURS = {
+  pizzaStrong: { name: 'Starkes Pizzamehl (W 300–320)', note: 'Stabil und ideal für lange kalte Gare.' },
+  pizzaAiry: { name: 'Pizzamehl für hohe Hydration (W 270–300)', note: 'Für weiche Teige und einen besonders luftigen Rand.' },
+  breadStrong: { name: 'Starkes Brotmehl (12–13% Protein)', note: 'Je nach Land z. B. Bread Flour oder kräftiges Type 550.' },
+  pinsa: { name: 'Pinsa-Mehlmischung', note: 'Für sehr weiche, leichte Pinsa-Teige entwickelt.' },
+};
+
+const STYLE_HYDRATION = {
+  neapolitan: { pizzaStrong: 65, pizzaAiry: 68, breadStrong: 63 },
+  'new-york': { pizzaStrong: 62, breadStrong: 62 },
+  detroit: { pizzaStrong: 70, pizzaAiry: 73, breadStrong: 72 },
+  roman: { pizzaAiry: 80, breadStrong: 75, pinsa: 80 },
+  sicilian: { pizzaStrong: 66, pizzaAiry: 69, breadStrong: 68 },
+};
+
+const STYLE_FLOURS = {
+  neapolitan: ['pizzaStrong', 'pizzaAiry', 'breadStrong'],
+  'new-york': ['breadStrong', 'pizzaStrong'],
+  detroit: ['pizzaAiry', 'breadStrong', 'pizzaStrong'],
+  roman: ['pinsa', 'pizzaAiry', 'breadStrong'],
+  sicilian: ['breadStrong', 'pizzaAiry', 'pizzaStrong'],
+};
+
+const STYLE_FERMENTATION_DEFAULTS = {
+  neapolitan: 48,
+  'new-york': 24,
+  detroit: 8,
+  roman: 48,
+  sicilian: 8,
+};
+
+const STYLE_FLOUR_DEFAULTS = {
+  neapolitan: 'pizzaStrong',
+  'new-york': 'breadStrong',
+  detroit: 'breadStrong',
+  roman: 'pinsa',
+  sicilian: 'breadStrong',
+};
+
 const $ = (selector) => document.querySelector(selector);
 
 const controls = {
   pizzas: $('#sliderPizzas'),
   weight: $('#sliderWeight'),
   hydration: $('#sliderHydration'),
+  flour: $('#flourType'),
   salt: $('#sliderSalt'),
-  yeast: $('#sliderYeast'),
+  fermentation: $('#fermentation'),
   oil: $('#sliderOil'),
 };
 
@@ -452,13 +186,14 @@ const output = {
   weight: $('#valWeight'),
   hydration: $('#valHydration'),
   salt: $('#valSalt'),
-  yeast: $('#valYeast'),
+  fermentation: $('#valFermentation'),
   oil: $('#valOil'),
   totalWeight: $('#totalWeight'),
   ingredients: $('#ingredients'),
   progress: $('#progressText'),
   steps: $('#steps'),
   tip: $('#tip'),
+  flourHint: $('#flourHint'),
 };
 
 const controlIds = Object.values(controls).map((control) => control.id);
@@ -478,17 +213,35 @@ function roundTo(val, decimals) {
   return Math.round(val * 10 ** decimals) / 10 ** decimals;
 }
 
+function roundToFive(val) {
+  return Math.round(val / 5) * 5;
+}
+
+function getFermentationHours() {
+  return FERMENTATION_HOURS[+controls.fermentation.value];
+}
+
+function getRecommendedHydration() {
+  return STYLE_HYDRATION[currentStyle.id][controls.flour.value];
+}
+
+function renderFlourOptions(style) {
+  controls.flour.innerHTML = STYLE_FLOURS[style.id]
+    .map(id => `<option value="${id}">${FLOURS[id].name}</option>`)
+    .join('');
+}
+
 function calcRecipe() {
   const pizzas = +controls.pizzas.value;
   const weight = +controls.weight.value;
   const hydration = +controls.hydration.value / 100;
   const saltPct = +controls.salt.value / 100;
-  const yeastPct = +controls.yeast.value / 100;
+  const yeastPct = FERMENTATION[getFermentationHours()].yeast / 100;
   const oilPct = +controls.oil.value / 100;
 
   const totalDough = pizzas * weight;
   const divisor = 1 + hydration + saltPct + yeastPct + (currentStyle.hasOil ? oilPct : 0);
-  const flour = roundTo(totalDough / divisor, 0);
+  const flour = roundToFive(totalDough / divisor);
   const water = roundTo(flour * hydration, 0);
   const salt = roundTo(flour * saltPct, 0);
   const yeast = roundTo(flour * yeastPct, 1);
@@ -509,12 +262,14 @@ function renderStyleGrid() {
 }
 
 function renderStyleInfo() {
+  const fermentation = FERMENTATION[getFermentationHours()];
+  const flour = FLOURS[controls.flour.value];
   output.styleInfo.innerHTML = `
     <div class="info-icon">ℹ️</div>
     <div class="info-text">
       ${currentStyle.info}
       <br/><br/>
-      <strong>Fermentation:</strong> ${currentStyle.ferment} &nbsp;|&nbsp; <strong>Mehl:</strong> ${currentStyle.flour}
+      <strong>Fermentation:</strong> ${fermentation.label} &nbsp;|&nbsp; <strong>Mehl:</strong> ${flour.name}
     </div>
   `;
 }
@@ -524,60 +279,24 @@ function renderControls(r) {
   output.weight.textContent = r.weight;
   output.hydration.textContent = Math.round(+controls.hydration.value);
   output.salt.textContent = formatDecimal(controls.salt.value);
-  output.yeast.textContent = formatYeast(+controls.yeast.value);
+  output.fermentation.textContent = getFermentationHours();
   output.oil.textContent = formatDecimal(controls.oil.value);
-}
-
-function calcPreferment(r) {
-  const ratio = currentStyle.prefermentRatio;
-  const type = currentStyle.prefermentType;
-  const prefFlour = roundTo(r.flour * ratio, 0);
-  const prefWater = type === 'biga' ? roundTo(prefFlour * 0.5, 0) : prefFlour;
-  const prefYeast = Math.max(0.1, roundTo(prefFlour * 0.001, 1));
-  const mainFlour = r.flour - prefFlour;
-  const mainWater = r.water - prefWater;
-  const mainYeast = Math.max(0, roundTo(r.yeast - prefYeast, 2));
-  return { prefFlour, prefWater, prefYeast, mainFlour, mainWater, mainYeast };
+  const flour = FLOURS[controls.flour.value];
+  const hydration = getRecommendedHydration();
+  output.flourHint.textContent = `Für diesen Stil: ca. ${hydration}% Hydration. ${flour.note}`;
 }
 
 function renderIngredients(r) {
-  output.totalWeight.textContent = `${r.total}g gesamt`;
-
-  if (currentStyle.hasPreferment) {
-    const pf = calcPreferment(r);
-    const prefName = currentStyle.prefermentType === 'biga' ? 'Biga' : 'Poolish';
-    const makeRow = (icon, name, amount) => `
-      <div class="ingredient-row">
-        <span class="ing-icon">${icon}</span>
-        <span class="ing-name">${name}</span>
-        <span class="ing-amount">${amount}g</span>
-      </div>
-    `;
-    output.ingredients.innerHTML = `
-      <div class="preferment-group">
-        <div class="preferment-label">${prefName} <span>(${Math.round(currentStyle.prefermentRatio * 100)}% des Mehls)</span></div>
-        ${makeRow('🌾', 'Mehl', pf.prefFlour)}
-        ${makeRow('💧', 'Wasser', pf.prefWater)}
-        ${makeRow('🦠', 'Trockenhefe', pf.prefYeast)}
-      </div>
-      <div class="preferment-group">
-        <div class="preferment-label">Hauptteig</div>
-        ${makeRow('🌾', 'Mehl', pf.mainFlour)}
-        ${makeRow('💧', 'Wasser', pf.mainWater)}
-        ${makeRow('🧂', 'Salz', r.salt)}
-        ${pf.mainYeast > 0 ? makeRow('🦠', 'Trockenhefe', pf.mainYeast) : ''}
-      </div>
-    `;
-    return;
-  }
-
+  const yeastPct = FERMENTATION[getFermentationHours()].yeast;
   const items = [
     { icon: '🌾', name: 'Mehl', amount: r.flour, pct: 100 },
     { icon: '💧', name: 'Wasser', amount: r.water, pct: Math.round(r.water / r.flour * 100) },
     { icon: '🧂', name: 'Salz', amount: r.salt, pct: Math.round(r.salt / r.flour * 1000) / 10 },
-    { icon: '🦠', name: 'Trockenhefe', amount: r.yeast, pct: Math.round(r.yeast / r.flour * 1000) / 10 },
+    { icon: '🦠', name: 'Trockenhefe', amount: r.yeast, pct: yeastPct },
     ...(currentStyle.hasOil && r.oil > 0 ? [{ icon: '🫒', name: 'Olivenöl', amount: r.oil, pct: Math.round(r.oil / r.flour * 1000) / 10 }] : []),
   ];
+
+  output.totalWeight.textContent = `${r.total}g gesamt`;
 
   output.ingredients.innerHTML = items.map(item => {
     const barWidth = Math.min(100, item.amount / r.flour * 100);
@@ -593,8 +312,36 @@ function renderIngredients(r) {
   }).join('');
 }
 
+function getSteps(r) {
+  const hours = getFermentationHours();
+  const cold = hours >= 24;
+  const oil = currentStyle.hasOil && r.oil > 0 ? ` und <strong>${r.oil}g</strong> Öl` : '';
+  const shape = {
+    neapolitan: 'Zu Kugeln formen und später von Hand dünn ausziehen; den Rand nicht flach drücken.',
+    'new-york': 'Zu Kugeln formen und später dünn auf etwa 35 cm ausziehen.',
+    detroit: 'In eine gut geölte rechteckige Form drücken und bis in die Ecken verteilen.',
+    roman: 'Mit geölten Händen vorsichtig oval formen und die Luftblasen erhalten.',
+    sicilian: 'In eine gut geölte Form drücken und vor dem Belegen nochmals aufgehen lassen.',
+  }[currentStyle.id];
+  const bake = {
+    neapolitan: 'Auf maximaler Hitze auf Stein oder Stahl backen, bis der Rand kräftig gebräunt ist.',
+    'new-york': 'Bei 275–290°C auf Stein oder Stahl 10–14 Minuten backen.',
+    detroit: 'Käse bis an den Rand geben und bei 260°C 15–18 Minuten backen.',
+    roman: 'Bei maximaler Hitze auf Stein 8–12 Minuten knusprig backen.',
+    sicilian: 'Bei 220°C 25–30 Minuten goldbraun backen.',
+  }[currentStyle.id];
+
+  return [
+    { emoji: '⚖️', title: 'Mischen', time: '5 Min', detail: `<strong>${r.flour}g</strong> Mehl, <strong>${r.water}g</strong> Wasser, <strong>${r.salt}g</strong> Salz, <strong>${formatYeast(r.yeast)}g</strong> Trockenhefe${oil} vermischen.` },
+    { emoji: '💪', title: 'Kneten', time: '8–10 Min', detail: 'Kneten, bis der Teig glatt und elastisch ist. Sehr weichen Teig stattdessen mehrfach dehnen und falten.' },
+    { emoji: cold ? '❄️' : '🕒', title: 'Fermentieren', time: `${hours} Std.`, detail: cold ? `Abgedeckt im Kühlschrank reifen lassen. Etwa 2 Stunden vor dem Backen herausnehmen.` : 'Abgedeckt bei Raumtemperatur gehen lassen.' },
+    { emoji: '🤌', title: 'Formen', time: '5 Min', detail: `In <strong>${r.pizzas}</strong> Portionen à <strong>${r.weight}g</strong> teilen. ${shape}` },
+    { emoji: '🔥', title: 'Belegen & backen', time: 'nach Stil', detail: bake },
+  ];
+}
+
 function renderSteps(r) {
-  const steps = currentStyle.steps(r);
+  const steps = getSteps(r);
   const done = doneSteps.size;
   output.progress.textContent = `${done} / ${steps.length} erledigt`;
 
@@ -633,9 +380,11 @@ function renderAll() {
 
 function applyStyleDefaults(style) {
   controls.weight.value = style.defaults.weight;
-  controls.hydration.value = style.defaults.hydration;
+  renderFlourOptions(style);
+  controls.flour.value = STYLE_FLOUR_DEFAULTS[style.id];
+  controls.hydration.value = getRecommendedHydration();
   controls.salt.value = style.defaults.salt;
-  controls.yeast.value = style.defaults.yeast;
+  controls.fermentation.value = FERMENTATION_HOURS.indexOf(STYLE_FERMENTATION_DEFAULTS[style.id]);
   controls.oil.value = style.defaults.oil;
   output.oilControl.hidden = !style.hasOil;
 }
@@ -665,6 +414,15 @@ output.steps.addEventListener('click', (event) => {
 
 controlIds.forEach(id => {
   $(`#${id}`).addEventListener('input', () => {
+    if (id === 'fermentation') {
+      doneSteps.clear();
+      renderStyleInfo();
+    }
+    if (id === 'flourType') {
+      controls.hydration.value = getRecommendedHydration();
+      doneSteps.clear();
+      renderStyleInfo();
+    }
     const r = calcRecipe();
     renderControls(r);
     renderIngredients(r);
