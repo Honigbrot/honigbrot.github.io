@@ -296,6 +296,17 @@ section h2 {
   cursor: pointer;
 }
 
+.flour-recommendation {
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  display: flex;
+  min-height: 42px;
+  padding: 8px 12px;
+}
+
 .control select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Ein interaktiver Pizzateig-Rechner für verschiedene Pizzastile." />
   <title>Pizzateig-Rechner</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=2" />
+  <link rel="stylesheet" href="../assets/styles.css?v=4" />
 </head>
 <body>
   <header>
@@ -30,35 +30,30 @@
           <div class="range-labels"><span>1</span><span>12</span></div>
         </div>
         <div class="control">
-          <label for="sliderWeight">Teiglingsgewicht <span id="valWeight">280</span>g</label>
-          <input type="range" id="sliderWeight" min="150" max="500" value="280" step="10" />
+          <label for="sliderWeight">Teiglingsgewicht <span id="valWeight">250</span>g</label>
+          <input type="range" id="sliderWeight" min="150" max="500" value="250" step="10" />
           <div class="range-labels"><span>150g</span><span>500g</span></div>
         </div>
         <div class="control">
-          <label for="sliderHydration">Hydration <span id="valHydration">65</span>%</label>
-          <input type="range" id="sliderHydration" min="50" max="90" value="65" step="1" />
+          <label for="sliderHydration">Hydration <span id="valHydration">68</span>%</label>
+          <input type="range" id="sliderHydration" min="50" max="90" value="68" step="1" />
           <div class="range-labels"><span>50%</span><span>90%</span></div>
         </div>
         <div class="control">
-          <label for="flourType">Mehlsorte</label>
-          <select id="flourType">
-            <option value="pizzaStrong">Starkes Pizzamehl (W 300–320)</option>
-            <option value="pizzaAiry">Pizzamehl für hohe Hydration (W 270–300)</option>
-            <option value="breadStrong">Starkes Brotmehl (12–13% Protein)</option>
-            <option value="pinsa">Pinsa-Mehlmischung</option>
-          </select>
-          <div class="control-hint" id="flourHint"></div>
+          <label>Empfohlenes Mehl</label>
+          <div class="flour-recommendation" id="flourRecommendation"></div>
+          <div class="control-hint">Wird passend zum Pizzastil ausgewählt.</div>
         </div>
         <div class="control">
-          <label for="sliderSalt">Salz <span id="valSalt">2,5</span>%</label>
-          <input type="range" id="sliderSalt" min="1.5" max="3.5" value="2.5" step="0.1" />
+          <label for="sliderSalt">Salz <span id="valSalt">2,7</span>%</label>
+          <input type="range" id="sliderSalt" min="1.5" max="3.5" value="2.7" step="0.1" />
           <div class="range-labels"><span>1,5%</span><span>3,5%</span></div>
         </div>
         <div class="control" id="ctrlYeast">
-          <label for="fermentation">Fermentationsdauer <span id="valFermentation">24</span> Std.</label>
-          <input type="range" id="fermentation" min="0" max="3" value="1" step="1" />
+          <label for="fermentation">Fermentationsdauer <span id="valFermentation">48</span> Std.</label>
+          <input type="range" id="fermentation" min="0" max="3" value="2" step="1" />
           <div class="range-labels fermentation-labels"><span>8h</span><span>24h</span><span>48h</span><span>72h</span></div>
-          <div class="control-hint">Die Hefemenge wird automatisch angepasst.</div>
+          <div class="control-hint">Die Menge der Trockenhefe wird automatisch angepasst.</div>
         </div>
         <div class="control" id="ctrlOil">
           <label for="sliderOil">Öl <span id="valOil">2</span>%</label>
@@ -89,6 +84,6 @@
     </section>
   </main>
 
-  <script src="../assets/app.js?v=2" defer></script>
+  <script src="../assets/app.js?v=4" defer></script>
 </body>
 </html>
