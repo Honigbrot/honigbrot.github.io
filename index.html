@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Honigbrot: Pizzateig-Rechner, Lernspiele, EDL-Textbausteine und NotebookLM." />
+  <meta name="description" content="Honigbrot: Pizzateig-Rechner, Lernspiele, EDL-Textbausteine, Festival-Packliste und NotebookLM." />
   <title>Honigbrot</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
@@ -17,6 +17,7 @@
       --accent-blue: #3f8cff;
       --accent-teal: #32b8a4;
       --accent-gold: #d8a72d;
+      --accent-pink: #ff6b6b;
       --text: #f0ede8;
       --text-dim: #bbb;
       --radius: 8px;
@@ -61,7 +62,7 @@
     .hub {
       display: grid;
       gap: 14px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       margin: 0 auto;
       max-width: 1060px;
       width: 100%;
@@ -91,6 +92,7 @@
     .hub-card-games { --card-accent: var(--accent-blue); }
     .hub-card-edl { --card-accent: var(--accent-teal); }
     .hub-card-notebook { --card-accent: var(--accent-gold); }
+    .hub-card-packliste { --card-accent: var(--accent-pink); }
     .hub-icon {
       align-items: center;
       background: rgba(255, 255, 255, 0.05);
@@ -144,7 +146,7 @@
   <header class="hub-header">
     <p class="hub-brand">Honigbrot</p>
     <h1>Wähle einen Bereich</h1>
-    <p>Direkt zum Pizzateig-Rechner, zu den Spielen, zum EDL-Bereich oder zum NotebookLM.</p>
+    <p>Direkt zum Pizzateig-Rechner, zu den Spielen, zum EDL-Bereich, zur Festival-Packliste oder zum NotebookLM.</p>
   </header>
 
   <main class="hub" aria-label="Bereich auswählen">
@@ -171,6 +173,15 @@
       <span class="hub-card-text">
         <strong>EDL</strong>
         <span>Direkt zum EDL-Bereich wechseln.</span>
+      </span>
+      <span class="hub-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="hub-card hub-card-packliste" href="packliste/">
+      <span class="hub-icon" aria-hidden="true">🎪</span>
+      <span class="hub-card-text">
+        <strong>Festival-Packliste</strong>
+        <span>Elbenwald 2026: Packliste zum Abhaken inkl. Wetter.</span>
       </span>
       <span class="hub-arrow" aria-hidden="true">→</span>
     </a>

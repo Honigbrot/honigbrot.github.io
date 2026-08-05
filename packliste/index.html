@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Packliste für das Elbenwald Festival in Cottbus, 06.–10.08.2026 – zum Abhaken auf dem Handy.">
+<title>Elbenwald Festival Packliste</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    margin: 0 auto;
+    padding: 16px;
+    max-width: 560px;
+  }
+  h1 {
+    font-size: 1.4em;
+    text-align: center;
+    margin: 8px 0 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #a0a0c0;
+    font-size: 0.85em;
+    margin-bottom: 16px;
+  }
+  .progress-wrap {
+    background: #2c2c4a;
+    border-radius: 8px;
+    height: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+    transition: width 0.3s ease;
+  }
+  .progress-text {
+    text-align: center;
+    font-size: 0.85em;
+    color: #a0a0c0;
+    margin-bottom: 16px;
+  }
+  .category {
+    background: #24243e;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .category-header {
+    padding: 12px 14px;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #ffd93d;
+    border-bottom: 1px solid #33335a;
+  }
+  .item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #2c2c4a;
+    font-size: 0.95em;
+  }
+  .item:last-child { border-bottom: none; }
+  .item input {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    accent-color: #ff6b6b;
+  }
+  .item label {
+    flex: 1;
+  }
+  .item.checked label {
+    text-decoration: line-through;
+    color: #6a6a8a;
+  }
+  .reset-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    background: #33335a;
+    color: #eee;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+  }
+  .reset-btn:active { background: #44446a; }
+  .weather-box {
+    background: #24243e;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+  }
+  .weather-title {
+    color: #ffd93d;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .weather-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #2c2c4a;
+  }
+  .weather-row:last-child { border-bottom: none; }
+  .weather-day { color: #a0a0c0; }
+  .weather-note {
+    margin-top: 8px;
+    color: #a0a0c0;
+    font-size: 0.9em;
+  }
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: #a0a0c0;
+    font-size: 0.85em;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎪 Elbenwald Festival</h1>
+<div class="subtitle">Cottbus · Do 06.08. – Mo 10.08.2026 (4 Nächte)</div>
+
+<div class="weather-box">
+  <div class="weather-title">🌤️ Wetter Spreeauenpark</div>
+  <div class="weather-row"><span class="weather-day">Do 06.08.</span><span>27° / 15° · 15% Regen</span></div>
+  <div class="weather-row"><span class="weather-day">Fr 07.08.</span><span>24° / 12° · 5% Regen</span></div>
+  <div class="weather-row"><span class="weather-day">Sa 08.08.</span><span>25° / 13° · 0% Regen</span></div>
+  <div class="weather-row"><span class="weather-day">So 09.08.</span><span>31° / 14° · 15% Regen</span></div>
+  <div class="weather-row"><span class="weather-day">Mo 10.08.</span><span>33° / 16° · 15% Regen</span></div>
+  <div class="weather-note">Warme, meist trockene Tage – aber kalte Nächte (12-16°). Sonnenschutz tagsüber + warme Schicht für die Nacht einplanen.</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+<div class="progress-text" id="progressText">0 / 0 gepackt</div>
+
+<div id="list"></div>
+
+<button class="reset-btn" id="resetBtn">Alles zurücksetzen</button>
+
+<a class="back-link" href="../">← Zurück zu Honigbrot</a>
+
+<script>
+const categories = [
+  { name: "Zelten/Schlafen", items: ["Zelt", "Hering-Ersatz", "Gummihammer", "Schlafsack", "Isomatte/Luftmatratze", "Kopfkissen", "Ohrstöpsel & Schlafmaske"] },
+  { name: "Kleidung", items: ["5x Unterwäsche", "Socken", "2-3 Outfits", "Regenjacke", "Warmer Pulli", "Festes Schuhwerk", "Ersatzpaar Schuhe", "Cap/Hut", "Sonnenbrille"] },
+  { name: "Hygiene", items: ["Feuchttücher", "Desinfektionsmittel", "Zahnbürste/-pasta", "Deo", "Sonnencreme", "Klopapier", "Kleines Handtuch"] },
+  { name: "Technik", items: ["Powerbank + Kabel", "Handy", "Kopfhörer"] },
+  { name: "Sonstiges", items: ["Bargeld (kleine Scheine)", "Ausweis", "Ticket", "Erste-Hilfe-Set", "Persönliche Medikamente", "Ohrstöpsel (Konzert)", "Rucksack (klein)", "Trinkflasche", "Müllsäcke", "Campingstuhl", "Feuerzeug/Streichhölzer"] },
+  { name: "Elbenwald Extra (Cosplay/Convention)", items: ["Cosplay-Outfit + Reparaturset (Nadel/Faden, Kleber)", "Bequeme Alternativkleidung für zwischendurch", "Zusätzliche warme Jacke für kühle Nächte (12-15°)", "Sonnencreme LSF + Kopfbedeckung (Tage bis 33°)", "Festival-App installiert (Timetable)", "Kamera/Ladegerät fürs Cosplay-Shooting"] }
+];
+
+const STORAGE_KEY = "festival-packliste-state";
+let state = {};
+
+const listEl = document.getElementById("list");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+const resetBtn = document.getElementById("resetBtn");
+
+let totalItems = 0;
+categories.forEach(c => totalItems += c.items.length);
+
+function itemKey(catIdx, itemIdx) {
+  return catIdx + "-" + itemIdx;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    state = {};
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error("Speichern fehlgeschlagen", e);
+  }
+}
+
+function render() {
+  listEl.innerHTML = "";
+  let checkedCount = 0;
+
+  categories.forEach((cat, catIdx) => {
+    const catDiv = document.createElement("div");
+    catDiv.className = "category";
+
+    const header = document.createElement("div");
+    header.className = "category-header";
+    header.textContent = cat.name;
+    catDiv.appendChild(header);
+
+    cat.items.forEach((item, itemIdx) => {
+      const key = itemKey(catIdx, itemIdx);
+      const isChecked = !!state[key];
+      if (isChecked) checkedCount++;
+
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "item" + (isChecked ? " checked" : "");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = isChecked;
+      checkbox.id = "chk-" + key;
+      checkbox.addEventListener("change", () => {
+        state[key] = checkbox.checked;
+        saveState();
+        render();
+      });
+
+      const label = document.createElement("label");
+      label.textContent = item;
+      label.htmlFor = "chk-" + key;
+
+      itemDiv.appendChild(checkbox);
+      itemDiv.appendChild(label);
+      catDiv.appendChild(itemDiv);
+    });
+
+    listEl.appendChild(catDiv);
+  });
+
+  const pct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+  progressBar.style.width = pct + "%";
+  progressText.textContent = checkedCount + " / " + totalItems + " gepackt";
+}
+
+resetBtn.addEventListener("click", () => {
+  state = {};
+  saveState();
+  render();
+});
+
+loadState();
+render();
+</script>
+
+</body>
+</html>
