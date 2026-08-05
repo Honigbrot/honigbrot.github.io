@@ -156,11 +156,11 @@
 <script>
 const categories = [
   { name: "Zelten/Schlafen", items: ["Zelt", "Hering-Ersatz", "Gummihammer", "Schlafsack", "Isomatte/Luftmatratze", "Kopfkissen", "Ohrstöpsel & Schlafmaske"] },
-  { name: "Kleidung", items: ["5x Unterwäsche", "Socken", "2-3 Outfits", "Regenjacke", "Warmer Pulli", "Festes Schuhwerk", "Ersatzpaar Schuhe", "Cap/Hut", "Sonnenbrille"] },
+  { name: "Kleidung", items: ["5x Unterwäsche", "Socken", "2-3 Outfits", "Regenjacke", "Warmer Pulli/Jacke (kalte Nächte)", "Festes Schuhwerk", "Ersatzpaar Schuhe", "Cap/Hut", "Sonnenbrille"] },
   { name: "Hygiene", items: ["Feuchttücher", "Desinfektionsmittel", "Zahnbürste/-pasta", "Deo", "Sonnencreme", "Klopapier", "Kleines Handtuch"] },
   { name: "Technik", items: ["Powerbank + Kabel", "Handy", "Kopfhörer"] },
-  { name: "Sonstiges", items: ["Bargeld (kleine Scheine)", "Ausweis", "Ticket", "Erste-Hilfe-Set", "Persönliche Medikamente", "Ohrstöpsel (Konzert)", "Rucksack (klein)", "Trinkflasche", "Müllsäcke", "Campingstuhl", "Feuerzeug/Streichhölzer"] },
-  { name: "Elbenwald Extra (Cosplay/Convention)", items: ["Cosplay-Outfit + Reparaturset (Nadel/Faden, Kleber)", "Bequeme Alternativkleidung für zwischendurch", "Zusätzliche warme Jacke für kühle Nächte (12-15°)", "Sonnencreme LSF + Kopfbedeckung (Tage bis 33°)", "Festival-App installiert (Timetable)", "Kamera/Ladegerät fürs Cosplay-Shooting"] }
+  { name: "Sonstiges", items: ["Bargeld (kleine Scheine)", "Ausweis", "Ticket", "Erste-Hilfe-Set", "Persönliche Medikamente", "Rucksack (klein)", "Trinkflasche", "Müllsäcke", "Campingstuhl", "Feuerzeug/Streichhölzer"] },
+  { name: "Elbenwald Extra (Cosplay/Convention)", items: ["Cosplay-Outfit + Reparaturset (Nadel/Faden, Kleber)", "Festival-App installiert (Timetable)"] }
 ];
 
 const STORAGE_KEY = "festival-packliste-state";
@@ -174,8 +174,10 @@ const resetBtn = document.getElementById("resetBtn");
 let totalItems = 0;
 categories.forEach(c => totalItems += c.items.length);
 
-function itemKey(catIdx, itemIdx) {
-  return catIdx + "-" + itemIdx;
+// Nach Namen statt Position speichern, damit Änderungen an der Liste
+// bereits gesetzte Häkchen nicht verschieben.
+function itemKey(cat, item) {
+  return cat.name + "|" + item;
 }
 
 function loadState() {
@@ -209,7 +211,8 @@ function render() {
     catDiv.appendChild(header);
 
     cat.items.forEach((item, itemIdx) => {
-      const key = itemKey(catIdx, itemIdx);
+      const key = itemKey(cat, item);
+      const domId = "chk-" + catIdx + "-" + itemIdx;
       const isChecked = !!state[key];
       if (isChecked) checkedCount++;
 
@@ -219,7 +222,7 @@ function render() {
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = isChecked;
-      checkbox.id = "chk-" + key;
+      checkbox.id = domId;
       checkbox.addEventListener("change", () => {
         state[key] = checkbox.checked;
         saveState();
@@ -228,7 +231,7 @@ function render() {
 
       const label = document.createElement("label");
       label.textContent = item;
-      label.htmlFor = "chk-" + key;
+      label.htmlFor = domId;
 
       itemDiv.appendChild(checkbox);
       itemDiv.appendChild(label);
