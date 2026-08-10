@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Ein Dackel hätte da eine Frage an dich." />
+  <meta name="description" content="Eine kleine Frage." />
   <meta name="robots" content="noindex" />
-  <meta property="og:title" content="Ein Dackel hätte da eine Frage…" />
-  <meta property="og:description" content="Kurze Beine. Große Gefühle. Dauert 30 Sekunden." />
+  <meta property="og:title" content="Ich hätte da eine Frage…" />
+  <meta property="og:description" content="Dauert 30 Sekunden." />
   <title>Willst du mein Date sein? 🐾</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%95%3C/text%3E%3C/svg%3E" />
   <style>
@@ -263,13 +263,6 @@
       font-weight: 700;
       margin-top: 8px;
     }
-    .duration-out small {
-      color: var(--text-muted);
-      display: block;
-      font-size: 0.83rem;
-      font-weight: 400;
-    }
-
     .group-title {
       color: var(--text-muted);
       font-size: 0.78rem;
@@ -437,9 +430,9 @@
 
     <!-- ============ Schritt 1 ============ -->
     <section class="step" id="step-frage">
-      <span class="brand">Amtliche Dackel-Anfrage</span>
+      <span class="brand">Eine Frage</span>
       <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
-      <p class="sub">Kurze Beine. Große Gefühle. Und ein Blick, dem du sowieso nicht widerstehst.</p>
+      <p class="sub">Kurze Beine, große Hoffnung.</p>
 
       <div class="dackel-slot" id="slot-frage"></div>
 
@@ -452,15 +445,15 @@
 
     <!-- ============ Schritt 2 ============ -->
     <section class="step" id="step-planung" hidden>
-      <span class="brand">Antrag angenommen · Schwanz wedelt</span>
+      <span class="brand">Schritt 2 von 3</span>
       <h1>Sehr gute Wahl.</h1>
-      <p class="sub">Jetzt bestimmst du alles. Der Dackel führt nur Protokoll.</p>
+      <p class="sub">Ab hier bestimmst du.</p>
 
       <div class="dackel-slot klein" id="slot-planung"></div>
 
       <div class="card">
         <h2>📅 Wann?</h2>
-        <p class="note">Such dir einen Tag aus. Der Dackel hat Zeit. Der Dackel hat immer Zeit.</p>
+        <p class="note">Such dir einen Tag aus.</p>
         <div class="row">
           <div>
             <label class="field" for="datum">Datum</label>
@@ -475,54 +468,54 @@
 
       <div class="card">
         <h2>⏳ Wie lange ungefähr?</h2>
-        <p class="note">Gemessen in Stunden, nicht in Dackellängen. Verlängerung jederzeit möglich.</p>
+        <p class="note">Ungefähr reicht. Verlängerung ist jederzeit möglich.</p>
         <input type="range" id="dauer" min="1" max="9" step="1" value="4" />
         <output class="duration-out" id="dauer-out"></output>
       </div>
 
       <div class="card">
         <h2>💡 Worauf hättest du Lust?</h2>
-        <p class="note">Mehrfachauswahl ausdrücklich erwünscht. Der Dackel ist flexibel.</p>
+        <p class="note">Mehrfachauswahl erwünscht.</p>
 
         <p class="group-title">Klassiker</p>
         <div class="chips" id="chips-klassiker"></div>
 
-        <p class="group-title">Zuhause (Sofa-Fraktion)</p>
+        <p class="group-title">Zuhause</p>
         <div class="chips" id="chips-zuhause"></div>
 
-        <p class="group-title">Draußen (Gassi deluxe)</p>
+        <p class="group-title">Draußen</p>
         <div class="chips" id="chips-aktiv"></div>
       </div>
 
       <div class="card">
         <h2>✍️ Noch was?</h2>
-        <p class="note">Wünsche, Bedingungen, Forderungen (optional).</p>
+        <p class="note">Optional.</p>
         <textarea id="notiz" placeholder="z. B. „Handy bleibt in der Tasche.“"></textarea>
       </div>
 
       <div class="actions">
-        <button class="btn btn-primary btn-wide" id="btn-fertig" type="button">Fertig – anschauen &amp; abschicken</button>
+        <button class="btn btn-primary btn-wide" id="btn-fertig" type="button">Fertig</button>
       </div>
       <p class="error" id="fehler"></p>
     </section>
 
     <!-- ============ Schritt 3 ============ -->
     <section class="step" id="step-fertig" hidden>
-      <span class="brand">Verbindlich · Notariell · Pfote drauf</span>
+      <span class="brand">Schritt 3 von 3</span>
       <h1>Das steht jetzt fest 🐾</h1>
-      <p class="sub">Einmal auf den grünen Button – dann weiß ich Bescheid.</p>
+      <p class="sub">Kopier den Text und schick ihn mir.</p>
 
       <div class="dackel-slot klein" id="slot-fertig"></div>
 
       <div class="card">
         <div class="summary" id="zusammenfassung"></div>
         <div class="actions">
+          <button class="btn btn-primary btn-wide" id="btn-copy" type="button">📋 Text kopieren</button>
           <a class="btn btn-wa btn-wide" id="btn-wa" href="#" target="_blank" rel="noopener">
-            <span aria-hidden="true">💬</span> Per WhatsApp abschicken
+            <span aria-hidden="true">💬</span> In WhatsApp öffnen
           </a>
-          <button class="btn btn-ghost btn-wide" id="btn-copy" type="button">Text kopieren</button>
           <button class="btn btn-ghost btn-wide" id="btn-ics" type="button">📆 Termin in meinen Kalender</button>
-          <button class="btn btn-ghost btn-wide" id="btn-zurueck" type="button">↩︎ Doch nochmal ändern</button>
+          <button class="btn btn-ghost btn-wide" id="btn-zurueck" type="button">↩︎ Nochmal ändern</button>
         </div>
       </div>
     </section>
@@ -534,12 +527,6 @@
 (function () {
   "use strict";
 
-  /* ==========================================================
-     Handynummer im internationalen Format, nur Ziffern.
-     Leer lassen = WhatsApp öffnet sich ohne festen Empfänger.
-     ========================================================== */
-  var MEINE_NUMMER = "436763119216";
-
   var $ = function (id) { return document.getElementById(id); };
 
   var dackel = $("dackel");
@@ -548,23 +535,19 @@
 
   var neinTexte = [
     "Nein",
-    "Bist du sicher? 🥺",
-    "Der Dackel legt die Ohren an",
-    "Er macht sich ganz lang vor Kummer",
-    "Er hat aufgehört zu wedeln",
-    "Kurze Beine, aber er weicht trotzdem aus",
-    "Okay. Er legt sich jetzt aufs Sofa.",
-    "Okay. Er legt sich jetzt aufs Sofa."
+    "Sicher?",
+    "Der Dackel schaut jetzt traurig",
+    "Er wird immer länger",
+    "Okay.",
+    "Okay."
   ];
   var hinweise = [
     "",
-    "Ups. Der Button ist weggehüpft.",
-    "Dackel sind stur. Sehr stur. Sprichwörtlich stur.",
-    "Je öfter du klickst, desto länger wird er.",
-    "Fun Fact: Der Ja-Button funktioniert einwandfrei.",
-    "Ein Dackel wurde gezüchtet, um Dachse aus dem Bau zu holen. Ein „Ja“ kriegt er auch noch raus.",
-    "Er wartet einfach. Dackel können das ewig.",
-    "Er wartet einfach. Dackel können das ewig."
+    "",
+    "",
+    "",
+    "Der Ja-Button funktioniert übrigens einwandfrei.",
+    "Der Ja-Button funktioniert übrigens einwandfrei."
   ];
 
   var neinIndex = 0;
@@ -672,15 +655,15 @@
   /* ---------- Dauer-Slider ---------- */
 
   var dauerStufen = [
-    { text: "1 Stunde",        stunden: 1,  witz: "Einmal ums Eck. So kurz wie die Beine." },
-    { text: "2 Stunden",       stunden: 2,  witz: "Solide Gassi-Runde." },
-    { text: "3 Stunden",       stunden: 3,  witz: "Gemütlich, mit Schnüffelpausen." },
-    { text: "4 Stunden",       stunden: 4,  witz: "Richtig schön. Da wedelt was." },
-    { text: "5 Stunden",       stunden: 5,  witz: "Da geht sich auch noch ein Nachtisch aus." },
-    { text: "6 Stunden",       stunden: 6,  witz: "Der Abend gehört uns." },
-    { text: "Halber Tag",      stunden: 8,  witz: "Ambitioniert. Der Dackel ist trotzdem dabei." },
-    { text: "Ganzer Tag",      stunden: 10, witz: "Ich sag alles andere ab." },
-    { text: "Offenes Ende ♾️", stunden: 12, witz: "Mutig. Der Dackel schläft dann halt zwischendurch." }
+    { text: "1 Stunde",        stunden: 1 },
+    { text: "2 Stunden",       stunden: 2 },
+    { text: "3 Stunden",       stunden: 3 },
+    { text: "4 Stunden",       stunden: 4 },
+    { text: "5 Stunden",       stunden: 5 },
+    { text: "6 Stunden",       stunden: 6 },
+    { text: "Halber Tag",      stunden: 8 },
+    { text: "Ganzer Tag",      stunden: 10 },
+    { text: "Offenes Ende ♾️", stunden: 12 }
   ];
 
   var slider = $("dauer");
@@ -689,12 +672,7 @@
   function dauerAktuell() { return dauerStufen[Number(slider.value) - 1]; }
 
   function dauerAnzeigen() {
-    var d = dauerAktuell();
-    dauerOut.innerHTML = "";
-    dauerOut.appendChild(document.createTextNode("ca. " + d.text));
-    var small = document.createElement("small");
-    small.textContent = d.witz;
-    dauerOut.appendChild(small);
+    dauerOut.textContent = "ca. " + dauerAktuell().text;
   }
 
   slider.addEventListener("input", dauerAnzeigen);
@@ -705,14 +683,14 @@
   var arten = {
     "chips-klassiker": [
       "Essen gehen 🍝", "Kino 🎬", "Cocktailbar 🍸", "Konzert 🎶",
-      "Museum / Ausstellung 🖼️", "Wellness / Sauna 🧖", "Überraschung – du planst 🎁"
+      "Museum / Ausstellung 🖼️", "Wellness / Sauna 🧖", "Überraschung 🎁"
     ],
     "chips-zuhause": [
       "Netflix & Couch 📺", "Zusammen kochen 👩‍🍳", "Brettspiel-Abend 🎲",
       "Pizza selbst machen 🍕", "Bad & Wein 🛁"
     ],
     "chips-aktiv": [
-      "Lange Gassi-Runde mit Umweg 🐾", "Wandern 🥾", "Radtour 🚴",
+      "Gassi-Runde 🐾", "Wandern 🥾", "Radtour 🚴",
       "Schwimmen / See 🏊", "Minigolf ⛳", "Städtetrip 🧳"
     ]
   };
@@ -759,7 +737,7 @@
 
   function textBauen(d) {
     var zeilen = [
-      "🐾 ES IST EIN JA! 🐾",
+      "Ja! 🐾",
       "",
       "📅 " + datumLesbar(d.datum) + (d.uhrzeit ? " um " + d.uhrzeit + " Uhr" : ""),
       "⏳ Dauer: ca. " + d.dauer.text
@@ -773,14 +751,14 @@
       zeilen.push("✍️ Dazu noch: " + d.notiz);
     }
     zeilen.push("");
-    zeilen.push("Der Dackel wedelt. Ich auch. 🥰");
+    zeilen.push("Freu mich. 🥰");
     return zeilen.join("\n");
   }
 
   $("btn-fertig").addEventListener("click", function () {
     var d = sammeln();
     if (!d.datum) {
-      $("fehler").textContent = "Ohne Datum wird das schwierig – such bitte einen Tag aus. 🐾";
+      $("fehler").textContent = "Bitte such noch einen Tag aus.";
       $("datum").focus();
       return;
     }
@@ -789,7 +767,9 @@
 
     var text = textBauen(d);
     $("zusammenfassung").textContent = text;
-    $("btn-wa").href = "https://wa.me/" + MEINE_NUMMER + "?text=" + encodeURIComponent(text);
+    // Ohne Empfänger: WhatsApp öffnet die Chatauswahl, es steht keine
+    // Telefonnummer im Quelltext dieser Seite.
+    $("btn-wa").href = "https://wa.me/?text=" + encodeURIComponent(text);
 
     pfoten(18);
     zeigeSchritt("step-fertig");
@@ -806,8 +786,8 @@
     var text = $("zusammenfassung").textContent;
 
     function rueckmeldung(ok) {
-      btn.textContent = ok ? "Kopiert ✓" : "Klappt nicht – bitte markieren & kopieren";
-      window.setTimeout(function () { btn.textContent = "Text kopieren"; }, 2200);
+      btn.textContent = ok ? "Kopiert ✓ – jetzt einfach einfügen" : "Klappt nicht – bitte oben markieren & kopieren";
+      window.setTimeout(function () { btn.textContent = "📋 Text kopieren"; }, 2600);
     }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
