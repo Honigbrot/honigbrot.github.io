@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Eine kleine Frage mit großer Wirkung." />
+  <meta name="description" content="Ein Dackel hätte da eine Frage an dich." />
   <meta name="robots" content="noindex" />
-  <meta property="og:title" content="Ich hätte da eine Frage…" />
-  <meta property="og:description" content="Es dauert 30 Sekunden. Versprochen." />
-  <title>Willst du mein Date sein?</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <meta property="og:title" content="Ein Dackel hätte da eine Frage…" />
+  <meta property="og:description" content="Kurze Beine. Große Gefühle. Dauert 30 Sekunden." />
+  <title>Willst du mein Date sein? 🐾</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%95%3C/text%3E%3C/svg%3E" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,9 +17,11 @@
       --surface: #1a1a1a;
       --surface2: #202020;
       --border: #333;
-      --accent: #ff4d6d;
-      --accent-soft: #ff8fa3;
-      --accent-gold: #d8a72d;
+      --accent: #e0913f;          /* Dackel-Karamell */
+      --accent-soft: #f0bd85;
+      --accent-deep: #a85f21;
+      --love: #ff4d6d;
+      --love-deep: #d43354;
       --text: #f0ede8;
       --text-dim: #bbb;
       --text-muted: #888;
@@ -28,14 +30,14 @@
 
     body {
       background:
-        radial-gradient(900px 600px at 50% -10%, rgba(255, 77, 109, 0.16), transparent 70%),
+        radial-gradient(900px 620px at 50% -12%, rgba(224, 145, 63, 0.16), transparent 70%),
         var(--bg);
       color: var(--text);
       font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       line-height: 1.5;
       min-height: 100vh;
       overflow-x: hidden;
-      padding: 32px 16px 64px;
+      padding: 28px 16px 64px;
     }
 
     .wrap {
@@ -57,7 +59,7 @@
     }
 
     h1 {
-      font-size: clamp(1.9rem, 7vw, 3.2rem);
+      font-size: clamp(1.9rem, 7vw, 3.1rem);
       line-height: 1.05;
       text-align: center;
     }
@@ -65,9 +67,74 @@
     .sub {
       color: var(--text-dim);
       margin: 14px auto 0;
-      max-width: 460px;
+      max-width: 470px;
       text-align: center;
     }
+
+    /* ---------- Der Dackel ---------- */
+
+    .dackel-slot { display: flex; justify-content: center; }
+
+    .dackel {
+      display: block;
+      height: auto;
+      overflow: visible;
+      width: min(330px, 84vw);
+    }
+    .dackel-slot.klein .dackel { width: min(190px, 52vw); }
+
+    .fell-haupt { fill: url(#fellverlauf); }
+    .fell-dunkel { fill: #7d3f12; }
+    .dunkel { fill: #1d1208; }
+    .schatten { fill: rgba(0, 0, 0, 0.45); }
+    .glanz { fill: #fff; }
+    .halsband { fill: var(--love); }
+
+    /* Rumpf und Hinterteil werden beim Traurigsein länger */
+    .rumpf {
+      transform: scaleX(var(--lang, 1));
+      transform-origin: 70px 79px;
+      transition: transform 0.35s ease;
+    }
+    .hinten {
+      transform: translateX(calc((var(--lang, 1) - 1) * 112px));
+      transition: transform 0.35s ease;
+    }
+
+    .schwanz {
+      animation: wedeln 0.5s ease-in-out infinite alternate;
+      transform-origin: 182px 62px;
+    }
+    @keyframes wedeln {
+      from { transform: rotate(-16deg); }
+      to   { transform: rotate(16deg); }
+    }
+
+    .traene { opacity: 0; }
+
+    /* Traurig: Schwanz hängt, Träne kullert, Ohr rutscht runter */
+    .dackel.traurig .schwanz {
+      animation: none;
+      transform: rotate(42deg);
+    }
+    .dackel.traurig .ohr { transform: translateY(5px) rotate(6deg); }
+    .dackel.traurig .traene { animation: kullern 1.6s ease-in infinite; }
+    @keyframes kullern {
+      0%   { opacity: 0; transform: translateY(0); }
+      25%  { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(26px); }
+    }
+
+    /* Freude: hüpfen und schneller wedeln */
+    .dackel.freut { animation: hupf 0.55s ease-in-out 3; }
+    .dackel.freut .schwanz { animation-duration: 0.16s; }
+    @keyframes hupf {
+      0%, 100% { transform: translateY(0); }
+      35%      { transform: translateY(-16px); }
+      60%      { transform: translateY(0); }
+    }
+
+    .ohr { transform-origin: 84px 44px; transition: transform 0.35s ease; }
 
     /* ---------- Schritt 1: Die Frage ---------- */
 
@@ -75,8 +142,8 @@
       display: grid;
       gap: 16px;
       grid-template-columns: 1fr 1fr;
-      margin-top: 40px;
-      min-height: 230px;
+      margin-top: 26px;
+      min-height: 210px;
       place-items: center;
       position: relative;
     }
@@ -97,12 +164,13 @@
     .btn:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 3px; }
 
     .btn-yes {
-      background: linear-gradient(180deg, var(--accent), #d43354);
+      background: linear-gradient(180deg, var(--love), var(--love-deep));
       border-color: transparent;
       box-shadow: 0 10px 30px rgba(255, 77, 109, 0.28);
       font-size: clamp(1.1rem, 3.4vw, 1.5rem);
-      padding: 18px 34px;
+      padding: 18px 32px;
       transform: scale(var(--yes-scale, 1));
+      white-space: nowrap;
     }
     .btn-yes:hover { transform: scale(calc(var(--yes-scale, 1) * 1.04)); }
 
@@ -116,7 +184,7 @@
       color: var(--text-muted);
       font-size: 0.85rem;
       grid-column: 1 / -1;
-      min-height: 1.4em;
+      min-height: 2.6em;
       text-align: center;
     }
 
@@ -224,15 +292,15 @@
       transition: border-color 0.15s, background 0.15s, color 0.15s;
       user-select: none;
     }
-    .chip input { position: absolute; opacity: 0; pointer-events: none; }
+    .chip input { opacity: 0; pointer-events: none; position: absolute; }
     .chip:has(input:checked) {
-      background: rgba(255, 77, 109, 0.26);
+      background: rgba(224, 145, 63, 0.24);
       border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px rgba(255, 77, 109, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(224, 145, 63, 0.4);
       color: #fff;
       font-weight: 600;
     }
-    .chip:has(input:checked)::before { content: "✓ "; color: var(--accent-soft); }
+    .chip:has(input:checked)::before { color: var(--accent-soft); content: "🐾 "; }
     .chip:has(input:focus-visible) { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
 
     .actions { display: grid; gap: 10px; margin-top: 22px; }
@@ -240,8 +308,9 @@
     .btn-wide { text-align: center; width: 100%; }
 
     .btn-primary {
-      background: linear-gradient(180deg, var(--accent), #d43354);
+      background: linear-gradient(180deg, var(--accent), var(--accent-deep));
       border-color: transparent;
+      color: #1d1208;
     }
 
     .btn-wa {
@@ -286,24 +355,25 @@
     }
     .footer-link:hover { color: var(--accent); }
 
-    /* ---------- Herzchen ---------- */
+    /* ---------- Pfoten- und Würstchenregen ---------- */
 
-    .heart {
-      animation: rise linear forwards;
+    .konfetti {
+      animation: aufsteigen linear forwards;
       font-size: 22px;
       pointer-events: none;
       position: fixed;
       user-select: none;
       z-index: 0;
     }
-    @keyframes rise {
+    @keyframes aufsteigen {
       from { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
       to   { opacity: 0; transform: translateY(-90vh) rotate(var(--spin, 200deg)) scale(0.6); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .btn, .btn-yes:hover { transition: none; }
-      .heart { display: none; }
+      .btn, .btn-yes:hover, .rumpf, .hinten, .ohr { transition: none; }
+      .schwanz, .dackel.freut, .dackel.traurig .traene { animation: none; }
+      .konfetti { display: none; }
     }
 
     @media (max-width: 520px) {
@@ -316,14 +386,65 @@
 <body>
   <div class="wrap">
 
+    <!-- ============ Der Dackel (wandert durch alle Schritte) ============ -->
+    <svg class="dackel" id="dackel" viewBox="0 0 300 150" role="img"
+         aria-label="Ein Dackel schaut dich mit großen Augen an">
+      <defs>
+        <linearGradient id="fellverlauf" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d78535" />
+          <stop offset="100%" stop-color="#a85f21" />
+        </linearGradient>
+      </defs>
+
+      <ellipse class="schatten" cx="150" cy="127" rx="98" ry="8" />
+
+      <!-- Hinterteil: Schwanz und Hinterbeine -->
+      <g class="hinten">
+        <g class="schwanz">
+          <path d="M178 62 q30 -4 38 -30" fill="none" stroke="#a85f21"
+                stroke-width="9" stroke-linecap="round" />
+        </g>
+        <rect class="fell-haupt" x="145" y="92" width="17" height="31" rx="8" />
+        <rect class="fell-haupt" x="166" y="92" width="17" height="31" rx="8" />
+      </g>
+
+      <!-- Rumpf -->
+      <g class="rumpf">
+        <rect class="fell-haupt" x="70" y="55" width="112" height="48" rx="24" />
+      </g>
+
+      <!-- Vorderbeine -->
+      <rect class="fell-haupt" x="80" y="92" width="17" height="31" rx="8" />
+      <rect class="fell-haupt" x="101" y="92" width="17" height="31" rx="8" />
+
+      <!-- Halsband mit Herz-Marke -->
+      <rect class="halsband" x="92" y="52" width="9" height="42" rx="4" />
+      <text x="96.5" y="101" font-size="13" text-anchor="middle">❤️</text>
+
+      <!-- Kopf und Schnauze -->
+      <ellipse class="fell-haupt" cx="70" cy="60" rx="27" ry="25" />
+      <rect class="fell-haupt" x="24" y="58" width="48" height="21" rx="10" />
+      <ellipse class="dunkel" cx="28" cy="63" rx="7" ry="6" />
+
+      <!-- Auge -->
+      <circle class="dunkel" cx="62" cy="48" r="4.6" />
+      <circle class="glanz" cx="63.8" cy="46.2" r="1.6" />
+      <ellipse class="traene" cx="58" cy="57" rx="3" ry="4" fill="#8fd4ff" />
+
+      <!-- Schlappohr -->
+      <ellipse class="ohr fell-dunkel" cx="84" cy="62" rx="13" ry="29" />
+    </svg>
+
     <!-- ============ Schritt 1 ============ -->
     <section class="step" id="step-frage">
-      <span class="brand">Streng vertrauliche Anfrage</span>
-      <h1>Willst du mein <span style="color:var(--accent)">Date</span> sein?</h1>
-      <p class="sub">Ein Antrag in Formularform. Weil Romantik und Struktur sich nicht ausschließen.</p>
+      <span class="brand">Amtliche Dackel-Anfrage</span>
+      <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
+      <p class="sub">Kurze Beine. Große Gefühle. Und ein Blick, dem du sowieso nicht widerstehst.</p>
+
+      <div class="dackel-slot" id="slot-frage"></div>
 
       <div class="stage">
-        <button class="btn btn-yes" id="btn-yes" type="button">Ja! 🥰</button>
+        <button class="btn btn-yes" id="btn-yes" type="button">Ja! 🌭</button>
         <button class="btn btn-no" id="btn-no" type="button">Nein</button>
         <p class="hint" id="hint"></p>
       </div>
@@ -331,13 +452,15 @@
 
     <!-- ============ Schritt 2 ============ -->
     <section class="step" id="step-planung" hidden>
-      <span class="brand">Antrag angenommen ✅</span>
+      <span class="brand">Antrag angenommen · Schwanz wedelt</span>
       <h1>Sehr gute Wahl.</h1>
-      <p class="sub">Jetzt darfst du bestimmen. Alles. Wirklich alles.</p>
+      <p class="sub">Jetzt bestimmst du alles. Der Dackel führt nur Protokoll.</p>
+
+      <div class="dackel-slot klein" id="slot-planung"></div>
 
       <div class="card">
         <h2>📅 Wann?</h2>
-        <p class="note">Such dir einen Tag aus, an dem du Lust auf mich hast.</p>
+        <p class="note">Such dir einen Tag aus. Der Dackel hat Zeit. Der Dackel hat immer Zeit.</p>
         <div class="row">
           <div>
             <label class="field" for="datum">Datum</label>
@@ -352,22 +475,22 @@
 
       <div class="card">
         <h2>⏳ Wie lange ungefähr?</h2>
-        <p class="note">Unverbindlich. Verlängerung ist jederzeit möglich.</p>
+        <p class="note">Gemessen in Stunden, nicht in Dackellängen. Verlängerung jederzeit möglich.</p>
         <input type="range" id="dauer" min="1" max="9" step="1" value="4" />
         <output class="duration-out" id="dauer-out"></output>
       </div>
 
       <div class="card">
         <h2>💡 Worauf hättest du Lust?</h2>
-        <p class="note">Mehrfachauswahl ausdrücklich erwünscht.</p>
+        <p class="note">Mehrfachauswahl ausdrücklich erwünscht. Der Dackel ist flexibel.</p>
 
         <p class="group-title">Klassiker</p>
         <div class="chips" id="chips-klassiker"></div>
 
-        <p class="group-title">Zuhause</p>
+        <p class="group-title">Zuhause (Sofa-Fraktion)</p>
         <div class="chips" id="chips-zuhause"></div>
 
-        <p class="group-title">Aktiv &amp; draußen</p>
+        <p class="group-title">Draußen (Gassi deluxe)</p>
         <div class="chips" id="chips-aktiv"></div>
       </div>
 
@@ -385,9 +508,11 @@
 
     <!-- ============ Schritt 3 ============ -->
     <section class="step" id="step-fertig" hidden>
-      <span class="brand">Verbindlich. Notariell. Fast.</span>
-      <h1>Das steht jetzt fest 🎉</h1>
+      <span class="brand">Verbindlich · Notariell · Pfote drauf</span>
+      <h1>Das steht jetzt fest 🐾</h1>
       <p class="sub">Einmal auf den grünen Button – dann weiß ich Bescheid.</p>
+
+      <div class="dackel-slot klein" id="slot-fertig"></div>
 
       <div class="card">
         <div class="summary" id="zusammenfassung"></div>
@@ -410,36 +535,36 @@
   "use strict";
 
   /* ==========================================================
-     HIER DEINE HANDYNUMMER EINTRAGEN (internationales Format,
-     nur Ziffern, ohne + und ohne Leerzeichen).
-     Beispiel Österreich: 436641234567
-     Leer lassen = WhatsApp öffnet sich, sie wählt den Chat selbst.
+     Handynummer im internationalen Format, nur Ziffern.
+     Leer lassen = WhatsApp öffnet sich ohne festen Empfänger.
      ========================================================== */
-  var MEINE_NUMMER = "";
+  var MEINE_NUMMER = "436763119216";
 
   var $ = function (id) { return document.getElementById(id); };
+
+  var dackel = $("dackel");
 
   /* ---------- Schritt 1: der störrische Nein-Button ---------- */
 
   var neinTexte = [
     "Nein",
-    "Bist du sicher?",
-    "Denk nochmal in Ruhe nach",
-    "Das tut mir jetzt weh 🥺",
-    "Ich frag nochmal: nein?",
-    "Der Button ist übrigens kaputt",
-    "Okay, ich geh dann mal",
-    "Nein"
+    "Bist du sicher? 🥺",
+    "Der Dackel legt die Ohren an",
+    "Er macht sich ganz lang vor Kummer",
+    "Er hat aufgehört zu wedeln",
+    "Kurze Beine, aber er weicht trotzdem aus",
+    "Okay. Er legt sich jetzt aufs Sofa.",
+    "Okay. Er legt sich jetzt aufs Sofa."
   ];
   var hinweise = [
     "",
-    "Ups, der ist wohl gerutscht.",
-    "Der Button hat heute keinen guten Tag.",
-    "Er ist scheu. Versuch's weiter.",
-    "Statistisch gesehen klickst du gleich „Ja“.",
+    "Ups. Der Button ist weggehüpft.",
+    "Dackel sind stur. Sehr stur. Sprichwörtlich stur.",
+    "Je öfter du klickst, desto länger wird er.",
     "Fun Fact: Der Ja-Button funktioniert einwandfrei.",
-    "Er hat aufgegeben. Verständlich.",
-    "Er hat aufgegeben. Verständlich."
+    "Ein Dackel wurde gezüchtet, um Dachse aus dem Bau zu holen. Ein „Ja“ kriegt er auch noch raus.",
+    "Er wartet einfach. Dackel können das ewig.",
+    "Er wartet einfach. Dackel können das ewig."
   ];
 
   var neinIndex = 0;
@@ -457,27 +582,41 @@
     hint.textContent = hinweise[neinIndex];
 
     var reichweite = Math.min(110, window.innerWidth / 4);
-    btnNein.style.setProperty("--no-x", (Math.random() * 2 - 1) * reichweite + "px");
-    btnNein.style.setProperty("--no-y", (Math.random() * 2 - 1) * 60 + "px");
+    var x = (Math.random() * 2 - 1) * reichweite;
+    btnNein.style.setProperty("--no-x", x + "px");
+    btnNein.style.setProperty("--no-y", (Math.random() * 2 - 1) * 55 + "px");
     btnNein.style.setProperty("--no-scale", Math.max(0.55, 1 - neinIndex * 0.07));
 
-    jaScale = Math.min(1.45, jaScale + 0.07);
+    // Die längeren Beschriftungen dürfen nicht aus dem Bild rutschen.
+    window.requestAnimationFrame(function () {
+      var r = btnNein.getBoundingClientRect();
+      var korrektur = 0;
+      if (r.left < 8) { korrektur = 8 - r.left; }
+      else if (r.right > window.innerWidth - 8) { korrektur = window.innerWidth - 8 - r.right; }
+      if (korrektur) { btnNein.style.setProperty("--no-x", (x + korrektur) + "px"); }
+    });
+
+    jaScale = Math.min(1.28, jaScale + 0.05);
     btnJa.style.setProperty("--yes-scale", jaScale);
+
+    // Der Dackel wird mit jedem Nein trauriger und länger.
+    dackel.classList.add("traurig");
+    dackel.style.setProperty("--lang", 1 + neinIndex * 0.1);
   }
 
   btnNein.addEventListener("click", neinAusweichen);
   btnNein.addEventListener("mouseenter", function () { neinAusweichen(null); });
 
-  /* ---------- Herzchen-Regen ---------- */
+  /* ---------- Pfotenregen ---------- */
 
-  function herzchen(anzahl) {
+  function pfoten(anzahl) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
-    var symbole = ["❤️", "💕", "💖", "🥰", "✨", "💘"];
+    var symbole = ["🐾", "🌭", "❤️", "🐕", "✨", "🦴"];
     for (var i = 0; i < anzahl; i++) {
       (function (i) {
         window.setTimeout(function () {
           var el = document.createElement("span");
-          el.className = "heart";
+          el.className = "konfetti";
           el.textContent = symbole[Math.floor(Math.random() * symbole.length)];
           el.style.left = Math.random() * 96 + "vw";
           el.style.top = "100vh";
@@ -491,17 +630,29 @@
     }
   }
 
-  /* ---------- Schrittwechsel ---------- */
+  /* ---------- Schrittwechsel (der Dackel zieht mit um) ---------- */
+
+  var slots = {
+    "step-frage": "slot-frage",
+    "step-planung": "slot-planung",
+    "step-fertig": "slot-fertig"
+  };
 
   function zeigeSchritt(id) {
-    ["step-frage", "step-planung", "step-fertig"].forEach(function (s) {
-      $(s).hidden = (s !== id);
-    });
+    Object.keys(slots).forEach(function (s) { $(s).hidden = (s !== id); });
+    $(slots[id]).appendChild(dackel);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  $("slot-frage").appendChild(dackel);
+
   btnJa.addEventListener("click", function () {
-    herzchen(28);
+    dackel.classList.remove("traurig");
+    dackel.style.setProperty("--lang", 1);
+    dackel.classList.add("freut");
+    window.setTimeout(function () { dackel.classList.remove("freut"); }, 1800);
+
+    pfoten(28);
     zeigeSchritt("step-planung");
   });
 
@@ -521,15 +672,15 @@
   /* ---------- Dauer-Slider ---------- */
 
   var dauerStufen = [
-    { text: "1 Stunde",            stunden: 1,  witz: "Kaffee im Stehen. Effizient." },
-    { text: "2 Stunden",           stunden: 2,  witz: "Solide Grundausstattung." },
-    { text: "3 Stunden",           stunden: 3,  witz: "Gemütlich, ohne Hektik." },
-    { text: "4 Stunden",           stunden: 4,  witz: "Richtig schön. Sehr gute Wahl." },
-    { text: "5 Stunden",           stunden: 5,  witz: "Da geht sich auch ein Nachtisch aus." },
-    { text: "6 Stunden",           stunden: 6,  witz: "Der Abend gehört uns." },
-    { text: "Halber Tag",          stunden: 8,  witz: "Ambitioniert. Ich mag das." },
-    { text: "Ganzer Tag",          stunden: 10, witz: "Ich sag alles andere ab." },
-    { text: "Offenes Ende ♾️",     stunden: 12, witz: "Mutig. Zustimmung meinerseits." }
+    { text: "1 Stunde",        stunden: 1,  witz: "Einmal ums Eck. So kurz wie die Beine." },
+    { text: "2 Stunden",       stunden: 2,  witz: "Solide Gassi-Runde." },
+    { text: "3 Stunden",       stunden: 3,  witz: "Gemütlich, mit Schnüffelpausen." },
+    { text: "4 Stunden",       stunden: 4,  witz: "Richtig schön. Da wedelt was." },
+    { text: "5 Stunden",       stunden: 5,  witz: "Da geht sich auch noch ein Nachtisch aus." },
+    { text: "6 Stunden",       stunden: 6,  witz: "Der Abend gehört uns." },
+    { text: "Halber Tag",      stunden: 8,  witz: "Ambitioniert. Der Dackel ist trotzdem dabei." },
+    { text: "Ganzer Tag",      stunden: 10, witz: "Ich sag alles andere ab." },
+    { text: "Offenes Ende ♾️", stunden: 12, witz: "Mutig. Der Dackel schläft dann halt zwischendurch." }
   ];
 
   var slider = $("dauer");
@@ -553,15 +704,16 @@
 
   var arten = {
     "chips-klassiker": [
-      "Essen gehen 🍝", "Kino 🎬", "Spaziergang / Wandern 🥾", "Cocktailbar 🍸",
-      "Netflix & Couch 📺", "Wellness / Sauna 🧖", "Konzert 🎶",
-      "Museum / Ausstellung 🖼️", "Überraschung – du planst 🎁"
+      "Essen gehen 🍝", "Kino 🎬", "Cocktailbar 🍸", "Konzert 🎶",
+      "Museum / Ausstellung 🖼️", "Wellness / Sauna 🧖", "Überraschung – du planst 🎁"
     ],
     "chips-zuhause": [
-      "Zusammen kochen 👩‍🍳", "Brettspiel-Abend 🎲", "Pizza selbst machen 🍕", "Bad & Wein 🛁"
+      "Netflix & Couch 📺", "Zusammen kochen 👩‍🍳", "Brettspiel-Abend 🎲",
+      "Pizza selbst machen 🍕", "Bad & Wein 🛁"
     ],
     "chips-aktiv": [
-      "Radtour 🚴", "Schwimmen / See 🏊", "Klettern 🧗", "Minigolf ⛳", "Städtetrip 🧳"
+      "Lange Gassi-Runde mit Umweg 🐾", "Wandern 🥾", "Radtour 🚴",
+      "Schwimmen / See 🏊", "Minigolf ⛳", "Städtetrip 🧳"
     ]
   };
 
@@ -607,7 +759,7 @@
 
   function textBauen(d) {
     var zeilen = [
-      "❤️ ES IST EIN JA! ❤️",
+      "🐾 ES IST EIN JA! 🐾",
       "",
       "📅 " + datumLesbar(d.datum) + (d.uhrzeit ? " um " + d.uhrzeit + " Uhr" : ""),
       "⏳ Dauer: ca. " + d.dauer.text
@@ -621,14 +773,14 @@
       zeilen.push("✍️ Dazu noch: " + d.notiz);
     }
     zeilen.push("");
-    zeilen.push("Ich freu mich. 🥰");
+    zeilen.push("Der Dackel wedelt. Ich auch. 🥰");
     return zeilen.join("\n");
   }
 
   $("btn-fertig").addEventListener("click", function () {
     var d = sammeln();
     if (!d.datum) {
-      $("fehler").textContent = "Ohne Datum wird das schwierig – such bitte einen Tag aus. 🙂";
+      $("fehler").textContent = "Ohne Datum wird das schwierig – such bitte einen Tag aus. 🐾";
       $("datum").focus();
       return;
     }
@@ -639,7 +791,7 @@
     $("zusammenfassung").textContent = text;
     $("btn-wa").href = "https://wa.me/" + MEINE_NUMMER + "?text=" + encodeURIComponent(text);
 
-    herzchen(18);
+    pfoten(18);
     zeigeSchritt("step-fertig");
   });
 
@@ -685,7 +837,7 @@
     return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
   }
 
-  // Zeilen auf 74 Zeichen umbrechen, wie es der iCalendar-Standard verlangt.
+  // Zeilen umbrechen, wie es der iCalendar-Standard verlangt.
   function icsFalten(zeile) {
     if (zeile.length <= 74) { return zeile; }
     var teile = [zeile.slice(0, 74)];
@@ -713,7 +865,7 @@
       "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
       "DTSTART:" + icsZeit(daten.datum, daten.uhrzeit, 0),
       "DTEND:" + icsZeit(daten.datum, daten.uhrzeit, daten.dauer.stunden),
-      "SUMMARY:❤️ Date",
+      "SUMMARY:🐾 Date",
       "DESCRIPTION:" + icsEscape(beschreibung),
       "END:VEVENT",
       "END:VCALENDAR"
