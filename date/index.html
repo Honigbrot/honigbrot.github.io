@@ -71,6 +71,33 @@
       text-align: center;
     }
 
+    /* ---------- Fortschritt ---------- */
+
+    .fortschritt { margin: 0 auto 22px; max-width: 380px; }
+    .fortschritt[hidden] { display: none; }
+
+    .fortschritt-bahn {
+      background: #262626;
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .fortschritt-bahn span {
+      background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+      display: block;
+      height: 100%;
+      transition: width 0.3s ease;
+      width: 0;
+    }
+    .fortschritt-text {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      margin-top: 8px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
     /* ---------- Der Dackel ---------- */
 
     .dackel-slot { display: flex; justify-content: center; }
@@ -81,7 +108,7 @@
       overflow: visible;
       width: min(330px, 84vw);
     }
-    .dackel-slot.klein .dackel { width: min(190px, 52vw); }
+    .dackel-slot.klein .dackel { width: min(160px, 44vw); }
 
     .fell-haupt { fill: url(#fellverlauf); }
     .fell-dunkel { fill: #7d3f12; }
@@ -188,7 +215,7 @@
       text-align: center;
     }
 
-    /* ---------- Schritte 2 & 3 ---------- */
+    /* ---------- Formularschritte ---------- */
 
     .step[hidden] { display: none; }
 
@@ -248,7 +275,7 @@
       outline: none;
     }
 
-    textarea { min-height: 86px; resize: vertical; }
+    textarea { min-height: 110px; resize: vertical; }
 
     input[type="range"] {
       accent-color: var(--accent);
@@ -263,6 +290,7 @@
       font-weight: 700;
       margin-top: 8px;
     }
+
     .group-title {
       color: var(--text-muted);
       font-size: 0.78rem;
@@ -295,6 +323,15 @@
     }
     .chip:has(input:checked)::before { color: var(--accent-soft); content: "🐾 "; }
     .chip:has(input:focus-visible) { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+
+    /* Navigation zwischen den Schritten */
+    .nav {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: auto 1fr;
+      margin-top: 20px;
+    }
+    .nav .btn-zurueck { padding-left: 18px; padding-right: 18px; }
 
     .actions { display: grid; gap: 10px; margin-top: 22px; }
 
@@ -364,7 +401,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .btn, .btn-yes:hover, .rumpf, .hinten, .ohr { transition: none; }
+      .btn, .btn-yes:hover, .rumpf, .hinten, .ohr, .fortschritt-bahn span { transition: none; }
       .schwanz, .dackel.freut, .dackel.traurig .traene { animation: none; }
       .konfetti { display: none; }
     }
@@ -378,6 +415,11 @@
 </head>
 <body>
   <div class="wrap">
+
+    <div class="fortschritt" id="fortschritt" hidden>
+      <div class="fortschritt-bahn"><span id="fortschritt-fill"></span></div>
+      <p class="fortschritt-text" id="fortschritt-text"></p>
+    </div>
 
     <!-- ============ Der Dackel (wandert durch alle Schritte) ============ -->
     <svg class="dackel" id="dackel" viewBox="0 0 300 150" role="img"
@@ -428,7 +470,7 @@
       <ellipse class="ohr fell-dunkel" cx="84" cy="62" rx="13" ry="29" />
     </svg>
 
-    <!-- ============ Schritt 1 ============ -->
+    <!-- ============ Die Frage ============ -->
     <section class="step" id="step-frage">
       <span class="brand">Eine Frage</span>
       <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
@@ -443,17 +485,15 @@
       </div>
     </section>
 
-    <!-- ============ Schritt 2 ============ -->
-    <section class="step" id="step-planung" hidden>
-      <span class="brand">Schritt 2 von 3</span>
-      <h1>Sehr gute Wahl.</h1>
-      <p class="sub">Ab hier bestimmst du.</p>
+    <!-- ============ Wann ============ -->
+    <section class="step" id="step-wann" hidden>
+      <h1>Wann?</h1>
+      <p class="sub">Such dir einen Tag aus.</p>
 
-      <div class="dackel-slot klein" id="slot-planung"></div>
+      <div class="dackel-slot klein" id="slot-wann"></div>
 
       <div class="card">
-        <h2>📅 Wann?</h2>
-        <p class="note">Such dir einen Tag aus.</p>
+        <h2>📅 Datum &amp; Uhrzeit</h2>
         <div class="row">
           <div>
             <label class="field" for="datum">Datum</label>
@@ -473,35 +513,75 @@
         <output class="duration-out" id="dauer-out"></output>
       </div>
 
-      <div class="card">
-        <h2>💡 Worauf hättest du Lust?</h2>
-        <p class="note">Mehrfachauswahl erwünscht.</p>
+      <div class="nav">
+        <button class="btn btn-ghost btn-zurueck" type="button" data-zurueck>Zurück</button>
+        <button class="btn btn-primary" type="button" data-weiter>Weiter</button>
+      </div>
+      <p class="error" id="fehler"></p>
+    </section>
 
+    <!-- ============ Was ============ -->
+    <section class="step" id="step-was" hidden>
+      <h1>Was machen wir?</h1>
+      <p class="sub">Mehrfachauswahl erwünscht.</p>
+
+      <div class="dackel-slot klein" id="slot-was"></div>
+
+      <div class="card">
         <p class="group-title">Klassiker</p>
         <div class="chips" id="chips-klassiker"></div>
 
         <p class="group-title">Zuhause</p>
         <div class="chips" id="chips-zuhause"></div>
 
-        <p class="group-title">Draußen</p>
-        <div class="chips" id="chips-aktiv"></div>
+        <p class="group-title">Unterwegs</p>
+        <div class="chips" id="chips-unterwegs"></div>
       </div>
 
+      <div class="nav">
+        <button class="btn btn-ghost btn-zurueck" type="button" data-zurueck>Zurück</button>
+        <button class="btn btn-primary" type="button" data-weiter>Weiter</button>
+      </div>
+    </section>
+
+    <!-- ============ Essen ============ -->
+    <section class="step" id="step-essen" hidden>
+      <h1>Und was essen wir?</h1>
+      <p class="sub">Egal ob auswärts oder daheim.</p>
+
+      <div class="dackel-slot klein" id="slot-essen"></div>
+
       <div class="card">
-        <h2>✍️ Noch was?</h2>
-        <p class="note">Optional.</p>
+        <div class="chips" id="chips-essen"></div>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-ghost btn-zurueck" type="button" data-zurueck>Zurück</button>
+        <button class="btn btn-primary" type="button" data-weiter>Weiter</button>
+      </div>
+    </section>
+
+    <!-- ============ Notiz ============ -->
+    <section class="step" id="step-notiz" hidden>
+      <h1>Noch was?</h1>
+      <p class="sub">Wünsche, Bedingungen, Forderungen. Optional.</p>
+
+      <div class="dackel-slot klein" id="slot-notiz"></div>
+
+      <div class="card">
+        <label class="field" for="notiz">Deine Notiz</label>
         <textarea id="notiz" placeholder="z. B. „Handy bleibt in der Tasche.“"></textarea>
       </div>
 
-      <div class="actions">
-        <button class="btn btn-primary btn-wide" id="btn-fertig" type="button">Fertig</button>
+      <div class="nav">
+        <button class="btn btn-ghost btn-zurueck" type="button" data-zurueck>Zurück</button>
+        <button class="btn btn-primary" type="button" data-weiter>Fertig</button>
       </div>
-      <p class="error" id="fehler"></p>
     </section>
 
-    <!-- ============ Schritt 3 ============ -->
+    <!-- ============ Zusammenfassung ============ -->
     <section class="step" id="step-fertig" hidden>
-      <span class="brand">Schritt 3 von 3</span>
+      <span class="brand">Fertig</span>
       <h1>Das steht jetzt fest 🐾</h1>
       <p class="sub">Kopier den Text und schick ihn mir.</p>
 
@@ -515,7 +595,7 @@
             <span aria-hidden="true">💬</span> In WhatsApp öffnen
           </a>
           <button class="btn btn-ghost btn-wide" id="btn-ics" type="button">📆 Termin in meinen Kalender</button>
-          <button class="btn btn-ghost btn-wide" id="btn-zurueck" type="button">↩︎ Nochmal ändern</button>
+          <button class="btn btn-ghost btn-wide" type="button" data-zurueck>↩︎ Nochmal ändern</button>
         </div>
       </div>
     </section>
@@ -531,7 +611,68 @@
 
   var dackel = $("dackel");
 
-  /* ---------- Schritt 1: der störrische Nein-Button ---------- */
+  /* ---------- Die Reihenfolge der Schritte ---------- */
+
+  var schritte = [
+    { id: "step-frage",  slot: "slot-frage" },
+    { id: "step-wann",   slot: "slot-wann",   titel: "Wann" },
+    { id: "step-was",    slot: "slot-was",    titel: "Was" },
+    { id: "step-essen",  slot: "slot-essen",  titel: "Essen" },
+    { id: "step-notiz",  slot: "slot-notiz",  titel: "Notiz" },
+    { id: "step-fertig", slot: "slot-fertig" }
+  ];
+
+  var formularSchritte = schritte.filter(function (s) { return s.titel; });
+  var aktuell = 0;
+
+  function zeigeSchritt(index) {
+    aktuell = index;
+    var schritt = schritte[index];
+
+    schritte.forEach(function (s, i) { $(s.id).hidden = (i !== index); });
+    $(schritt.slot).appendChild(dackel);
+
+    var nummer = formularSchritte.indexOf(schritt) + 1;
+    var balken = $("fortschritt");
+    balken.hidden = (nummer === 0);
+    if (nummer > 0) {
+      $("fortschritt-fill").style.width = (nummer / formularSchritte.length * 100) + "%";
+      $("fortschritt-text").textContent =
+        "Schritt " + nummer + " von " + formularSchritte.length + " · " + schritt.titel;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* Prüfungen, bevor es weitergehen darf. */
+  var pruefungen = {
+    "step-wann": function () {
+      if (!$("datum").value) {
+        $("fehler").textContent = "Bitte such noch einen Tag aus.";
+        $("datum").focus();
+        return false;
+      }
+      $("fehler").textContent = "";
+      return true;
+    }
+  };
+
+  document.querySelectorAll("[data-weiter]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var schritt = schritte[aktuell];
+      if (pruefungen[schritt.id] && !pruefungen[schritt.id]()) { return; }
+      if (schritte[aktuell + 1].id === "step-fertig") { zusammenfassenUndAnzeigen(); }
+      else { zeigeSchritt(aktuell + 1); }
+    });
+  });
+
+  document.querySelectorAll("[data-zurueck]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (aktuell > 0) { zeigeSchritt(aktuell - 1); }
+    });
+  });
+
+  /* ---------- Der störrische Nein-Button ---------- */
 
   var neinTexte = [
     "Nein",
@@ -590,6 +731,16 @@
   btnNein.addEventListener("click", neinAusweichen);
   btnNein.addEventListener("mouseenter", function () { neinAusweichen(null); });
 
+  btnJa.addEventListener("click", function () {
+    dackel.classList.remove("traurig");
+    dackel.style.setProperty("--lang", 1);
+    dackel.classList.add("freut");
+    window.setTimeout(function () { dackel.classList.remove("freut"); }, 1800);
+
+    pfoten(28);
+    zeigeSchritt(1);
+  });
+
   /* ---------- Pfotenregen ---------- */
 
   function pfoten(anzahl) {
@@ -612,32 +763,6 @@
       })(i);
     }
   }
-
-  /* ---------- Schrittwechsel (der Dackel zieht mit um) ---------- */
-
-  var slots = {
-    "step-frage": "slot-frage",
-    "step-planung": "slot-planung",
-    "step-fertig": "slot-fertig"
-  };
-
-  function zeigeSchritt(id) {
-    Object.keys(slots).forEach(function (s) { $(s).hidden = (s !== id); });
-    $(slots[id]).appendChild(dackel);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  $("slot-frage").appendChild(dackel);
-
-  btnJa.addEventListener("click", function () {
-    dackel.classList.remove("traurig");
-    dackel.style.setProperty("--lang", 1);
-    dackel.classList.add("freut");
-    window.setTimeout(function () { dackel.classList.remove("freut"); }, 1800);
-
-    pfoten(28);
-    zeigeSchritt("step-planung");
-  });
 
   /* ---------- Datum vorbelegen ---------- */
 
@@ -678,9 +803,9 @@
   slider.addEventListener("input", dauerAnzeigen);
   dauerAnzeigen();
 
-  /* ---------- Date-Arten ---------- */
+  /* ---------- Auswahlmöglichkeiten ---------- */
 
-  var arten = {
+  var auswahl = {
     "chips-klassiker": [
       "Essen gehen 🍝", "Kino 🎬", "Cocktailbar 🍸", "Konzert 🎶",
       "Museum / Ausstellung 🖼️", "Wellness / Sauna 🧖", "Überraschung 🎁"
@@ -689,28 +814,35 @@
       "Netflix & Couch 📺", "Zusammen kochen 👩‍🍳", "Brettspiel-Abend 🎲",
       "Pizza selbst machen 🍕", "Bad & Wein 🛁"
     ],
-    "chips-aktiv": [
-      "Gassi-Runde 🐾", "Wandern 🥾", "Radtour 🚴",
+    "chips-unterwegs": [
+      "Buchhandlung-Tour 📚", "Gassi-Runde 🐾", "Wandern 🥾",
       "Schwimmen / See 🏊", "Minigolf ⛳", "Städtetrip 🧳"
+    ],
+    "chips-essen": [
+      "Italienisch 🍝", "Asiatisch 🍜", "Sushi 🍣", "Burger 🍔", "Pizza 🍕",
+      "Griechisch 🥙", "Mexikanisch 🌮", "Wirtshaus 🥨", "Vegetarisch 🥗",
+      "Brunch 🥐", "Nur Snacks & Drinks 🍹", "Selber kochen 👩‍🍳",
+      "Egal – überrasch mich 🎁"
     ]
   };
 
-  Object.keys(arten).forEach(function (containerId) {
+  Object.keys(auswahl).forEach(function (containerId) {
     var container = $(containerId);
-    arten[containerId].forEach(function (name) {
+    var gruppe = (containerId === "chips-essen") ? "essen" : "art";
+    auswahl[containerId].forEach(function (name) {
       var label = document.createElement("label");
       label.className = "chip";
       var box = document.createElement("input");
       box.type = "checkbox";
       box.value = name;
-      box.className = "art";
+      box.className = gruppe;
       label.appendChild(box);
       label.appendChild(document.createTextNode(name));
       container.appendChild(label);
     });
   });
 
-  /* ---------- Zusammenfassung bauen ---------- */
+  /* ---------- Zusammenfassung ---------- */
 
   var wochentage = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
   var daten = null;
@@ -721,16 +853,21 @@
     return wochentage[d.getDay()] + ", " + teile[2] + "." + teile[1] + "." + teile[0];
   }
 
-  function sammeln() {
-    var gewaehlt = [];
-    document.querySelectorAll("input.art:checked").forEach(function (el) {
-      gewaehlt.push(el.value);
+  function gewaehlte(klasse) {
+    var liste = [];
+    document.querySelectorAll("input." + klasse + ":checked").forEach(function (el) {
+      liste.push(el.value);
     });
+    return liste;
+  }
+
+  function sammeln() {
     return {
       datum: $("datum").value,
       uhrzeit: $("uhrzeit").value,
       dauer: dauerAktuell(),
-      arten: gewaehlt,
+      arten: gewaehlte("art"),
+      essen: gewaehlte("essen"),
       notiz: $("notiz").value.trim()
     };
   }
@@ -740,13 +877,10 @@
       "Ja! 🐾",
       "",
       "📅 " + datumLesbar(d.datum) + (d.uhrzeit ? " um " + d.uhrzeit + " Uhr" : ""),
-      "⏳ Dauer: ca. " + d.dauer.text
+      "⏳ Dauer: ca. " + d.dauer.text,
+      "💡 Lust auf: " + (d.arten.length ? d.arten.join(", ") : "überrasch mich einfach"),
+      "🍽️ Essen: " + (d.essen.length ? d.essen.join(", ") : "such du was aus")
     ];
-    if (d.arten.length) {
-      zeilen.push("💡 Lust auf: " + d.arten.join(", "));
-    } else {
-      zeilen.push("💡 Lust auf: überrasch mich einfach");
-    }
     if (d.notiz) {
       zeilen.push("✍️ Dazu noch: " + d.notiz);
     }
@@ -755,29 +889,18 @@
     return zeilen.join("\n");
   }
 
-  $("btn-fertig").addEventListener("click", function () {
-    var d = sammeln();
-    if (!d.datum) {
-      $("fehler").textContent = "Bitte such noch einen Tag aus.";
-      $("datum").focus();
-      return;
-    }
-    $("fehler").textContent = "";
-    daten = d;
-
-    var text = textBauen(d);
+  function zusammenfassenUndAnzeigen() {
+    daten = sammeln();
+    var text = textBauen(daten);
     $("zusammenfassung").textContent = text;
+
     // Ohne Empfänger: WhatsApp öffnet die Chatauswahl, es steht keine
     // Telefonnummer im Quelltext dieser Seite.
     $("btn-wa").href = "https://wa.me/?text=" + encodeURIComponent(text);
 
     pfoten(18);
-    zeigeSchritt("step-fertig");
-  });
-
-  $("btn-zurueck").addEventListener("click", function () {
-    zeigeSchritt("step-planung");
-  });
+    zeigeSchritt(schritte.length - 1);
+  }
 
   /* ---------- Kopieren ---------- */
 
@@ -834,6 +957,7 @@
     if (!daten) { return; }
     var beschreibung = "Dauer: ca. " + daten.dauer.text +
       (daten.arten.length ? "\nIdeen: " + daten.arten.join(", ") : "") +
+      (daten.essen.length ? "\nEssen: " + daten.essen.join(", ") : "") +
       (daten.notiz ? "\nNotiz: " + daten.notiz : "");
 
     var ics = [
@@ -861,6 +985,8 @@
     a.remove();
     window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   });
+
+  zeigeSchritt(0);
 })();
 </script>
 </body>
