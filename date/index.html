@@ -249,11 +249,15 @@
       margin-bottom: 6px;
     }
 
+    /* Datum und Uhrzeit bleiben auch am Handy nebeneinander, sonst werden
+       die Felder unnötig breit und iOS zentriert den Wert darin. */
     .row {
       display: grid;
-      gap: 14px;
-      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      grid-template-columns: 1.35fr 1fr;
     }
+    /* Ohne das erzwingt die Eigenbreite der Datumsfelder einen Überlauf. */
+    .row > * { min-width: 0; }
 
     input[type="date"],
     input[type="time"],
@@ -264,8 +268,22 @@
       color: var(--text);
       font-family: inherit;
       font-size: 1rem;
+      min-width: 0;
       padding: 12px;
+      text-align: left;
       width: 100%;
+    }
+
+    /* Safari/iOS zentriert den Inhalt von Datums- und Zeitfeldern sonst. */
+    input[type="date"],
+    input[type="time"] {
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: left;
+    }
+    input[type="date"]::-webkit-date-and-time-value,
+    input[type="time"]::-webkit-date-and-time-value {
+      text-align: left;
     }
 
     input[type="date"]:focus,
@@ -407,9 +425,9 @@
     }
 
     @media (max-width: 520px) {
-      .row { grid-template-columns: 1fr; }
       .stage { gap: 12px; }
       .btn { padding: 14px 18px; }
+      .card { padding: 16px; }
     }
   </style>
 </head>
@@ -547,7 +565,7 @@
     <!-- ============ Essen ============ -->
     <section class="step" id="step-essen" hidden>
       <h1>Und was essen wir?</h1>
-      <p class="sub">Egal ob auswärts oder daheim.</p>
+      <p class="sub">Alles vegetarisch – egal ob auswärts oder daheim.</p>
 
       <div class="dackel-slot klein" id="slot-essen"></div>
 
@@ -815,14 +833,15 @@
       "Pizza selbst machen 🍕", "Bad & Wein 🛁"
     ],
     "chips-unterwegs": [
-      "Buchhandlung-Tour 📚", "Gassi-Runde 🐾", "Wandern 🥾",
-      "Schwimmen / See 🏊", "Minigolf ⛳", "Städtetrip 🧳"
+      "Buchhandlung-Tour 📚", "Kaffeehaus & Kuchen ☕", "Flohmarkt / Antiquitäten 🕰️",
+      "Plattenladen stöbern 🎧", "Mittelalter- / Fantasyfest 🧝", "Gassi-Runde 🐾",
+      "Einfach irgendwo hinfahren 🚗"
     ],
     "chips-essen": [
-      "Italienisch 🍝", "Asiatisch 🍜", "Sushi 🍣", "Burger 🍔", "Pizza 🍕",
-      "Griechisch 🥙", "Mexikanisch 🌮", "Wirtshaus 🥨", "Vegetarisch 🥗",
-      "Brunch 🥐", "Nur Snacks & Drinks 🍹", "Selber kochen 👩‍🍳",
-      "Egal – überrasch mich 🎁"
+      "Italienisch 🍝", "Pizza 🍕", "Asiatisch 🍜", "Indisch 🍛", "Sushi 🥢",
+      "Griechisch 🥙", "Mexikanisch 🌮", "Falafel & Mezze 🧆", "Veggie-Burger 🍔",
+      "Käse & Wein 🧀", "Brunch 🥐", "Nur Snacks & Drinks 🍹",
+      "Selber kochen 👩‍🍳", "Egal – überrasch mich 🎁"
     ]
   };
 
