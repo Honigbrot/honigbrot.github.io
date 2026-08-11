@@ -601,14 +601,13 @@
     <section class="step" id="step-fertig" hidden>
       <span class="brand">Fertig</span>
       <h1>Das steht jetzt fest 🐾</h1>
-      <p class="sub">Kopier den Text und schick ihn mir.</p>
+      <p class="sub">Einmal auf den grünen Button – dann weiß ich Bescheid.</p>
 
       <div class="dackel-slot klein" id="slot-fertig"></div>
 
       <div class="card">
         <div class="summary" id="zusammenfassung"></div>
         <div class="actions">
-          <button class="btn btn-primary btn-wide" id="btn-copy" type="button">📋 Text kopieren</button>
           <a class="btn btn-wa btn-wide" id="btn-wa" href="#" target="_blank" rel="noopener">
             <span aria-hidden="true">💬</span> In WhatsApp öffnen
           </a>
@@ -833,8 +832,7 @@
       "Pizza selbst machen 🍕", "Bad & Wein 🛁"
     ],
     "chips-unterwegs": [
-      "Buchhandlung-Tour 📚", "Kaffeehaus & Kuchen ☕", "Flohmarkt / Antiquitäten 🕰️",
-      "Plattenladen stöbern 🎧", "Mittelalter- / Fantasyfest 🧝", "Gassi-Runde 🐾",
+      "Buchhandlung-Tour 📚", "Kaffeehaus & Kuchen ☕", "Gassi-Runde 🐾",
       "Einfach irgendwo hinfahren 🚗"
     ],
     "chips-essen": [
@@ -920,25 +918,6 @@
     pfoten(18);
     zeigeSchritt(schritte.length - 1);
   }
-
-  /* ---------- Kopieren ---------- */
-
-  $("btn-copy").addEventListener("click", function () {
-    var btn = this;
-    var text = $("zusammenfassung").textContent;
-
-    function rueckmeldung(ok) {
-      btn.textContent = ok ? "Kopiert ✓ – jetzt einfach einfügen" : "Klappt nicht – bitte oben markieren & kopieren";
-      window.setTimeout(function () { btn.textContent = "📋 Text kopieren"; }, 2600);
-    }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { rueckmeldung(true); },
-                                              function () { rueckmeldung(false); });
-    } else {
-      rueckmeldung(false);
-    }
-  });
 
   /* ---------- Kalendereintrag (.ics) ---------- */
 
