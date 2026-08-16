@@ -342,6 +342,55 @@
     .chip:has(input:checked)::before { color: var(--accent-soft); content: "🐾 "; }
     .chip:has(input:focus-visible) { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
 
+    /* Konkrete Vorschläge, die unter der gewählten Kategorie aufgehen */
+    .vorschlaege { display: grid; gap: 16px; }
+    .vorschlaege:not(:empty) { margin-top: 18px; }
+
+    .vorschlag-titel {
+      color: var(--accent-soft);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .ort-liste { display: grid; gap: 8px; }
+
+    .ort-zeile { display: flex; gap: 8px; }
+
+    .ort {
+      background: #151515;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      flex: 1;
+      padding: 10px 13px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ort input { opacity: 0; pointer-events: none; position: absolute; }
+    .ort strong { display: block; font-size: 0.95rem; }
+    .ort span { color: var(--text-muted); font-size: 0.82rem; line-height: 1.35; }
+    .ort:has(input:checked) {
+      background: rgba(224, 145, 63, 0.16);
+      border-color: var(--accent);
+    }
+    .ort:has(input:checked) strong::before { color: var(--accent-soft); content: "🐾 "; }
+    .ort:has(input:focus-visible) { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+
+    .ort-karte {
+      align-items: center;
+      background: #151515;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      display: flex;
+      font-size: 0.8rem;
+      padding: 0 11px;
+      text-decoration: none;
+    }
+    .ort-karte:hover { border-color: var(--accent); color: var(--accent-soft); }
+
     /* Navigation zwischen den Schritten */
     .nav {
       display: grid;
@@ -824,37 +873,188 @@
 
   var auswahl = {
     "chips-klassiker": [
-      "Essen gehen 🍝", "Kino 🎬", "Cocktailbar 🍸", "Konzert 🎶",
-      "Museum / Ausstellung 🖼️", "Wellness / Sauna 🧖", "Überraschung 🎁"
+      { name: "Essen gehen 🍝" },
+      { name: "Kino 🎬", orte: [
+        { n: "Moviemento & City Kino", i: "Programmkino am OK-Platz, kleine Säle", q: "Moviemento Linz" },
+        { n: "Cineplexx Linz", i: "Für alles, was groß und laut ist" }
+      ] },
+      { name: "Cocktailbar 🍸", orte: [
+        { n: "Solaris", i: "Bar und Club, unter der Woche ruhiger" },
+        { n: "Hemingway's", i: "Klassische Cocktailbar in der Innenstadt" },
+        { n: "Rooftop7", i: "Drinks mit Blick über Linz", q: "Rooftop7 Bar Linz" }
+      ] },
+      { name: "Konzert 🎶", orte: [
+        { n: "Posthof", i: "Von Indie bis Kabarett" },
+        { n: "Brucknerhaus", i: "Klassik direkt an der Donau" }
+      ] },
+      { name: "Museum / Ausstellung 🖼️", orte: [
+        { n: "Lentos Kunstmuseum", i: "Moderne Kunst an der Donaulände" },
+        { n: "Ars Electronica Center", i: "Technik zum Angreifen" },
+        { n: "Nordico Stadtmuseum", i: "Kleiner, feiner, mitten in der Stadt" }
+      ] },
+      { name: "Wellness / Sauna 🧖", orte: [
+        { n: "Eurothermen Bad Schallerbach", i: "Gut eine halbe Stunde raus aus Linz", q: "Eurothermenresort Bad Schallerbach" }
+      ] },
+      { name: "Überraschung 🎁" }
     ],
     "chips-zuhause": [
-      "Netflix & Couch 📺", "Zusammen kochen 👩‍🍳", "Brettspiel-Abend 🎲",
-      "Pizza selbst machen 🍕", "Bad & Wein 🛁"
+      { name: "Netflix & Couch 📺" },
+      { name: "Zusammen kochen 👩‍🍳" },
+      { name: "Brettspiel-Abend 🎲" },
+      { name: "Pizza selbst machen 🍕" },
+      { name: "Bad & Wein 🛁" }
     ],
     "chips-unterwegs": [
-      "Buchhandlung-Tour 📚", "Kaffeehaus & Kuchen ☕", "Gassi-Runde 🐾",
-      "Einfach irgendwo hinfahren 🚗"
+      { name: "Buchhandlung-Tour 📚", orte: [
+        { n: "ALEX", i: "Unabhängig am Hauptplatz, kuratiert und klein", q: "Buchhandlung ALEX Hauptplatz Linz" },
+        { n: "Thalia Landstraße", i: "Riesig, zum stundenlangen Verlieren" }
+      ] },
+      { name: "Kaffeehaus & Kuchen ☕", orte: [
+        { n: "Café Traxlmayr", i: "Seit 1847, Jugendstil und Zeitungen" },
+        { n: "Jindrak am Pöstlingberg", i: "Linzer Torte mit Blick über die Stadt", q: "Jindrak Pöstlingberg Linz" }
+      ] },
+      { name: "Gassi-Runde 🐾", orte: [
+        { n: "Donaulände & Donaupark", i: "Flach, lang, direkt am Wasser", q: "Donaupark Linz" },
+        { n: "Pöstlingberg", i: "Rauf schnaufen, oben die Aussicht" },
+        { n: "Traunauen", i: "Schattig im Sommer", q: "Traunauen Linz Ebelsberg" }
+      ] },
+      { name: "Einfach irgendwo hinfahren 🚗", orte: [
+        { n: "Stift Wilhering", i: "Rokoko-Kirche im Donautal, keine 20 Minuten", q: "Stift Wilhering" },
+        { n: "Enns", i: "Älteste Stadt Österreichs, Altstadt zum Schlendern", q: "Enns Hauptplatz Oberösterreich" },
+        { n: "Pöstlingberg & Grottenbahn", i: "Bergbahn rauf, Kitsch inklusive", q: "Grottenbahn Pöstlingberg Linz" }
+      ] }
     ],
     "chips-essen": [
-      "Italienisch 🍝", "Pizza 🍕", "Asiatisch 🍜", "Indisch 🍛", "Sushi 🥢",
-      "Griechisch 🥙", "Mexikanisch 🌮", "Falafel & Mezze 🧆", "Veggie-Burger 🍔",
-      "Käse & Wein 🧀", "Brunch 🥐", "Nur Snacks & Drinks 🍹",
-      "Selber kochen 👩‍🍳", "Egal – überrasch mich 🎁"
+      { name: "Italienisch 🍝", orte: [
+        { n: "RIVA", i: "Direkt am Hauptplatz, Gastgarten zum Platz hin" },
+        { n: "Da Vinci", i: "Mediterran gemischt, mitten in der Stadt" }
+      ] },
+      { name: "Pizza 🍕", orte: [
+        { n: "Il Caminetto", i: "Bio-Pizza am Hessenplatz, viele vegane Varianten" },
+        { n: "Buon Appetito", i: "Klein und echt, Holzofen am OK-Platz" }
+      ] },
+      { name: "Asiatisch 🍜", orte: [
+        { n: "Fu Asia", i: "Modern, Ramen und Sushi, viel Vegetarisches" },
+        { n: "Chinoiss", i: "Chinesisch und indisch, Rainerstraße" }
+      ] },
+      { name: "Indisch 🍛", orte: [
+        { n: "Royal Bombay Palace", i: "Klassiker in der Innenstadt" },
+        { n: "Chinoiss", i: "Indisch und chinesisch unter einem Dach" }
+      ] },
+      { name: "Sushi 🥢", orte: [
+        { n: "Fu Asia", i: "Auch Veggie-Rollen auf der Karte" }
+      ] },
+      { name: "Griechisch 🥙" },
+      { name: "Mexikanisch 🌮" },
+      { name: "Falafel & Mezze 🧆", orte: [
+        { n: "Schadzi", i: "Orientalisch, viel Veganes, Unverträglichkeiten auf Ansage" },
+        { n: "Ayam Zaman", i: "Levantinisch, Mezze zum Teilen" }
+      ] },
+      { name: "Veggie-Burger 🍔", orte: [
+        { n: "Front Food", i: "Komplett vegan, Pfarrgasse – Burger, Wraps, Bowls" },
+        { n: "Gelbes Krokodil", i: "Im Moviemento, gut vor oder nach dem Kino" }
+      ] },
+      { name: "Käse & Wein 🧀" },
+      { name: "Brunch 🥐", orte: [
+        { n: "Teichwerk", i: "Auf dem Teich am Uni-Campus, Brunch am Wochenende", q: "Teichwerk JKU Linz" },
+        { n: "Stadtliebe", i: "Großes Buffet, eher deftig" },
+        { n: "Deli", i: "Gastgarten in der Herrenstraße", q: "Deli Linz Herrenstraße" }
+      ] },
+      { name: "Nur Snacks & Drinks 🍹", orte: [
+        { n: "Solaris", i: "Kleinigkeiten und gute Drinks" },
+        { n: "Rooftop7", i: "Aussicht statt Hauptspeise" }
+      ] },
+      { name: "Selber kochen 👩‍🍳" },
+      { name: "Egal – überrasch mich 🎁" }
     ]
   };
+
+  /* Merkt sich die konkreten Orte je Kategorie, damit die Auswahl beim
+     Neuaufbau der Vorschlagsliste nicht verlorengeht. */
+  var gewaehlteOrte = {};
+
+  function vorschlaegeAufbauen(containerId, box) {
+    box.innerHTML = "";
+
+    auswahl[containerId].forEach(function (eintrag) {
+      if (!eintrag.orte) { return; }
+      var haken = box.parentNode.querySelector('input[value="' + eintrag.name + '"]');
+      if (!haken || !haken.checked) { return; }
+
+      var gruppe = document.createElement("div");
+      var titel = document.createElement("p");
+      titel.className = "vorschlag-titel";
+      titel.textContent = eintrag.name;
+      gruppe.appendChild(titel);
+
+      var liste = document.createElement("div");
+      liste.className = "ort-liste";
+
+      eintrag.orte.forEach(function (ort) {
+        var zeile = document.createElement("div");
+        zeile.className = "ort-zeile";
+
+        var label = document.createElement("label");
+        label.className = "ort";
+
+        var box2 = document.createElement("input");
+        box2.type = "checkbox";
+        box2.checked = (gewaehlteOrte[eintrag.name] || []).indexOf(ort.n) !== -1;
+        box2.addEventListener("change", function () {
+          var liste2 = gewaehlteOrte[eintrag.name] || [];
+          if (box2.checked) { liste2 = liste2.concat([ort.n]); }
+          else { liste2 = liste2.filter(function (x) { return x !== ort.n; }); }
+          gewaehlteOrte[eintrag.name] = liste2;
+        });
+
+        var name = document.createElement("strong");
+        name.textContent = ort.n;
+        var info = document.createElement("span");
+        info.textContent = ort.i;
+
+        label.appendChild(box2);
+        label.appendChild(name);
+        label.appendChild(info);
+
+        var karte = document.createElement("a");
+        karte.className = "ort-karte";
+        karte.href = "https://www.google.com/maps/search/?api=1&query=" +
+          encodeURIComponent(ort.q || (ort.n + " Linz"));
+        karte.target = "_blank";
+        karte.rel = "noopener";
+        karte.textContent = "Karte ↗";
+
+        zeile.appendChild(label);
+        zeile.appendChild(karte);
+        liste.appendChild(zeile);
+      });
+
+      gruppe.appendChild(liste);
+      box.appendChild(gruppe);
+    });
+  }
 
   Object.keys(auswahl).forEach(function (containerId) {
     var container = $(containerId);
     var gruppe = (containerId === "chips-essen") ? "essen" : "art";
-    auswahl[containerId].forEach(function (name) {
+
+    var box = document.createElement("div");
+    box.className = "vorschlaege";
+    container.parentNode.insertBefore(box, container.nextSibling);
+
+    auswahl[containerId].forEach(function (eintrag) {
       var label = document.createElement("label");
       label.className = "chip";
-      var box = document.createElement("input");
-      box.type = "checkbox";
-      box.value = name;
-      box.className = gruppe;
-      label.appendChild(box);
-      label.appendChild(document.createTextNode(name));
+      var haken = document.createElement("input");
+      haken.type = "checkbox";
+      haken.value = eintrag.name;
+      haken.className = gruppe;
+      haken.addEventListener("change", function () {
+        if (!haken.checked) { delete gewaehlteOrte[eintrag.name]; }
+        vorschlaegeAufbauen(containerId, box);
+      });
+      label.appendChild(haken);
+      label.appendChild(document.createTextNode(eintrag.name));
       container.appendChild(label);
     });
   });
@@ -870,10 +1070,13 @@
     return wochentage[d.getDay()] + ", " + teile[2] + "." + teile[1] + "." + teile[0];
   }
 
+  /* Liefert die angehakten Kategorien, jeweils mit den konkreten Orten
+     dahinter in Klammern. */
   function gewaehlte(klasse) {
     var liste = [];
     document.querySelectorAll("input." + klasse + ":checked").forEach(function (el) {
-      liste.push(el.value);
+      var orte = gewaehlteOrte[el.value] || [];
+      liste.push(orte.length ? el.value + " (" + orte.join(", ") + ")" : el.value);
     });
     return liste;
   }
