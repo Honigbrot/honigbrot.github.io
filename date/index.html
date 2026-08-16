@@ -470,6 +470,374 @@
       .btn { padding: 14px 18px; }
       .card { padding: 16px; }
     }
+
+    /* ---------- Nacht-Comic (Claude 2b) + Verhandlung (3b) ---------- */
+
+    :root {
+      --bg: #08080a;
+      --surface: #17171f;
+      --surface2: #101014;
+      --border: #4a4a58;
+      --accent: #ff4d6d;
+      --accent-soft: #ff879d;
+      --accent-deep: #d92f51;
+      --love: #ff4d6d;
+      --love-deep: #d92f51;
+      --text: #f7f1e4;
+      --text-dim: #d7d1c6;
+      --text-muted: #8b8b9a;
+      --radius: 0;
+      --ink: #101014;
+      --paper: #f7f1e4;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 50% -10%, rgba(255, 77, 109, 0.13), transparent 34rem),
+        radial-gradient(#1c1c26 1px, transparent 1.6px);
+      background-size: auto, 7px 7px;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      padding: clamp(12px, 4vw, 32px) 12px 48px;
+    }
+
+    .wrap {
+      background: var(--surface2);
+      background-image: radial-gradient(#1c1c26 1px, transparent 1.6px);
+      background-size: 7px 7px;
+      border: 3px solid var(--paper);
+      box-shadow: 8px 8px 0 var(--accent);
+      max-width: 560px;
+      min-height: calc(100vh - 64px);
+      overflow: hidden;
+      padding: clamp(14px, 4vw, 24px);
+    }
+
+    .step[hidden] { display: none; }
+
+    .fortschritt {
+      margin: 0 0 16px;
+      max-width: none;
+    }
+    .fortschritt-bahn {
+      background: transparent;
+      border-radius: 0;
+      display: flex;
+      gap: 5px;
+      height: 10px;
+      overflow: visible;
+    }
+    .fortschritt-bahn span {
+      background: var(--accent);
+      border: 2px solid var(--paper);
+      transition: width .25s steps(4, end);
+    }
+    .fortschritt-text {
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    .brand {
+      align-self: flex-start;
+      background: var(--accent);
+      border: 3px solid var(--paper);
+      color: #fff;
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      margin: 0;
+      padding: 6px 10px;
+      transform: rotate(-3deg);
+    }
+
+    h1,
+    .card h2,
+    .group-title,
+    .btn {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      color: var(--ink);
+      font-size: clamp(1.65rem, 7vw, 2.45rem);
+      letter-spacing: -.04em;
+      line-height: .98;
+      padding: 12px 14px;
+      position: relative;
+      text-align: left;
+    }
+    h1::after {
+      background: var(--paper);
+      border-bottom: 3px solid var(--ink);
+      border-right: 3px solid var(--ink);
+      bottom: -11px;
+      content: "";
+      height: 16px;
+      left: 28px;
+      position: absolute;
+      transform: rotate(45deg);
+      width: 16px;
+    }
+
+    .sub {
+      color: var(--text-muted);
+      font-family: Georgia, serif;
+      font-size: .86rem;
+      font-style: italic;
+      line-height: 1.45;
+      margin: 12px 0 0;
+      max-width: none;
+      text-align: left;
+    }
+
+    .hero-panel {
+      align-items: center;
+      background-color: var(--surface);
+      background-image: radial-gradient(rgba(255, 77, 109, .32) 1.4px, transparent 1.8px);
+      background-size: 9px 9px;
+      border: 3px solid var(--paper);
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+    }
+    .hero-panel h1 { align-self: stretch; }
+    .hero-panel .sub { align-self: flex-start; color: var(--paper); font-weight: 700; }
+
+    .dackel-slot { min-height: 0; }
+    .dackel {
+      filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, .38));
+      margin: 8px 0 -2px;
+      width: min(300px, 78vw);
+    }
+    .dackel-slot.klein .dackel { margin: 0; width: min(118px, 32vw); }
+
+    .dialogue {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 10px;
+      max-height: 220px;
+      overflow: auto;
+      scrollbar-color: var(--accent) var(--surface);
+    }
+    .dialogue:empty { display: none; }
+    .dialogue-row { align-items: flex-end; display: flex; gap: 9px; }
+    .dialogue-avatar {
+      align-items: center;
+      background: var(--accent);
+      border: 3px solid var(--paper);
+      border-radius: 50%;
+      display: flex;
+      flex: 0 0 36px;
+      height: 36px;
+      justify-content: center;
+    }
+    .dialogue-bubble {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      color: var(--ink);
+      flex: 1;
+      font-size: .88rem;
+      font-weight: 700;
+      line-height: 1.3;
+      padding: 10px 12px;
+      position: relative;
+    }
+    .dialogue-bubble::before {
+      background: var(--paper);
+      border-bottom: 3px solid var(--ink);
+      border-left: 3px solid var(--ink);
+      bottom: 7px;
+      content: "";
+      height: 12px;
+      left: -8px;
+      position: absolute;
+      transform: rotate(45deg);
+      width: 12px;
+    }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+      min-height: 0;
+      padding-top: 14px;
+    }
+    #step-frage {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100dvh - clamp(96px, 12vw, 132px));
+    }
+    #step-frage[hidden] { display: none; }
+    .btn {
+      background: var(--surface);
+      border: 3px solid var(--border);
+      border-radius: 0;
+      color: var(--paper);
+      font-size: .86rem;
+      letter-spacing: .02em;
+      padding: 14px 18px;
+      transition: transform .14s ease, background .14s ease, color .14s ease, border-color .14s ease;
+    }
+    .btn:hover { transform: translate(-2px, -2px); }
+    .btn:active { transform: translate(2px, 2px); }
+    .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .btn-yes {
+      align-self: stretch;
+      background: var(--accent);
+      border-color: var(--paper);
+      box-shadow: 6px 6px 0 var(--paper);
+      color: #fff;
+      font-size: clamp(1.35rem, 6vw, 1.75rem);
+      padding: 18px;
+      transform: rotate(-1deg);
+    }
+    .btn-yes:hover { transform: rotate(-1deg) translate(-2px, -2px); }
+    .btn-no {
+      align-self: stretch;
+      background: var(--surface);
+      color: var(--text-muted);
+      transform: none;
+    }
+    .btn-no.warm { border-color: var(--accent); color: var(--paper); }
+    .btn-no.final-offer { background: var(--accent); border-color: var(--paper); color: #fff; }
+    .hint {
+      color: var(--text-muted);
+      font-size: .64rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      min-height: 1.4em;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .step:not(#step-frage):not(#step-fertig) > h1 { max-width: 82%; }
+    .step:not(#step-frage) > .dackel-slot {
+      justify-content: flex-end;
+      margin: -42px 8px 4px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 3px solid var(--paper);
+      border-radius: 0;
+      margin-top: 14px;
+      padding: 16px;
+    }
+    .card h2 { font-size: 1rem; margin-bottom: 14px; }
+    .card p.note { color: var(--text-muted); }
+    label.field,
+    .group-title {
+      color: var(--text-muted);
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    input[type="date"],
+    input[type="time"],
+    textarea {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+      font-weight: 700;
+    }
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    textarea:focus { border-color: var(--accent); outline: 2px solid var(--paper); }
+
+    .chips { gap: 9px; }
+    .chip {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+      font-size: .78rem;
+      font-weight: 900;
+      padding: 9px 12px;
+      text-transform: uppercase;
+      transform: rotate(-1deg);
+    }
+    .chip:nth-child(even) { transform: rotate(1deg); }
+    .chip:has(input:checked) {
+      background: var(--accent);
+      border-color: var(--paper);
+      box-shadow: 3px 3px 0 var(--paper);
+      color: #fff;
+    }
+    .chip:has(input:checked)::before { color: #fff; content: "✓ "; }
+
+    .vorschlaege { gap: 12px; }
+    .vorschlag-titel { color: var(--accent); font-size: .68rem; font-weight: 900; }
+    .ort-zeile { align-items: stretch; }
+    .ort {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+    }
+    .ort span { color: #5a5a66; font-family: Georgia, serif; font-style: italic; }
+    .ort:has(input:checked) { background: var(--accent); border-color: var(--paper); color: #fff; }
+    .ort:has(input:checked) span { color: #fff; }
+    .ort:has(input:checked) strong::before { color: #fff; content: "✓ "; }
+    .ort-karte {
+      background: var(--surface);
+      border: 3px solid var(--border);
+      border-radius: 0;
+      color: var(--paper);
+      font-size: .7rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .nav { margin-top: 14px; }
+    .btn-primary {
+      background: var(--paper);
+      border-color: var(--paper);
+      box-shadow: 4px 4px 0 var(--accent);
+      color: var(--ink);
+    }
+    .btn-zurueck { color: var(--text-muted); }
+    .error { color: var(--accent); font-family: Georgia, serif; font-style: italic; }
+
+    .summary {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-left: 3px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+      font-weight: 700;
+      line-height: 1.6;
+    }
+    .btn-wa {
+      background: #29c65a;
+      border-color: var(--paper);
+      box-shadow: 5px 5px 0 var(--paper);
+      color: #08240f;
+    }
+    .footer-link { color: #6b6b7a; font-size: .65rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .footer-link:hover { color: var(--accent); }
+
+    @media (max-width: 520px) {
+      body { padding: 0; }
+      .wrap { border-left: 0; border-right: 0; box-shadow: none; min-height: 100vh; }
+      .row { gap: 8px; grid-template-columns: 1.18fr .82fr; }
+      .card { padding: 13px; }
+      .ort-zeile { gap: 5px; }
+      .ort-karte { padding: 0 7px; }
+    }
   </style>
 </head>
 <body>
@@ -531,16 +899,19 @@
 
     <!-- ============ Die Frage ============ -->
     <section class="step" id="step-frage">
-      <span class="brand">Eine Frage</span>
-      <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
-      <p class="sub">Kurze Beine, große Hoffnung.</p>
+      <div class="hero-panel">
+        <span class="brand">Panel 1 · Eine Frage</span>
+        <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
+        <div class="dackel-slot" id="slot-frage"></div>
+        <p class="sub">„Kurze Beine, große Hoffnung.“</p>
+      </div>
 
-      <div class="dackel-slot" id="slot-frage"></div>
+      <div class="dialogue" id="dialogue" aria-live="polite"></div>
 
       <div class="stage">
         <button class="btn btn-yes" id="btn-yes" type="button">Ja! 🌭</button>
         <button class="btn btn-no" id="btn-no" type="button">Nein</button>
-        <p class="hint" id="hint"></p>
+        <p class="hint" id="hint">Antworten sind Dialog, keine Sackgasse.</p>
       </div>
     </section>
 
@@ -726,64 +1097,74 @@
     });
   });
 
-  /* ---------- Der störrische Nein-Button ---------- */
+  /* ---------- Die Verhandlung (Claude-Variante 3b) ---------- */
 
-  var neinTexte = [
-    "Nein",
-    "Sicher?",
-    "Der Dackel schaut jetzt traurig",
-    "Er wird immer länger",
-    "Okay.",
-    "Okay."
-  ];
-  var hinweise = [
-    "",
-    "",
-    "",
-    "",
-    "Der Ja-Button funktioniert übrigens einwandfrei.",
-    "Der Ja-Button funktioniert übrigens einwandfrei."
+  var angebote = [
+    {
+      label: "Nein, wirklich",
+      antwort: "Okay, ich respektiere ein klares Nein. Aber darf ich ein einziges Gegenargument vorbringen? 🐾"
+    },
+    {
+      label: "Vielleicht später",
+      antwort: "Später klingt schon verdächtig nach einem kleinen Vielleicht. Ich kann warten. Also kurz."
+    },
+    {
+      label: "Nur wenn es Kuchen gibt",
+      antwort: "Kuchen ist nicht nur möglich, Kuchen ist jetzt offiziell Teil der Verhandlungen. 🍰"
+    },
+    {
+      label: "Ja, aber ich bestimme das Essen",
+      antwort: "Abgemacht. Du bestimmst das Essen, ich bringe die kurzen Beine und die große Hoffnung."
+    }
   ];
 
   var neinIndex = 0;
-  var jaScale = 1;
   var btnNein = $("btn-no");
   var btnJa = $("btn-yes");
   var hint = $("hint");
+  var dialogue = $("dialogue");
 
-  function neinAusweichen(event) {
-    if (neinIndex >= neinTexte.length - 1) { return; }
-    if (event) { event.preventDefault(); }
-    neinIndex += 1;
-
-    btnNein.textContent = neinTexte[neinIndex];
-    hint.textContent = hinweise[neinIndex];
-
-    var reichweite = Math.min(110, window.innerWidth / 4);
-    var x = (Math.random() * 2 - 1) * reichweite;
-    btnNein.style.setProperty("--no-x", x + "px");
-    btnNein.style.setProperty("--no-y", (Math.random() * 2 - 1) * 55 + "px");
-    btnNein.style.setProperty("--no-scale", Math.max(0.55, 1 - neinIndex * 0.07));
-
-    // Die längeren Beschriftungen dürfen nicht aus dem Bild rutschen.
-    window.requestAnimationFrame(function () {
-      var r = btnNein.getBoundingClientRect();
-      var korrektur = 0;
-      if (r.left < 8) { korrektur = 8 - r.left; }
-      else if (r.right > window.innerWidth - 8) { korrektur = window.innerWidth - 8 - r.right; }
-      if (korrektur) { btnNein.style.setProperty("--no-x", (x + korrektur) + "px"); }
-    });
-
-    jaScale = Math.min(1.28, jaScale + 0.05);
-    btnJa.style.setProperty("--yes-scale", jaScale);
-
-    // Der Dackel wird mit jedem Nein trauriger und länger.
-    dackel.classList.add("traurig");
-    dackel.style.setProperty("--lang", 1 + neinIndex * 0.1);
+  function antwortHinzufuegen(text) {
+    var zeile = document.createElement("div");
+    zeile.className = "dialogue-row";
+    var avatar = document.createElement("span");
+    avatar.className = "dialogue-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = "🐾";
+    var blase = document.createElement("div");
+    blase.className = "dialogue-bubble";
+    blase.textContent = text;
+    zeile.appendChild(avatar);
+    zeile.appendChild(blase);
+    dialogue.appendChild(zeile);
+    dialogue.scrollTop = dialogue.scrollHeight;
   }
 
-  btnNein.addEventListener("click", neinAusweichen);
-  btnNein.addEventListener("mouseenter", function () { neinAusweichen(null); });
+  function weiterVerhandeln() {
+    // Das letzte Angebot ist ein Ja mit einer sehr vernünftigen Bedingung.
+    if (neinIndex >= angebote.length) {
+      btnJa.click();
+      return;
+    }
+
+    var angebot = angebote[neinIndex];
+    antwortHinzufuegen(angebot.antwort);
+    btnNein.textContent = angebot.label;
+    neinIndex += 1;
+
+    if (neinIndex >= 3) { btnNein.classList.add("warm"); }
+    if (neinIndex >= angebote.length) {
+      btnNein.classList.add("final-offer");
+      hint.textContent = "Deal? Ein Klick besiegelt die Sache.";
+    } else {
+      hint.textContent = "Verhandlungsrunde " + neinIndex + " von " + angebote.length;
+    }
+
+    dackel.classList.add("traurig");
+    dackel.style.setProperty("--lang", 1 + neinIndex * 0.07);
+  }
+
+  btnNein.addEventListener("click", weiterVerhandeln);
 
   btnJa.addEventListener("click", function () {
     dackel.classList.remove("traurig");
