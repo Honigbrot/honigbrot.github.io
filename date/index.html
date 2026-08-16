@@ -452,7 +452,8 @@
       pointer-events: none;
       position: fixed;
       user-select: none;
-      z-index: 0;
+      /* Keep the floating emojis above the full-width card on mobile. */
+      z-index: 3;
     }
     @keyframes aufsteigen {
       from { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
@@ -900,18 +901,16 @@
     <!-- ============ Die Frage ============ -->
     <section class="step" id="step-frage">
       <div class="hero-panel">
-        <span class="brand">Panel 1 · Eine Frage</span>
-        <h1>Willst du mein <span style="color:var(--love)">Date</span> sein?</h1>
+        <h1>Hast du Lust auf ein <span style="color:var(--love)">Date</span> mit mir?</h1>
         <div class="dackel-slot" id="slot-frage"></div>
-        <p class="sub">„Kurze Beine, große Hoffnung.“</p>
       </div>
 
       <div class="dialogue" id="dialogue" aria-live="polite"></div>
 
       <div class="stage">
-        <button class="btn btn-yes" id="btn-yes" type="button">Ja! 🌭</button>
-        <button class="btn btn-no" id="btn-no" type="button">Nein</button>
-        <p class="hint" id="hint">Antworten sind Dialog, keine Sackgasse.</p>
+        <button class="btn btn-yes" id="btn-yes" type="button">Ja, gerne</button>
+        <button class="btn btn-no" id="btn-no" type="button">Lieber nicht</button>
+        <p class="hint" id="hint"></p>
       </div>
     </section>
 
@@ -1004,7 +1003,6 @@
 
     <!-- ============ Zusammenfassung ============ -->
     <section class="step" id="step-fertig" hidden>
-      <span class="brand">Fertig</span>
       <h1>Das steht jetzt fest 🐾</h1>
       <p class="sub">Einmal auf den grünen Button – dann weiß ich Bescheid.</p>
 
@@ -1021,8 +1019,6 @@
         </div>
       </div>
     </section>
-
-    <a class="footer-link" href="../">honigbrot.github.io</a>
   </div>
 
 <script>
@@ -1101,20 +1097,20 @@
 
   var angebote = [
     {
-      label: "Nein, wirklich",
-      antwort: "Okay, ich respektiere ein klares Nein. Aber darf ich ein einziges Gegenargument vorbringen? 🐾"
+      label: "Ich bin mir nicht sicher",
+      antwort: "Alles gut. Du musst dich nicht sofort entscheiden."
     },
     {
       label: "Vielleicht später",
-      antwort: "Später klingt schon verdächtig nach einem kleinen Vielleicht. Ich kann warten. Also kurz."
+      antwort: "Klar, kein Stress. Wir können das auch ein anderes Mal planen."
     },
     {
-      label: "Nur wenn es Kuchen gibt",
-      antwort: "Kuchen ist nicht nur möglich, Kuchen ist jetzt offiziell Teil der Verhandlungen. 🍰"
+      label: "Kommt drauf an",
+      antwort: "Verständlich. Wann, was wir machen und was wir essen, suchst du mit aus."
     },
     {
-      label: "Ja, aber ich bestimme das Essen",
-      antwort: "Abgemacht. Du bestimmst das Essen, ich bringe die kurzen Beine und die große Hoffnung."
+      label: "Okay, zeig mal",
+      antwort: "Gerne. Schau dir die Optionen einfach in Ruhe an."
     }
   ];
 
@@ -1155,9 +1151,9 @@
     if (neinIndex >= 3) { btnNein.classList.add("warm"); }
     if (neinIndex >= angebote.length) {
       btnNein.classList.add("final-offer");
-      hint.textContent = "Deal? Ein Klick besiegelt die Sache.";
+      if (hint) { hint.textContent = "Deal? Ein Klick besiegelt die Sache."; }
     } else {
-      hint.textContent = "Verhandlungsrunde " + neinIndex + " von " + angebote.length;
+      if (hint) { hint.textContent = "Verhandlungsrunde " + neinIndex + " von " + angebote.length; }
     }
 
     dackel.classList.add("traurig");
