@@ -301,14 +301,6 @@
       width: 100%;
     }
 
-    .duration-out {
-      color: var(--accent-soft);
-      display: block;
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-top: 8px;
-    }
-
     .group-title {
       color: var(--text-muted);
       font-size: 0.78rem;
@@ -573,13 +565,6 @@
         </div>
       </div>
 
-      <div class="card">
-        <h2>⏳ Wie lange ungefähr?</h2>
-        <p class="note">Ungefähr reicht. Verlängerung ist jederzeit möglich.</p>
-        <input type="range" id="dauer" min="1" max="9" step="1" value="4" />
-        <output class="duration-out" id="dauer-out"></output>
-      </div>
-
       <div class="nav">
         <button class="btn btn-ghost btn-zurueck" type="button" data-zurueck>Zurück</button>
         <button class="btn btn-primary" type="button" data-weiter>Weiter</button>
@@ -674,6 +659,9 @@
   "use strict";
 
   var $ = function (id) { return document.getElementById(id); };
+
+  // Es wird keine Dauer mehr abgefragt; der Kalendereintrag bekommt diese Länge.
+  var STANDARD_DAUER = 3;
 
   var dackel = $("dackel");
 
@@ -843,32 +831,6 @@
   $("datum").min = alsISO(heute);
   $("datum").value = alsISO(inEinerWoche);
 
-  /* ---------- Dauer-Slider ---------- */
-
-  var dauerStufen = [
-    { text: "1 Stunde",        stunden: 1 },
-    { text: "2 Stunden",       stunden: 2 },
-    { text: "3 Stunden",       stunden: 3 },
-    { text: "4 Stunden",       stunden: 4 },
-    { text: "5 Stunden",       stunden: 5 },
-    { text: "6 Stunden",       stunden: 6 },
-    { text: "Halber Tag",      stunden: 8 },
-    { text: "Ganzer Tag",      stunden: 10 },
-    { text: "Offenes Ende ♾️", stunden: 12 }
-  ];
-
-  var slider = $("dauer");
-  var dauerOut = $("dauer-out");
-
-  function dauerAktuell() { return dauerStufen[Number(slider.value) - 1]; }
-
-  function dauerAnzeigen() {
-    dauerOut.textContent = "ca. " + dauerAktuell().text;
-  }
-
-  slider.addEventListener("input", dauerAnzeigen);
-  dauerAnzeigen();
-
   /* ---------- Auswahlmöglichkeiten ---------- */
 
   var auswahl = {
@@ -877,9 +839,15 @@
         { n: "Moviemento & City Kino", i: "Programmkino am OK-Platz, kleine Säle", q: "Moviemento Linz" },
         { n: "Cineplexx Linz", i: "Für alles, was groß und laut ist" }
       ] },
+      { name: "Theater / Kabarett 🎭", orte: [
+        { n: "Schauspielhaus", i: "Landestheater an der Promenade", q: "Schauspielhaus Linz Promenade" },
+        { n: "Kammerspiele", i: "Kleiner und näher dran", q: "Kammerspiele Linz Promenade" },
+        { n: "Musiktheater am Volksgarten", i: "Das große Haus, Oper und Musical", q: "Musiktheater Linz" }
+      ] },
       { name: "Cocktailbar 🍸", orte: [
         { n: "Solaris", i: "Bar und Club, unter der Woche ruhiger" },
         { n: "Hemingway's", i: "Klassische Cocktailbar in der Innenstadt" },
+        { n: "Frau Dietrich", i: "Kleiner und ruhiger für Gespräche", q: "Frau Dietrich Bar Linz" },
         { n: "Rooftop7", i: "Drinks mit Blick über Linz", q: "Rooftop7 Bar Linz" }
       ] },
       { name: "Konzert 🎶", orte: [
@@ -889,7 +857,8 @@
       { name: "Museum / Ausstellung 🖼️", orte: [
         { n: "Lentos Kunstmuseum", i: "Moderne Kunst an der Donaulände" },
         { n: "Ars Electronica Center", i: "Technik zum Angreifen" },
-        { n: "Nordico Stadtmuseum", i: "Kleiner, feiner, mitten in der Stadt" }
+        { n: "Nordico Stadtmuseum", i: "Kleiner, feiner, mitten in der Stadt" },
+        { n: "Schlossmuseum", i: "Oben am Schlossberg, mit Blick über die Donau", q: "Schlossmuseum Linz" }
       ] },
       { name: "Wellness / Sauna 🧖", orte: [
         { n: "Eurothermen Bad Schallerbach", i: "Gut eine halbe Stunde raus aus Linz", q: "Eurothermenresort Bad Schallerbach" }
@@ -901,7 +870,9 @@
       { name: "Zusammen kochen 👩‍🍳" },
       { name: "Brettspiel-Abend 🎲" },
       { name: "Pizza selbst machen 🍕" },
-      { name: "Bad & Wein 🛁" }
+      { name: "Bad & Wein 🛁" },
+      { name: "Zusammen backen 🥐" },
+      { name: "Vorlesen & Tee 📖" }
     ],
     "chips-unterwegs": [
       { name: "Buchhandlung-Tour 📚", orte: [
@@ -912,6 +883,12 @@
         { n: "Café Traxlmayr", i: "Seit 1847, Jugendstil und Zeitungen" },
         { n: "Jindrak am Pöstlingberg", i: "Linzer Torte mit Blick über die Stadt", q: "Jindrak Pöstlingberg Linz" }
       ] },
+      { name: "Markt & Standln 🧺", orte: [
+        { n: "Südbahnhofmarkt", i: "Samstagvormittag am lebendigsten, 46 Standln", q: "Südbahnhofmarkt Linz" }
+      ] },
+      { name: "Botanischer Garten 🌿", orte: [
+        { n: "Botanischer Garten auf der Gugl", i: "Größte Kakteensammlung Europas, Rosarium, Tropenhaus", q: "Botanischer Garten Linz" }
+      ] },
       { name: "Gassi-Runde 🐾", orte: [
         { n: "Donaulände & Donaupark", i: "Flach, lang, direkt am Wasser", q: "Donaupark Linz" },
         { n: "Pöstlingberg", i: "Rauf schnaufen, oben die Aussicht" },
@@ -920,7 +897,10 @@
       { name: "Einfach irgendwo hinfahren 🚗", orte: [
         { n: "Stift Wilhering", i: "Rokoko-Kirche im Donautal, keine 20 Minuten", q: "Stift Wilhering" },
         { n: "Enns", i: "Älteste Stadt Österreichs, Altstadt zum Schlendern", q: "Enns Hauptplatz Oberösterreich" },
-        { n: "Pöstlingberg & Grottenbahn", i: "Bergbahn rauf, Kitsch inklusive", q: "Grottenbahn Pöstlingberg Linz" }
+        { n: "Pöstlingberg & Grottenbahn", i: "Bergbahn rauf, Kitsch inklusive", q: "Grottenbahn Pöstlingberg Linz" },
+        { n: "Steyr", i: "Altstadt mit dem Bummerlhaus, gut eine halbe Stunde", q: "Steyr Stadtplatz" },
+        { n: "Stift Kremsmünster", i: "Bibliothek, Fischkalter, Sternwarte", q: "Stift Kremsmünster" },
+        { n: "Schlögener Schlinge", i: "Wo die Donau kehrtmacht – knapp 45 Minuten", q: "Schlögener Blick" }
       ] }
     ],
     "chips-essen": [
@@ -953,11 +933,22 @@
         { n: "Front Food", i: "Komplett vegan, Pfarrgasse – Burger, Wraps, Bowls" },
         { n: "Gelbes Krokodil", i: "Im Moviemento, gut vor oder nach dem Kino" }
       ] },
+      { name: "Rein vegan 🌱", orte: [
+        { n: "Front Food", i: "Komplett vegan, Pfarrgasse", q: "Front Food Linz Pfarrgasse" },
+        { n: "Der Charmante Elefant", i: "In der Tabakfabrik, täglich ein veganes Hauptgericht – nur mittags", q: "Der Charmante Elefant Linz" },
+        { n: "Gelbes Krokodil", i: "Viel Veganes, im Moviemento" }
+      ] },
       { name: "Käse & Wein 🧀" },
       { name: "Brunch 🥐", orte: [
         { n: "Teichwerk", i: "Auf dem Teich am Uni-Campus, Brunch am Wochenende", q: "Teichwerk JKU Linz" },
         { n: "Stadtliebe", i: "Großes Buffet, eher deftig" },
-        { n: "Deli", i: "Gastgarten in der Herrenstraße", q: "Deli Linz Herrenstraße" }
+        { n: "Deli", i: "Gastgarten in der Herrenstraße", q: "Deli Linz Herrenstraße" },
+        { n: "Beenie.all day", i: "Eierspezialitäten, Shakshuka, Eggs Benedict", q: "Beenie all day Linz" }
+      ] },
+      { name: "Eis 🍨", orte: [
+        { n: "Surace", i: "Mehrere Standorte in der Innenstadt, viele Eigenkreationen", q: "Eissalon Surace Linz" },
+        { n: "Eiskönig", i: "Seit 1950 auf der Landstraße beim Ursulinenhof", q: "Eiskönig Linz Landstraße" },
+        { n: "Jindrak", i: "Im Sommer auch Linzer-Torte-Eis", q: "Jindrak Linz" }
       ] },
       { name: "Nur Snacks & Drinks 🍹", orte: [
         { n: "Solaris", i: "Kleinigkeiten und gute Drinks" },
@@ -1084,7 +1075,6 @@
     return {
       datum: $("datum").value,
       uhrzeit: $("uhrzeit").value,
-      dauer: dauerAktuell(),
       arten: gewaehlte("art"),
       essen: gewaehlte("essen"),
       notiz: $("notiz").value.trim()
@@ -1101,7 +1091,6 @@
       "Ja! 🐾",
       "",
       "📅 " + datumLesbar(d.datum) + (d.uhrzeit ? " um " + d.uhrzeit + " Uhr" : ""),
-      "⏳ Dauer: ca. " + d.dauer.text,
       "💡 Lust auf: " + lust,
       "🍽️ Essen: " + (d.essen.length ? d.essen.join(", ") : "such du was aus")
     ];
@@ -1160,8 +1149,7 @@
 
   $("btn-ics").addEventListener("click", function () {
     if (!daten) { return; }
-    var beschreibung = "Dauer: ca. " + daten.dauer.text +
-      (daten.arten.length ? "\nIdeen: " + daten.arten.join(", ") : "") +
+    var beschreibung = (daten.arten.length ? "Ideen: " + daten.arten.join(", ") : "") +
       (daten.essen.length ? "\nEssen: " + daten.essen.join(", ") : "") +
       (daten.notiz ? "\nNotiz: " + daten.notiz : "");
 
@@ -1173,7 +1161,7 @@
       "UID:date-" + Date.now() + "@honigbrot",
       "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
       "DTSTART:" + icsZeit(daten.datum, daten.uhrzeit, 0),
-      "DTEND:" + icsZeit(daten.datum, daten.uhrzeit, daten.dauer.stunden),
+      "DTEND:" + icsZeit(daten.datum, daten.uhrzeit, STANDARD_DAUER),
       "SUMMARY:🐾 Date",
       "DESCRIPTION:" + icsEscape(beschreibung),
       "END:VEVENT",
