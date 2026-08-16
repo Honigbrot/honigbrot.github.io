@@ -590,7 +590,7 @@
     <!-- ============ Was ============ -->
     <section class="step" id="step-was" hidden>
       <h1>Was machen wir?</h1>
-      <p class="sub">Mehrfachauswahl erwünscht.</p>
+      <p class="sub">Mehrfachauswahl erwünscht. Wenn es nur ums Essen gehen soll: nichts anhaken und weiter.</p>
 
       <div class="dackel-slot klein" id="slot-was"></div>
 
@@ -1092,12 +1092,17 @@
   }
 
   function textBauen(d) {
+    // Ohne Aktivität, aber mit Essenswunsch ist das Essen selbst das Date.
+    var lust = "überrasch mich einfach";
+    if (d.arten.length) { lust = d.arten.join(", "); }
+    else if (d.essen.length) { lust = "einfach in Ruhe essen"; }
+
     var zeilen = [
       "Ja! 🐾",
       "",
       "📅 " + datumLesbar(d.datum) + (d.uhrzeit ? " um " + d.uhrzeit + " Uhr" : ""),
       "⏳ Dauer: ca. " + d.dauer.text,
-      "💡 Lust auf: " + (d.arten.length ? d.arten.join(", ") : "überrasch mich einfach"),
+      "💡 Lust auf: " + lust,
       "🍽️ Essen: " + (d.essen.length ? d.essen.join(", ") : "such du was aus")
     ];
     if (d.notiz) {
